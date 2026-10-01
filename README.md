@@ -26,6 +26,13 @@ within a couple of minutes.
 
 The game list and card text live in `docs/assets/games.js`.
 
+## Feedback and itch.io
+
+- **Feedback:** players send it through the **Game feedback** issue form
+  (`.github/ISSUE_TEMPLATE/feedback.yml`). Each card's "Feedback" link opens
+  that form with the game already chosen. Issues are labelled `feedback`.
+- **itch.io:** to publish the games there as well, see [ITCH.md](ITCH.md).
+
 ## Rights
 
 © 2026 Tactile Forge. All rights reserved. The games are free to play, but the

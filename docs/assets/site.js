@@ -5,6 +5,10 @@
 
 import { GAMES } from './games.js';
 
+// Feedback goes to a GitHub issue form for grown-ups; nothing is collected on this site.
+const FEEDBACK = 'https://github.com/louiscrocker/tactile-forge-arcade/issues/new?template=feedback.yml';
+const feedbackFor = (name) => `${FEEDBACK}&game=${encodeURIComponent(name)}`;
+
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 function card(g) {
@@ -22,7 +26,7 @@ function card(g) {
       <p class="desc">${esc(g.description)}</p>
       <ul class="feats">${g.features.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>
       <div class="card-foot">
-        <span class="meta">${esc(g.meta)}</span>
+        <span class="meta">${esc(g.meta)} · <a class="fb" href="${feedbackFor(g.name)}" target="_blank" rel="noopener">Feedback<span class="sr"> on ${esc(g.name)}</span></a></span>
         <a class="play" href="${g.slug}/">Play <span aria-hidden="true">▶</span><span class="sr"> ${esc(g.name)}</span></a>
       </div>
     </div>

@@ -1,0 +1,53 @@
+name: Game feedback
+description: Tell us what you liked, what broke, or what you'd like to see.
+title: "[Feedback] "
+labels: ["feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for playing! This form is for **grown-ups**. Please don't include
+        a child's name, age, school or photo — just tell us about the game.
+  - type: dropdown
+    id: game
+    attributes:
+      label: Which game?
+      options:
+        - Last Silo
+        - Soft Touchdown
+        - Rubble Drift
+        - Periscope Front
+        - Lightwake
+        - Frog Pond
+        - Ladybug Life
+        - Monarch Journey
+        - Alicorn Skies
+        - Burrow & Brood
+        - Storm Lab
+        - The arcade website itself
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of feedback?
+      options:
+        - Something is broken or wrong
+        - An idea or request
+        - I just loved it
+        - Too hard / too easy
+        - Reading or learning content
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: What happened, or what would you like?
+      description: For a problem, what were you doing just before it happened?
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and browser (optional)
+      placeholder: e.g. Windows laptop, Chrome · iPad, Safari
