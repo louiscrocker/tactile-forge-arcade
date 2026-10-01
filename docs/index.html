@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Tactile Forge Arcade — free games in your browser</title>
+  <meta name="description" content="Glowing vector arcade games and gentle nature adventures for kids. Free to play in your browser — no downloads, no accounts, no ads, nothing tracked." />
+  <meta name="theme-color" content="#04070a" />
+  <meta property="og:title" content="Tactile Forge Arcade" />
+  <meta property="og:description" content="Vector arcade games and nature adventures. Free in your browser." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="assets/og.webp" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='none' stroke='%235cffaa' stroke-width='4' d='M32 6 L32 38 M22 18 L32 6 L42 18 M14 56 L32 38 L50 56 M14 56 L50 56'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="assets/fonts/fonts.css" />
+  <link rel="stylesheet" href="assets/site.css" />
+  <style>.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}</style>
+</head>
+<body>
+  <div class="backdrop" aria-hidden="true">
+    <div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div><div class="glow g4"></div>
+  </div>
+  <canvas id="stars" aria-hidden="true"></canvas>
+  <div class="scan" aria-hidden="true"></div>
+
+  <header class="wrap">
+    <nav class="topbar glass" aria-label="Main">
+      <a class="brand" href="./">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4 L16 20 M11 9 L16 4 L21 9 M7 28 L16 20 L25 28 M7 28 L25 28" /></svg>
+        <span>TACTILE&nbsp;FORGE</span>
+      </a>
+      <div class="topnav">
+        <a href="#arcade">Arcade</a>
+        <a href="#nature">Nature &amp; Reading</a>
+        <a href="#about">About</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <span class="eyebrow glass">FREE · IN YOUR BROWSER</span>
+      <h1>Tactile Forge<br/><span class="amber">Arcade</span></h1>
+      <p class="lede">Glowing vector arcade games and gentle nature adventures that help kids read.
+        Click a card and play — no downloads, no accounts, no ads.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="#arcade">Play the arcade <span aria-hidden="true">▶</span></a>
+        <a class="btn btn-glass glass" href="#nature">Games for young readers</a>
+      </div>
+      <div class="stats glass" role="list">
+        <div class="stat" role="listitem"><b id="count-all">–</b><span>Games</span></div>
+        <div class="stat" role="listitem"><b>0</b><span>Downloads needed</span></div>
+        <div class="stat" role="listitem"><b>0</b><span>Trackers</span></div>
+        <div class="stat" role="listitem"><b>$0</b><span>Forever</span></div>
+      </div>
+    </section>
+
+    <section class="shelf arcade" id="arcade" aria-labelledby="h-arcade">
+      <div class="shelf-head">
+        <div>
+          <h2 id="h-arcade">The Arcade</h2>
+          <p>Vector-tube shooters and racers drawn the way old cabinets drew them: bright beams, bloom and phosphor glow.</p>
+        </div>
+        <span class="tag-pill glass"><span id="count-arcade">–</span> CABINETS</span>
+      </div>
+      <div class="grid" id="grid-arcade"></div>
+    </section>
+
+    <section class="shelf nature" id="nature" aria-labelledby="h-nature">
+      <div class="shelf-head">
+        <div>
+          <h2 id="h-nature">Nature &amp; Reading</h2>
+          <p>Gentle adventures for young explorers. Grow up as a ladybug, a frog or a monarch, raise an ant colony, chase a storm — and read along the way.</p>
+        </div>
+        <span class="tag-pill glass"><span id="count-nature">–</span> ADVENTURES</span>
+      </div>
+      <div class="grid" id="grid-nature"></div>
+    </section>
+
+    <section class="about glass" id="about" aria-label="About">
+      <div>
+        <h3>Play anywhere</h3>
+        <p>Every game runs in a modern browser on a laptop or tablet. Nothing to install. The arcade games look best with WebGL; they fall back to a simpler renderer if your device doesn't have it.</p>
+      </div>
+      <div>
+        <h3>Nothing tracked</h3>
+        <p>No accounts, no ads, no analytics, no cookies. These pages load nothing from any other website. Progress and high scores are saved only in your own browser.</p>
+      </div>
+      <div>
+        <h3>Made for families</h3>
+        <p>The nature games are written for young readers, with real facts about the animals and weather they explore and everything read aloud.</p>
+      </div>
+      <div>
+        <h3>For grown-ups</h3>
+        <p>Read-aloud and the optional microphone (&ldquo;I read to play&rdquo;) use your browser's built-in speech features. In Chrome these can send the spoken text or the child's voice to Google; the microphone is off unless you turn it on. Fact cards include &ldquo;See the real thing&rdquo; links that open YouTube or Wikipedia in a new tab.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <div>© <span id="year">2026</span> Tactile Forge · Free to play in your browser.</div>
+    <div class="small">Fonts (Orbitron, Inter, VT323, Nunito, Atkinson Hyperlegible) under the SIL Open Font License, served from this site.</div>
+  </footer>
+
+  <script type="module" src="assets/site.js"></script>
+</body>
+</html>

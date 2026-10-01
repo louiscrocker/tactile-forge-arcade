@@ -1,0 +1,26 @@
+{
+  "slug": "storm-lab",
+  "commit": "d6721e9",
+  "builtAt": "2026-10-01T21:28:53.001Z",
+  "files": {
+    "css/style.css": "eab86c9d428eb3e674f49f37f9aba8b2bddc8022edb794504110492ea2502b72",
+    "icon.svg": "72042535aa026c8181447cf6a3593a5b7e985dcef74d890e47b690fd08301237",
+    "index.html": "83fccae8d7690d019d70b9835bb28822c5c9c5d85f773591e67f52865bf348bb",
+    "js/audio.js": "8a088d38da790aee65d918f0fc2ef1be5821a19ed44653a329436d2a486b7064",
+    "js/core.js": "ef42c0390ef96118635d23c13acee7bb5b9ad268ec0f45995d5908f2f8e4592e",
+    "js/gl.js": "c59586dfa2808f43398c430a948bfe9bb2c443adb4ae9670a17ae81c85eaa9f3",
+    "js/gldraw.js": "0a0af3c98dbfe357103bc6938b2c29185d1e7e83ccc10d57ad9f59ccb3312149",
+    "js/glscene.js": "164c90f4cb9fdfbc883bd1a54fc45089ec3fab13d108fd0d1feb18578a3ab926",
+    "js/glshaders.js": "7df30361626d929100b3589147ea5360a57efe34754490ee4be97b33c5a521d5",
+    "js/main.js": "5a65a280627872970a4b70e29459d1596d0e8de2db378623b3b9f848a993e6b4",
+    "js/meshes.js": "4431a6f24afdb00c0fee1bf59eff891298d697c41fb5270b4d36b8465f7fd365",
+    "js/overlay.js": "a79439843d69064b23313db8d6a4f173b52a46968f76d057b6865e56078b39cb",
+    "js/radar.js": "c80bd2d2b8ee288acd46b1c8e354e6626130d3c578fae986aae64c653058d655",
+    "js/render.js": "2756db0f45273e29f57c83612e90c16a5534b528b382049d0b484c5f3ff1f935",
+    "js/scenarios.js": "a22d8ca244823081608c89bfa30161dc6dbbfe70a3dae582311eae35fb11216a",
+    "js/terrain.js": "eb177658522cfa57c52393a8badcd525d6fffe3e1afc1fb6216a7cd600899885",
+    "js/vegetation.js": "3bceb5dd21a21945de947aea21e730ba9cfb2de78cba5d95898c715f8ee78857",
+    "js/vortex.js": "097927e1e03af61b8f4067425b99bdf174f9453474cea39d5a4428c53ab7c4db",
+    "js/world.js": "223a5ab59cd106eeffc2690d9a9f8d1c7897025c22642fac41c77edd339435a1"
+  }
+}

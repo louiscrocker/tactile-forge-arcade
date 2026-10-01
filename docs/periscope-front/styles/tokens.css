@@ -1,0 +1,112 @@
+/* =====================================================
+   TACTILE FORGE — Tank Battle · Design Tokens
+   Phosphor / vector cabinet aesthetic
+   ===================================================== */
+
+:root {
+  /* ----- Phosphor palette (default: green) ----- */
+  --c-void:         #000604;
+  --c-deep:         #00130a;
+  --c-shadow:       #001b0e;
+  --c-line-soft:    #003a1f;
+  --c-line:         #00b86a;
+  --c-line-hot:     #5cffaa;
+  --c-line-glow:    rgba(60, 255, 160, .55);
+  --c-line-bloom:   rgba(60, 255, 160, .18);
+
+  --c-accent:       #ffe04a;     /* pad multipliers / brass */
+  --c-accent-glow:  rgba(255, 224, 74, .45);
+  --c-warn:         #ff7a3a;
+  --c-danger:       #ff3a4a;
+  --c-success:      #5cffaa;
+  --c-paper:        #c9ffe1;
+
+  /* Surfaces */
+  --s-glass:        rgba(0, 18, 10, .55);
+  --s-glass-strong: rgba(0, 18, 10, .82);
+  --s-glass-light:  rgba(92, 255, 170, .05);
+  --s-stroke:       rgba(92, 255, 170, .28);
+  --s-stroke-soft:  rgba(92, 255, 170, .12);
+  --s-stroke-hard:  rgba(92, 255, 170, .55);
+
+  /* Type */
+  --f-display:      "Orbitron", "Inter", system-ui, sans-serif;
+  --f-mono:         "VT323", ui-monospace, "SF Mono", Menlo, monospace;
+  --f-sans:         "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --t-xs:    11px;
+  --t-sm:    13px;
+  --t-base:  15px;
+  --t-md:    17px;
+  --t-lg:    20px;
+  --t-xl:    26px;
+  --t-2xl:   34px;
+  --t-3xl:   48px;
+  --t-4xl:   72px;
+  --t-display: clamp(64px, 14vw, 200px);
+
+  /* Space */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  20px;
+  --sp-6:  24px;
+  --sp-7:  32px;
+  --sp-8:  44px;
+  --sp-9:  64px;
+  --sp-10: 96px;
+
+  /* Radius */
+  --r-1: 2px;
+  --r-2: 4px;
+  --r-3: 8px;
+  --r-4: 14px;
+  --r-pill: 999px;
+
+  /* Shadow / glow */
+  --sh-1: 0 1px 2px rgba(0,0,0,.55);
+  --sh-2: 0 6px 22px rgba(0,0,0,.55);
+  --sh-3: 0 18px 48px rgba(0,0,0,.65);
+  --sh-glow: 0 0 0 1px var(--s-stroke), 0 0 24px var(--c-line-glow);
+  --sh-glow-hot: 0 0 0 1px var(--c-line-hot), 0 0 36px var(--c-line-glow);
+
+  /* Motion */
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --ease-in:  cubic-bezier(.4, 0, 1, 1);
+  --ease-emph:cubic-bezier(.2, .8, .2, 1);
+  --d-fast:   .14s;
+  --d-base:   .28s;
+  --d-slow:   .52s;
+
+  /* Layout */
+  --topbar-h: 56px;
+  --max-w:    1280px;
+}
+
+/* Phosphor variants — set on body via [data-phosphor] */
+body[data-phosphor="amber"] {
+  --c-line:        #ffb24a;
+  --c-line-hot:    #ffe9a8;
+  --c-line-soft:   #4a2a05;
+  --c-line-glow:   rgba(255, 178, 74, .55);
+  --c-line-bloom:  rgba(255, 178, 74, .18);
+  --c-success:     #ffd57a;
+  --c-paper:       #fff0c9;
+}
+body[data-phosphor="cyan"] {
+  --c-line:        #4ad8ff;
+  --c-line-hot:    #c8f2ff;
+  --c-line-soft:   #053a4a;
+  --c-line-glow:   rgba(74, 216, 255, .55);
+  --c-line-bloom:  rgba(74, 216, 255, .18);
+  --c-success:     #c8f2ff;
+  --c-paper:       #d4f3ff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --d-fast: 0s; --d-base: 0s; --d-slow: 0s; }
+}
+[data-reduce-motion="true"] {
+  --d-fast: 0s; --d-base: 0s; --d-slow: 0s;
+}

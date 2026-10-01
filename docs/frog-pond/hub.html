@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tactile Forge Games</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<style>
+  @import url('fonts/fonts.css');
+  :root { --ink: #1d3538; --dim: #4e6b6c; --card: rgba(255,255,255,.9); }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; font-family: "Nunito", "Segoe UI", system-ui, sans-serif; color: var(--ink);
+         background: radial-gradient(ellipse at 50% 0%, #bfeaf5, #6fb8c8 45%, #2a6f7f); padding: 28px 16px 40px; }
+  h1 { margin: 0 auto 4px; max-width: 1000px; font-size: clamp(30px, 6vw, 52px); font-weight: 900; color: #fff; text-shadow: 0 3px 0 rgba(0,40,50,.35); }
+  .sub { margin: 0 auto 22px; max-width: 1000px; font-weight: 800; color: #eafcff; }
+  .grid { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  .game { display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 22px; background: var(--card); text-decoration: none; color: var(--ink);
+          box-shadow: 0 14px 30px rgba(0,40,50,.25); transition: transform .15s; }
+  .game:hover { transform: translateY(-4px) rotate(-.5deg); }
+  .game .pic { height: 120px; border-radius: 16px; display: grid; place-items: center; font-size: 64px; background: linear-gradient(180deg, #e8f7fa, #cfeaf0); }
+  .game .pic img { width: 104px; height: 104px; border-radius: 22px; }
+  .game b { font-size: 20px; font-weight: 900; }
+  .game span { font-size: 13.5px; font-weight: 700; color: var(--dim); line-height: 1.35; }
+  .stk { margin-top: auto; font-size: 13px; font-weight: 900; color: #b07a10; }
+  h2 { max-width: 1000px; margin: 34px auto 10px; color: #fff; font-size: 26px; }
+  .wall { max-width: 1000px; margin: 0 auto; padding: 16px; border-radius: 22px; background: var(--card); display: flex; flex-wrap: wrap; gap: 8px; }
+  .st { padding: 6px 12px; border-radius: 999px; background: #fff3c0; font-weight: 800; font-size: 13px; }
+  .st i { font-style: normal; color: var(--dim); font-weight: 700; }
+  .empty { color: var(--dim); font-weight: 700; }
+</style>
+</head>
+<body>
+<h1>🌿 Tactile Forge Games</h1>
+<p class="sub">Pick a game. Your stickers from every game meet on the wall below.</p>
+<div class="grid" id="grid"></div>
+<h2>⭐ Sticker wall</h2>
+<div class="wall" id="wall"></div>
+<script>
+'use strict';
+/* Relative links work from the folders on this computer, where each game sits in
+   its repo folder. On the Tactile Forge Arcade site (this page served from
+   /frog-pond/) each game sits in its slug folder instead, and only games that
+   are published there are listed, so no link or icon points at a missing page. */
+const GAMES = [
+  { dir: 'TACTILE_FORGE_FROG_POND', slug: 'frog-pond', here: true, name: 'Frog Pond', emoji: '🐸', icon: 'icons/icon-192.png', blurb: 'Jelly egg to tadpole to frog. Swim, hop the lily pads, snap flies, sing at night.', keys: ['frogpond.stickers'] },
+  { dir: 'TACTILE_FORGE_LADYBUG', name: 'Ladybug Life', emoji: '🐞', icon: 'icons/icon-192.png', blurb: 'Hatch, eat aphids, molt, pupate and fly away a ladybug.', keys: ['ladybug.stickers'] },
+  { dir: 'TACTILE_FORGE_MONARCH_JOURNEY', name: 'Monarch Journey', emoji: '🦋', blurb: 'Caterpillar on milkweed, chrysalis, then fly the migration to Mexico.', keys: ['monarch.stickers'] },
+  { dir: 'TACTILE_FORGE_ALICORN', slug: 'alicorn-skies', name: 'Alicorn Skies', emoji: '🦄', icon: 'icons/icon-192.png', blurb: 'Make your own alicorn and gallop across a magical land.', keys: ['alicorn.stickers'] },
+  { dir: 'TACTILE_FORGE_TORNADO', name: 'Tornado Alley', emoji: '🌪️', blurb: 'A storm lab: build the weather and watch a tornado form.', keys: [] }
+];
+const ON_ARCADE = /\/frog-pond\/(hub\.html)?$/.test(location.pathname);
+if (ON_ARCADE) for (let i = GAMES.length - 1; i >= 0; i--) if (!GAMES[i].slug) GAMES.splice(i, 1);
+const href = (g, file) => (g.here ? '' : '../' + (ON_ARCADE ? g.slug : g.dir) + '/') + file;
+function stickerList(key) {
+  try {
+    const raw = localStorage.getItem(key); if (!raw) return [];
+    const d = JSON.parse(raw);
+    if (Array.isArray(d)) return d.map(String);
+    if (d && Array.isArray(d.unlocked)) return d.unlocked.map(String);
+    if (d && typeof d === 'object') return Object.keys(d).filter(k => d[k]);
+  } catch (e) { /* not ours to fix */ }
+  return [];
+}
+/* every child profile in Frog Pond keeps its own stickers */
+function frogKeys() {
+  let list = [{ id: 'main' }];
+  try { list = JSON.parse(localStorage.getItem('frogpond.profiles')) || list; } catch (e) { /* fine */ }
+  return list.map(p => p.id === 'main' ? 'frogpond.stickers' : `frogpond.${p.id}.stickers`);
+}
+const grid = document.getElementById('grid'), wall = document.getElementById('wall');
+let any = false;
+for (const g of GAMES) {
+  const keys = g.dir === 'TACTILE_FORGE_FROG_POND' ? frogKeys() : g.keys;
+  const got = [...new Set(keys.flatMap(stickerList))];
+  const a = document.createElement('a'); a.className = 'game'; a.href = href(g, 'index.html');
+  const pic = document.createElement('div'); pic.className = 'pic';
+  if (g.icon) { const img = new Image(); img.src = href(g, g.icon); img.alt = ''; img.onerror = () => { pic.textContent = g.emoji; }; pic.appendChild(img); } else pic.textContent = g.emoji;
+  a.appendChild(pic);
+  a.insertAdjacentHTML('beforeend', `<b>${g.emoji} ${g.name}</b><span>${g.blurb}</span><div class="stk">${got.length ? '⭐ ' + got.length + ' sticker' + (got.length > 1 ? 's' : '') : ''}</div>`);
+  grid.appendChild(a);
+  for (const s of got) { any = true; const el = document.createElement('span'); el.className = 'st'; el.innerHTML = `${g.emoji} ${s.replace(/[<>&]/g, '')}`; wall.appendChild(el); }
+}
+if (!any) wall.innerHTML = '<span class="empty">No stickers yet. Play a game and they will gather here.</span>';
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "Ladybug Life — Aphid Hunter",
+  "short_name": "Ladybug Life",
+  "description": "Hatch from an egg, eat aphids, molt, pupate and fly away a ladybug. A garden life-cycle game for kids.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#5ea9e8",
+  "theme_color": "#5ea9e8",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

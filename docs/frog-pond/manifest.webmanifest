@@ -1,0 +1,16 @@
+{
+  "name": "Frog Pond — Tadpole to Frog",
+  "short_name": "Frog Pond",
+  "description": "Hatch from a jelly egg, swim as a tadpole, grow legs, lose your tail, hop the lily pads and snap flies as a frog. A pond life-cycle game for kids.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#3f9ab8",
+  "theme_color": "#3f9ab8",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "Alicorn Skies",
+  "short_name": "Alicorn Skies",
+  "description": "Make your own alicorn, then gallop and fly across a magical land helping your animal friends.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#b48cff",
+  "theme_color": "#9b6cff",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

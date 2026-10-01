@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Storm Lab</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<canvas id="glscene"></canvas>
+<canvas id="scene"></canvas>
+<canvas id="overlay"></canvas>
+
+<!-- ============================ TOP BAR ============================ -->
+<header class="bar top" id="topBar">
+  <div class="brand">
+    <div class="logo">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M4 6h24M6 11h20M9 16h14M12 21h9M14 26h4" fill="none" stroke="currentColor"
+              stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="brand-txt">
+      <h1>STORM LAB</h1>
+      <p>Tornado Simulator &amp; Damage Survey</p>
+    </div>
+  </div>
+
+  <div class="readouts">
+    <div class="ro">
+      <span class="ro-k">Peak wind</span>
+      <b class="ro-v" id="roWind">0</b><span class="ro-u">mph</span>
+    </div>
+    <div class="ro">
+      <span class="ro-k">Rating</span>
+      <b class="ro-v ef" id="roEF">EF0</b>
+    </div>
+    <div class="ro">
+      <span class="ro-k">Width</span>
+      <b class="ro-v" id="roWidth">0</b><span class="ro-u">yd</span>
+    </div>
+    <div class="ro">
+      <span class="ro-k">Path</span>
+      <b class="ro-v" id="roPath">0.0</b><span class="ro-u">mi</span>
+    </div>
+    <div class="ro">
+      <span class="ro-k">Stage</span>
+      <b class="ro-v stage" id="roStage">Mature</b>
+    </div>
+  </div>
+
+  <div class="top-actions">
+    <button class="icon-btn" id="btnHelp" title="How tornadoes work (?)">?</button>
+    <button class="icon-btn" id="btnShot" title="Save a picture (P)">
+      <svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13.5" r="3.4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+    </button>
+    <button class="icon-btn" id="btnUI" title="Hide interface (H)">
+      <svg viewBox="0 0 24 24"><path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ============================ LEFT PANEL ============================ -->
+<aside class="panel left" id="leftPanel">
+  <div class="panel-scroll">
+
+    <section class="grp">
+      <h2>Storm Strength</h2>
+      <div class="ef-picker" id="efPicker">
+        <button data-ef="0">EF0</button>
+        <button data-ef="1">EF1</button>
+        <button data-ef="2">EF2</button>
+        <button data-ef="3" class="on">EF3</button>
+        <button data-ef="4">EF4</button>
+        <button data-ef="5">EF5</button>
+      </div>
+      <label class="ctl">
+        <span>Rotation speed <em id="vWind">165 mph</em></span>
+        <input type="range" id="sWind" min="45" max="300" step="1" value="110">
+      </label>
+      <p class="note tiny">The <b>peak wind</b> up top reads higher than this: the storm's
+        forward motion adds to the rotation on one flank, so damage along a track is
+        always lopsided.</p>
+      <label class="ctl">
+        <span>Funnel width <em id="vWidth">90 m</em></span>
+        <input type="range" id="sWidth" min="20" max="4200" step="10" value="90">
+      </label>
+      <label class="ctl">
+        <span>Forward speed <em id="vSpeed">14 m/s</em></span>
+        <input type="range" id="sSpeed" min="0" max="34" step="0.5" value="14">
+      </label>
+      <label class="ctl">
+        <span>Track heading <em id="vHeading">45&deg;</em></span>
+        <input type="range" id="sHeading" min="0" max="359" step="1" value="45">
+      </label>
+    </section>
+
+    <section class="grp">
+      <h2>Real Storms</h2>
+      <div class="storms" id="stormPicker">
+        <button data-storm="elreno"><b>El Reno</b><i>2013 · widest ever</i></button>
+        <button data-storm="moore"><b>Moore</b><i>2013 · EF5</i></button>
+        <button data-storm="joplin"><b>Joplin</b><i>2011 · deadliest</i></button>
+        <button data-storm="tristate"><b>Tri-State</b><i>1925 · longest</i></button>
+      </div>
+      <div class="storm-card" id="stormCard" hidden></div>
+    </section>
+
+    <section class="grp">
+      <h2>The Supercell</h2>
+      <label class="ctl">
+        <span>Storm development <em id="vStorm">Mature</em></span>
+        <input type="range" id="sStorm" min="0" max="100" step="1" value="100">
+      </label>
+      <button class="wide form" id="btnForm">&#9728; Watch one form, start to finish</button>
+      <p class="note tiny">The storm builds first &mdash; tower, anvil, wall cloud &mdash;
+        and only then does the funnel reach the ground. That order is the whole point.</p>
+    </section>
+
+    <section class="grp">
+      <h2>Vortex Structure</h2>
+      <label class="ctl">
+        <span>Suction vortices <em id="vSub">0</em></span>
+        <input type="range" id="sSub" min="0" max="5" step="1" value="0">
+      </label>
+      <label class="ctl">
+        <span>Cloud base <em id="vBase">1000 m</em></span>
+        <input type="range" id="sBase" min="400" max="2600" step="20" value="1000">
+      </label>
+      <div class="row">
+        <button class="pill on" id="btnSpin" data-spin="1">Cyclonic &#8635;</button>
+        <button class="pill" id="btnLife">Life&nbsp;cycle: Off</button>
+      </div>
+      <label class="ctl">
+        <span>Lifecycle stage <em id="vLife">Mature</em></span>
+        <input type="range" id="sLife" min="0" max="100" step="1" value="50">
+      </label>
+    </section>
+
+    <section class="grp">
+      <h2>Weather</h2>
+      <label class="ctl">
+        <span>Rain <em id="vRain">45%</em></span>
+        <input type="range" id="sRain" min="0" max="100" step="1" value="45">
+      </label>
+      <label class="ctl">
+        <span>Time of day <em id="vTod">Afternoon</em></span>
+        <input type="range" id="sTod" min="0" max="100" step="1" value="55">
+      </label>
+      <div class="row">
+        <button class="pill on" id="btnLightning">Lightning</button>
+        <button class="pill" id="btnSound">Sound: Off</button>
+      </div>
+    </section>
+
+    <section class="grp">
+      <h2>The Town</h2>
+      <label class="ctl">
+        <span>Buildings <em id="vTown">28</em></span>
+        <input type="range" id="sTown" min="6" max="60" step="1" value="28">
+      </label>
+      <label class="ctl">
+        <span>Cows &#128004; <em id="vCows">34</em></span>
+        <input type="range" id="sCows" min="0" max="90" step="1" value="34">
+      </label>
+      <label class="ctl">
+        <span>Cars <em id="vCars">22</em></span>
+        <input type="range" id="sCars" min="0" max="60" step="1" value="22">
+      </label>
+      <button class="wide" id="btnRebuild">&#8635; Rebuild the town</button>
+    </section>
+
+    <section class="grp">
+      <h2>Show Me</h2>
+      <div class="chips">
+        <button class="chip" id="tgAnatomy">Anatomy labels</button>
+        <button class="chip on" id="tgPath">Damage path</button>
+        <button class="chip" id="tgWind">Wind arrows</button>
+        <button class="chip" id="tgGrid">Survey grid</button>
+        <button class="chip" id="tgRadar">Doppler radar</button>
+        <button class="chip" id="tgSiren">Warning siren</button>
+      </div>
+      <button class="wide quiz" id="btnQuiz">&#9873; Damage survey quiz</button>
+    </section>
+
+  </div>
+</aside>
+
+<!-- ============================ RIGHT PANEL ============================ -->
+<aside class="panel right" id="rightPanel">
+  <div class="panel-scroll">
+
+    <section class="grp moo">
+      <h2>Moo-Meter</h2>
+      <div class="moo-big"><span id="mooNow">0</span><i>&#128004;</i></div>
+      <p class="moo-sub">airborne right now &middot; <b id="mooTotal">0</b> lofted in total</p>
+      <div class="moo-bar"><i id="mooBar"></i></div>
+    </section>
+
+    <section class="grp">
+      <h2>Damage Survey</h2>
+      <table class="tally">
+        <tr><td>Roofs peeled</td><td id="tRoof">0</td></tr>
+        <tr><td>Homes destroyed</td><td id="tHome">0</td></tr>
+        <tr><td>Swept to slab</td><td id="tSlab">0</td></tr>
+        <tr><td>Vehicles tossed</td><td id="tCar">0</td></tr>
+        <tr><td>Trees snapped</td><td id="tTree">0</td></tr>
+        <tr><td>Debris aloft</td><td id="tDebris">0</td></tr>
+      </table>
+      <p class="note">Real EF ratings are assigned from the <b>damage left behind</b>, never from a wind gauge. Surveyors read the wreckage — exactly like this table.</p>
+      <div class="survey">
+        <span>Survey rating</span><b id="surveyEF">EF0</b>
+      </div>
+    </section>
+
+    <section class="grp">
+      <h2>Fujita Scale</h2>
+      <ul class="fujita" id="fujita">
+        <li data-ef="0"><b>EF0</b><span>65&ndash;85 mph</span><i>Branches break, gutters peel</i></li>
+        <li data-ef="1"><b>EF1</b><span>86&ndash;110 mph</span><i>Roofs stripped, cars pushed</i></li>
+        <li data-ef="2"><b>EF2</b><span>111&ndash;135 mph</span><i>Roofs gone, trees snapped</i></li>
+        <li data-ef="3"><b>EF3</b><span>136&ndash;165 mph</span><i>Walls collapse, cars lifted</i></li>
+        <li data-ef="4"><b>EF4</b><span>166&ndash;200 mph</span><i>Houses levelled</i></li>
+        <li data-ef="5"><b>EF5</b><span>200+ mph</span><i>Swept clean off the slab</i></li>
+      </ul>
+    </section>
+
+  </div>
+</aside>
+
+<!-- ============================ BOTTOM BAR ============================ -->
+<footer class="bar bottom" id="bottomBar">
+  <div class="grp-btns">
+    <button class="ctl-btn primary" id="btnPlay" title="Play / pause (Space)">
+      <svg viewBox="0 0 24 24" id="icPause"><path d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor"/></svg>
+      <svg viewBox="0 0 24 24" id="icPlay" class="hide"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>
+    </button>
+    <button class="ctl-btn" id="btnReset" title="Reset storm (R)">
+      <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <label class="slider-inline">
+      <span>Speed</span>
+      <input type="range" id="sTime" min="10" max="300" step="5" value="100">
+      <em id="vTime">1.0&times;</em>
+    </label>
+  </div>
+
+  <div class="cams" id="camPicker">
+    <button data-cam="chase" class="on">Chase</button>
+    <button data-cam="ground">Storm chaser</button>
+    <button data-cam="town">Main street</button>
+    <button data-cam="aerial">Aerial</button>
+    <button data-cam="cellar">Cellar</button>
+    <button data-cam="orbit">Free orbit</button>
+  </div>
+
+  <div class="grp-btns right-side">
+    <label class="select">
+      <span>Quality</span>
+      <select id="selQuality">
+        <option value="low">Low</option>
+        <option value="med">Medium</option>
+        <option value="high" selected>High</option>
+        <option value="ultra">Ultra</option>
+      </select>
+    </label>
+    <div class="fps"><b id="fps">60</b> fps</div>
+  </div>
+</footer>
+
+<div class="ticker" id="ticker"><span></span></div>
+
+<!-- ============================ RADAR ============================ -->
+<section class="radar" id="radarPanel" hidden>
+  <header>
+    <span class="dot"></span>
+    <h3>KTLX Doppler</h3>
+    <div class="rmode">
+      <button data-rmode="reflectivity">Reflectivity</button>
+      <button data-rmode="velocity" class="on">Velocity</button>
+    </div>
+  </header>
+  <canvas id="radarCanvas"></canvas>
+  <p class="rlegend" id="radarLegend"></p>
+</section>
+
+<!-- ============================ WARNING ============================ -->
+<div class="warning" id="warnBanner" hidden>
+  <div class="wsign">&#9888;</div>
+  <div class="wtxt">
+    <b>TORNADO WARNING</b>
+    <span id="warnSub">Take shelter now</span>
+  </div>
+  <div class="wclock" id="warnClock">0:00</div>
+</div>
+
+<!-- ============================ QUIZ ============================ -->
+<div class="quiz-card" id="quizCard" hidden>
+  <h3>Damage Survey</h3>
+  <div id="quizBody"></div>
+</div>
+
+<!-- ============================ INFO MODAL ============================ -->
+<div class="modal" id="modal" hidden>
+  <div class="sheet">
+    <button class="close" id="btnClose">&times;</button>
+    <h2>How a tornado works</h2>
+
+    <div class="steps">
+      <div class="step"><b>1</b><div><h3>Warm meets cold</h3><p>Hot, damp air rushes up from the Gulf and slides under cold, dry air coming over the Rockies. The warm air wants to rise &mdash; fast.</p></div></div>
+      <div class="step"><b>2</b><div><h3>The wind shears</h3><p>Wind near the ground blows one way, wind higher up blows another. That difference rolls the air into an invisible horizontal tube, like a rolling pin lying in the sky.</p></div></div>
+      <div class="step"><b>3</b><div><h3>The updraft tips it upright</h3><p>A thunderstorm's updraft grabs the spinning tube and stands it on end. Now the whole storm is rotating &mdash; that's a <b>mesocyclone</b>, and the storm is a <b>supercell</b>.</p></div></div>
+      <div class="step"><b>4</b><div><h3>It tightens and speeds up</h3><p>As the spinning column stretches and narrows, it spins faster &mdash; the same reason an ice skater speeds up by pulling their arms in. This is conservation of angular momentum.</p></div></div>
+      <div class="step"><b>5</b><div><h3>The funnel appears</h3><p>Pressure inside the vortex drops so low that water vapour condenses into cloud. That white funnel is <b>not</b> the tornado &mdash; it's just the part you can see. The wind extends well beyond it.</p></div></div>
+      <div class="step"><b>6</b><div><h3>The debris cloud</h3><p>When the circulation reaches the ground it lifts dirt, fence posts, shingles &mdash; and yes, occasionally livestock. Debris is what makes a tornado dangerous, and what surveyors read afterwards.</p></div></div>
+    </div>
+
+    <h2>What the app is showing you</h2>
+    <ul class="bullets">
+      <li><b>The wind field</b> is a Rankine combined vortex: wind speed climbs straight up from zero at the centre to a maximum at the funnel wall, then falls off outside it. That's why the very middle is eerily calm.</li>
+      <li><b>Inflow</b> spirals inwards near the ground, then turns into a violent <b>updraft</b> at the funnel wall &mdash; the reason objects get carried upward instead of just sideways.</li>
+      <li><b>Suction vortices</b> are smaller whirls orbiting inside a big tornado. They're why one house is flattened while the one next door keeps its porch light on.</li>
+      <li><b>Damage is staged</b>: gutters &rarr; shingles &rarr; roof deck &rarr; walls &rarr; swept to the slab. Every object has its own failure wind speed.</li>
+    </ul>
+
+    <h2>Keyboard</h2>
+    <div class="keys">
+      <span><kbd>Space</kbd> play / pause</span>
+      <span><kbd>R</kbd> reset storm</span>
+      <span><kbd>1</kbd>&hellip;<kbd>5</kbd> camera</span>
+      <span><kbd>A</kbd> anatomy labels</span>
+      <span><kbd>W</kbd> wind arrows</span>
+      <span><kbd>H</kbd> hide interface</span>
+      <span><kbd>P</kbd> save picture</span>
+      <span><kbd>?</kbd> this page</span>
+      <span><kbd>Drag</kbd> orbit camera</span>
+      <span><kbd>Wheel</kbd> zoom</span>
+      <span><kbd>Click ground</kbd> steer the storm</span>
+    </div>
+
+    <p class="fineprint">Safety note for the grown-ups: this is a toy model built for wonder, not forecasting. Buildings and cows are drawn larger than life so they read on screen. In real life you go to the lowest floor, innermost room, and put something solid between you and the sky.</p>
+  </div>
+</div>
+
+<div class="hint" id="hint">Drag to look around &middot; click the ground to steer the storm</div>
+
+<script src="js/gl.js"></script>
+<script src="js/core.js"></script>
+<script src="js/terrain.js"></script>
+<script src="js/vegetation.js"></script>
+<script src="js/meshes.js"></script>
+<script src="js/vortex.js"></script>
+<script src="js/world.js"></script>
+<script src="js/render.js"></script>
+<script src="js/glscene.js"></script>
+<script src="js/glshaders.js"></script>
+<script src="js/gldraw.js"></script>
+<script src="js/overlay.js"></script>
+<script src="js/radar.js"></script>
+<script src="js/scenarios.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

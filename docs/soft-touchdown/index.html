@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#000604" />
+  <title>Tactile Forge — Soft Touchdown</title>
+
+  <link href="fonts/fonts.css" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles/tokens.css" />
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/game.css" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='none' stroke='%2300ff9d' stroke-width='3' d='M22 14 H42 L48 26 H16 Z M16 26 H48 L42 38 H22 Z M22 38 V46 M42 38 V46 M16 50 H28 M36 50 H48'/%3E%3C/svg%3E" />
+</head>
+<body class="app">
+
+  <!-- ==================== ATMOSPHERE ==================== -->
+  <canvas id="bg-stars" class="bg-stars" aria-hidden="true"></canvas>
+  <div id="bg-vignette" class="bg-vignette" aria-hidden="true"></div>
+  <div id="bg-scanlines" class="bg-scanlines" aria-hidden="true"></div>
+
+  <!-- ==================== TOP BAR ==================== -->
+  <header class="topbar" id="topbar">
+    <button class="brand" type="button" data-action="goto-title" aria-label="Tactile Forge — Soft Touchdown, back to title">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32">
+          <path d="M11 7 H21 L25 14 H7 Z M7 14 H25 L21 21 H11 Z M11 21 V26 M21 21 V26 M5 28 H13 M19 28 H27" />
+        </svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-line-1">TACTILE&nbsp;FORGE</span>
+        <span class="brand-line-2">Soft Touchdown</span>
+      </span>
+    </button>
+    <nav class="topnav" id="topnav">
+      <button class="chip" data-action="goto-title">Home</button>
+      <button class="chip" data-action="goto-briefing">Briefing</button>
+      <button class="chip" data-action="goto-stats">Pilot Log</button>
+      <button class="chip" data-action="goto-settings" aria-label="Settings">⚙</button>
+    </nav>
+  </header>
+
+  <!-- ==================== TITLE ==================== -->
+  <section class="screen screen-title is-active" data-screen="title">
+    <div class="title-stack">
+      <div class="eyebrow">
+        <span class="eyebrow-rule"></span>
+        <span class="eyebrow-text">VECTOR CABINET · FORGED 2026</span>
+        <span class="eyebrow-rule"></span>
+      </div>
+      <h1 class="display-title">
+        <span class="display-line">SOFT</span>
+        <span class="display-line display-line--accent">TOUCHDOWN</span>
+      </h1>
+      <p class="display-sub">
+        Burn fuel. Find the flat ground.<br/>
+        Touch down soft, or don't touch down at all.
+      </p>
+
+      <div class="title-cta">
+        <button class="btn btn-primary btn-lg" data-action="goto-briefing">
+          <span class="btn-icon" aria-hidden="true">▶</span>
+          <span>Begin Descent</span>
+          <span class="btn-sub">Burn · Drift · Land</span>
+        </button>
+        <button class="btn btn-ghost btn-lg" data-action="goto-stats">
+          <span class="btn-icon" aria-hidden="true">◆</span>
+          <span>Pilot Log</span>
+          <span class="btn-sub">Career stats</span>
+        </button>
+      </div>
+
+      <div class="title-foot">
+        <button class="link" data-action="goto-briefing">Briefing</button>
+        <span class="dotsep">·</span>
+        <button class="link" data-action="goto-settings">Settings</button>
+      </div>
+    </div>
+
+    <!-- The track holds the message list twice; the scroll animation shifts it
+         by exactly half its width, so the loop is seamless. -->
+    <div class="title-marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>EAGLE TRANQUILITY BASE</span><span class="dot">●</span>
+        <span>ATTITUDE NOMINAL</span><span class="dot">●</span>
+        <span>FUEL 1000 LBS</span><span class="dot">●</span>
+        <span>1202 PROGRAM ALARM</span><span class="dot">●</span>
+        <span>EAGLE TRANQUILITY BASE</span><span class="dot">●</span>
+        <span>ATTITUDE NOMINAL</span><span class="dot">●</span>
+        <span>FUEL 1000 LBS</span><span class="dot">●</span>
+        <span>1202 PROGRAM ALARM</span><span class="dot">●</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== BRIEFING ==================== -->
+  <section class="screen screen-briefing" data-screen="briefing">
+    <div class="panel panel-wide">
+      <header class="panel-head">
+        <h2 class="panel-title">Mission Briefing</h2>
+        <p class="panel-sub">Pre-flight checks before separation.</p>
+      </header>
+
+      <div class="brief-grid">
+
+        <fieldset class="card">
+          <legend class="card-title">Pilot</legend>
+          <label class="field">
+            <span>Call sign</span>
+            <input id="pilot-name" class="input input-mono" type="text" placeholder="EAGLE" maxlength="14" />
+          </label>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend class="card-title">Difficulty</legend>
+          <div class="seg-row" id="difficulty" role="radiogroup">
+            <button class="seg" data-value="cadet">Cadet</button>
+            <button class="seg is-active" data-value="pilot">Pilot</button>
+            <button class="seg" data-value="ace">Commander</button>
+          </div>
+          <p class="card-help">Less fuel. Higher gravity. Tighter pads.</p>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend class="card-title">Control</legend>
+          <p class="card-help">
+            <strong>Thrust</strong> W / ↑ / Space &nbsp;·&nbsp;
+            <strong>Rotate</strong> A · D / ← · → &nbsp;·&nbsp;
+            <strong>Pause</strong> P / Esc
+          </p>
+        </fieldset>
+
+      </div>
+
+      <div class="phase-strip">
+        <article class="phase-card">
+          <span class="phase-num">1</span>
+          <h3>Approach</h3>
+          <p>Bleed off horizontal velocity. Scan the surface for a flat pad.</p>
+        </article>
+        <article class="phase-card">
+          <span class="phase-num">2</span>
+          <h3>Hover</h3>
+          <p>Match descent against gravity. Center the lander over the bonus pad.</p>
+        </article>
+        <article class="phase-card">
+          <span class="phase-num">3</span>
+          <h3>Touchdown</h3>
+          <p>Vertical &lt; 15 m/s. Lateral &lt; 8 m/s. Upright. Or boom.</p>
+        </article>
+      </div>
+
+      <footer class="panel-foot">
+        <button class="btn btn-ghost" data-action="goto-title">← Back</button>
+        <button class="btn btn-primary btn-lg" id="btn-launch">Separate ▶</button>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ==================== STATS ==================== -->
+  <section class="screen screen-stats" data-screen="stats">
+    <div class="panel panel-wide">
+      <header class="panel-head">
+        <h2 class="panel-title">Pilot Log</h2>
+        <p class="panel-sub">Touchdowns, splatters, and the longest streak.</p>
+      </header>
+      <div id="stats-body" class="stats-body"></div>
+      <footer class="panel-foot">
+        <button class="btn btn-ghost" data-action="goto-title">← Back</button>
+        <button class="btn btn-ghost btn-sm" id="btn-clear-stats">Reset Log</button>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ==================== SETTINGS ==================== -->
+  <section class="screen screen-settings" data-screen="settings">
+    <div class="panel">
+      <header class="panel-head">
+        <h2 class="panel-title">Settings</h2>
+      </header>
+      <div class="settings-list">
+        <div class="setting-row">
+          <span>Sound effects</span>
+          <button class="toggle" id="opt-sfx" aria-pressed="true">On</button>
+        </div>
+        <div class="setting-row">
+          <span>Engine drone</span>
+          <button class="toggle" id="opt-music" aria-pressed="true">On</button>
+        </div>
+        <div class="setting-row">
+          <span>CRT scanlines</span>
+          <button class="toggle" id="opt-crt" aria-pressed="true">On</button>
+        </div>
+        <div class="setting-row">
+          <span>Phosphor color</span>
+          <div class="seg-row" id="opt-phosphor">
+            <button class="seg is-active" data-value="green">Green</button>
+            <button class="seg" data-value="amber">Amber</button>
+            <button class="seg" data-value="cyan">Cyan</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span>Reduced motion</span>
+          <button class="toggle" id="opt-reduce-motion" aria-pressed="false">Off</button>
+        </div>
+        <div class="setting-row setting-row-stack">
+          <div class="setting-main">
+            <span>Renderer</span>
+            <div class="seg-row" id="opt-renderer">
+              <button class="seg is-active" data-value="auto">Auto</button>
+              <button class="seg" data-value="webgl">WebGL</button>
+              <button class="seg" data-value="canvas">Canvas</button>
+            </div>
+          </div>
+          <p class="card-help" id="renderer-note"></p>
+        </div>
+      </div>
+      <footer class="panel-foot">
+        <button class="btn btn-ghost" data-action="goto-title">← Back</button>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ==================== GAME ==================== -->
+  <section class="screen screen-game" data-screen="game">
+    <canvas id="game-canvas" class="game-canvas"></canvas>
+
+    <!-- Phase banner (transient) -->
+    <div class="phase-banner" id="phase-banner" hidden>
+      <span class="pb-num" id="pb-num">1</span>
+      <span class="pb-name" id="pb-name">Site 01</span>
+      <span class="pb-sub" id="pb-sub">Find a level pad</span>
+    </div>
+
+    <!-- Top-left: telemetry -->
+    <aside class="hud hud-status">
+      <div class="hud-row">
+        <span class="kv"><span class="k">FUEL</span><span class="v" id="val-fuel">1000</span></span>
+        <span class="kv"><span class="k">ALT</span><span class="v" id="val-alt">0</span></span>
+      </div>
+      <div class="hud-row hud-row-bar">
+        <span class="hud-k">FUEL</span>
+        <span class="hud-bar" id="bar-fuel"><span class="bar-fill"></span></span>
+      </div>
+      <div class="hud-row">
+        <span class="kv"><span class="k">H-VEL</span><span class="v" id="val-hvel">0</span></span>
+        <span class="kv"><span class="k">V-VEL</span><span class="v" id="val-vvel">0</span></span>
+      </div>
+    </aside>
+
+    <!-- Top-right: score / site -->
+    <aside class="hud hud-score">
+      <div class="hud-row">
+        <span class="kv kv-big"><span class="k">SCORE</span><span class="v" id="val-score">0</span></span>
+      </div>
+      <div class="hud-row">
+        <span class="kv"><span class="k">SITE</span><span class="v" id="val-site">01</span></span>
+        <span class="kv"><span class="k">LANDS</span><span class="v" id="val-lands">0</span></span>
+        <span class="kv"><span class="k">TIME</span><span class="v" id="val-time">00:00</span></span>
+      </div>
+    </aside>
+
+    <!-- Bottom helper hint -->
+    <div class="comm" id="comm" aria-live="polite">
+      <span class="comm-tag">CAPCOM</span>
+      <span class="comm-text" id="comm-text">Eagle, you are GO for descent.</span>
+    </div>
+
+    <!-- Pause -->
+    <button class="game-menu-btn" id="game-menu-btn" aria-label="Menu">☰</button>
+    <div class="game-menu" id="game-menu" hidden>
+      <button id="btn-resume">Resume</button>
+      <button id="btn-quit">Abort Mission</button>
+    </div>
+
+    <!-- Pause veil -->
+    <div class="paused-veil" id="paused-veil" hidden>
+      <span class="paused-text">PAUSED</span>
+      <span class="paused-sub">Press P or Esc to resume</span>
+    </div>
+  </section>
+
+  <!-- ==================== FINISH ==================== -->
+  <section class="screen screen-finish" data-screen="finish">
+    <div class="panel panel-wide">
+      <header class="panel-head">
+        <h2 class="panel-title" id="finish-title">Tranquility Base</h2>
+        <p class="panel-sub" id="finish-sub">The Eagle has landed.</p>
+      </header>
+
+      <div class="debrief">
+        <div class="debrief-stat">
+          <span class="ds-k">Score</span>
+          <span class="ds-v" id="ds-score">0</span>
+        </div>
+        <div class="debrief-stat">
+          <span class="ds-k">Landings</span>
+          <span class="ds-v" id="ds-lands">0</span>
+        </div>
+        <div class="debrief-stat">
+          <span class="ds-k">Best Site</span>
+          <span class="ds-v" id="ds-site">01</span>
+        </div>
+        <div class="debrief-stat">
+          <span class="ds-k">Time</span>
+          <span class="ds-v" id="ds-time">00:00</span>
+        </div>
+        <div class="debrief-stat ds-medal">
+          <span class="ds-k">Rank</span>
+          <span class="ds-v" id="ds-rank">CADET</span>
+        </div>
+      </div>
+
+      <footer class="panel-foot">
+        <button class="btn btn-ghost" data-action="goto-title">Main Menu</button>
+        <button class="btn btn-primary btn-lg" id="btn-rematch">Fly Again ▶</button>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ==================== ENTRY POINT ==================== -->
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

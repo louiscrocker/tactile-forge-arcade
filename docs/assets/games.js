@@ -1,0 +1,95 @@
+// The games on the site, in display order. Each `slug` is a folder beside
+// index.html, with screenshots at assets/shots/<slug>-game.webp and -title.webp.
+export const GAMES = [
+  // ---------------- The Arcade ----------------
+  {
+    slug: 'last-silo', shelf: 'arcade', name: 'Last Silo', badge: 'MISSILE DEFENCE',
+    accent: '#ff9a62', glow: 'rgba(255,154,98,0.55)',
+    tagline: 'Six cities. Three batteries. Every warhead is yours to stop.',
+    description: 'Aim, fire and detonate counter-missiles before the inbound warheads reach the ground. Waves speed up, warheads split, and the last silo standing decides it.',
+    features: ['WebGL vector-tube glow', 'Green, amber or cyan phosphor', 'Splitting warheads'],
+    meta: 'Mouse or touch',
+  },
+  {
+    slug: 'soft-touchdown', shelf: 'arcade', name: 'Soft Touchdown', badge: 'PRECISION LANDING',
+    accent: '#9fe8ff', glow: 'rgba(159,232,255,0.5)',
+    tagline: "Burn fuel. Find flat ground. Don't splatter.",
+    description: 'Ease a fragile lander onto narrow pads across endless ridgelines, keeping speed, drift and tilt inside the limits. Every safe landing sends you to a tougher site with a fresh tank.',
+    features: ['Risky pads pay ×2 to ×5', 'Fuel and streak bonuses', 'Three gravity settings'],
+    meta: 'Keyboard',
+  },
+  {
+    slug: 'rubble-drift', shelf: 'arcade', name: 'Rubble Drift', badge: 'SPACE SHOOTER',
+    accent: '#c9b8ff', glow: 'rgba(201,184,255,0.5)',
+    tagline: 'One ship. A belt of rocks. Nowhere to hide.',
+    description: 'Rotate, thrust and fire in a field that wraps at every edge, where each rock you hit splits into smaller, faster pieces. Watch for saucers, and jump to hyperspace when cornered — if you dare.',
+    features: ['Rocks split three ways', 'Saucers and hyperspace', 'Top-10 high scores'],
+    meta: 'Keyboard',
+  },
+  {
+    slug: 'periscope-front', shelf: 'arcade', name: 'Periscope Front', badge: 'TANK COMMAND',
+    accent: '#8dff6a', glow: 'rgba(141,255,106,0.5)',
+    tagline: 'Raise the periscope. Hold the line.',
+    description: 'Command a tank from behind its periscope in a glowing wireframe wasteland as enemy armour and saucers close in from every bearing. Read the radar, swing the hull and land your shells first.',
+    features: ['First-person wireframe 3D', 'Radar on every bearing', 'Career log with ranks'],
+    meta: 'Keyboard',
+  },
+  {
+    slug: 'lightwake', shelf: 'arcade', name: 'Lightwake', badge: 'ARENA RACER',
+    accent: '#4ad8ff', glow: 'rgba(74,216,255,0.55)',
+    tagline: 'Leave a wall of light. Make them hit it.',
+    description: 'Race light bikes around a sealed neon arena where every bike leaves a solid wall behind it. Box in your rivals, boost through the gaps and be the last rider moving.',
+    features: ['More rivals each round', 'Boost for escapes and traps', 'High scores with initials'],
+    meta: 'Keyboard',
+  },
+
+  // ---------------- Nature & Reading ----------------
+  {
+    slug: 'frog-pond', shelf: 'nature', name: 'Frog Pond', badge: 'AGES 4–8',
+    accent: '#7be07b', glow: 'rgba(123,224,123,0.5)',
+    tagline: 'Hatch from a jelly egg and grow into a singing frog, one hop at a time.',
+    description: "Live a frog's whole life — egg, tadpole, froglet, frog — in a pond full of real creatures. Everything is read aloud, and “I read to play” makes reading the way you play, at the level you pick.",
+    features: ['Real metamorphosis', 'Reading levels A–E', '37-creature field guide'],
+    meta: 'Keyboard or touch',
+  },
+  {
+    slug: 'ladybug-life', shelf: 'nature', name: 'Ladybug Life', badge: 'AGES 4–8',
+    accent: '#ff6b6b', glow: 'rgba(255,107,107,0.5)',
+    tagline: 'Hatch, munch and grow into a ladybug, one aphid at a time.',
+    description: "Hatch from an egg, hunt aphids as a larva, molt, pupate and fly off to sleep through winter. Real biology made for small hands, with read-aloud help and a reading report for grown-ups.",
+    features: ['Six real species', 'Read-aloud, levels A–E', 'Printable scavenger hunt'],
+    meta: 'Keyboard or touch',
+  },
+  {
+    slug: 'monarch-journey', shelf: 'nature', name: 'Monarch Journey', badge: 'AGES 5–9',
+    accent: '#ffb347', glow: 'rgba(255,179,71,0.5)',
+    tagline: 'From one tiny egg on a milkweed leaf to a 3,000-mile flight.',
+    description: 'Raise a monarch from egg to caterpillar to jade chrysalis to butterfly, then fly the real migration south and relay the next generations home. Two siblings can play together on one keyboard.',
+    features: ['Full life cycle + migration', 'Two-player mode', 'Little kid to Scientist'],
+    meta: 'Keyboard',
+  },
+  {
+    slug: 'alicorn-skies', shelf: 'nature', name: 'Alicorn Skies', badge: 'AGES 4–7',
+    accent: '#d9a6ff', glow: 'rgba(217,166,255,0.5)',
+    tagline: 'Design your own alicorn and gallop, fly and swim through a magical land.',
+    description: 'Make your own alicorn, help animal friends with gentle quests, raise a baby foal and bring back the rainbow — nothing scary, nothing lost. Read aloud, with an optional read-to-play mode.',
+    features: ['Raise a baby foal', 'Gentle quests and races', 'Printable colouring pages'],
+    meta: 'Keyboard or touch',
+  },
+  {
+    slug: 'burrow-and-brood', shelf: 'nature', name: 'Burrow & Brood', badge: 'AGES 4–8',
+    accent: '#e0a96d', glow: 'rgba(224,169,109,0.5)',
+    tagline: 'Be the ant — from one brave queen to a colony of thousands.',
+    description: 'Land as a young queen, dig a nest through soil that behaves like real sand, clay and water, and raise the first brood. Watch the colony share out jobs as it grows to 5,000 ants.',
+    features: ['Living soil to dig', 'Colony of 5,000 ants', 'Field journal and microscope'],
+    meta: 'Keyboard or touch',
+  },
+  {
+    slug: 'storm-lab', shelf: 'nature', name: 'Storm Lab', badge: 'AGES 8–13',
+    accent: '#8fb8ff', glow: 'rgba(143,184,255,0.5)',
+    tagline: 'Build a tornado, watch it work, and read the damage like a scientist.',
+    description: 'Set wind speed, funnel width and track, then watch a 3D storm cross a prairie town. Learn how tornadoes form and why they are rated by the damage they leave, with real historic storms.',
+    features: ['Doppler radar views', 'Damage-survey quiz', 'Four historic storms'],
+    meta: 'Mouse',
+  },
+];

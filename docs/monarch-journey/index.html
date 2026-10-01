@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Monarch Journey — From Milkweed to Mexico</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A6%8B%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<canvas id="scene"></canvas>
+
+<!-- ============================ HUD ============================ -->
+<header class="hud" id="hud">
+  <div class="stage-card">
+    <div class="stage-icon"><canvas id="stageIcon" width="112" height="112"></canvas></div>
+    <div class="stage-txt">
+      <span class="stage-k" id="stageK">You are an</span>
+      <b class="stage-v" id="stageName">Egg</b>
+      <div class="prog"><i id="progBar"></i><span id="progText">Chew out!</span></div>
+    </div>
+  </div>
+
+  <ol class="wheel" id="wheel" aria-label="Life cycle"></ol>
+
+  <div class="readouts">
+    <div class="ro" id="roA"><span class="ro-k" id="roAk">Bites</span><b id="roAv">0</b></div>
+    <div class="ro" id="roB"><span class="ro-k" id="roBk">Leaves</span><b id="roBv">0</b></div>
+    <div class="ro" title="Days so far"><span class="ro-k">Day</span><b id="roDay">1</b></div>
+    <div class="ro" title="Generation"><span class="ro-k">Gen</span><b id="roGen">1</b></div>
+  </div>
+
+  <div class="bars" id="bars" hidden>
+    <div class="bar" title="Energy: flapping burns it, nectar refills it"><span>Energy</span><div class="bar-track"><i id="energyBar"></i></div></div>
+    <div class="bar" title="Fat stored for the winter"><span>Fat</span><div class="bar-track fat"><i id="fatBar"></i></div></div>
+    <div class="bar" id="bar2" hidden title="Player 2 energy"><span>P2</span><div class="bar-track p2"><i id="energyBar2"></i></div></div>
+  </div>
+
+  <div class="top-actions">
+    <button class="icon-btn" id="btnJournal" title="Field journal (J)">📓</button>
+    <button class="icon-btn" id="btnMap" title="Map (K)">🗺️</button>
+    <button class="icon-btn" id="btnLabels" title="Show names (L)">Aa</button>
+    <button class="icon-btn" id="btnSound" title="Sound (M)">
+      <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a9 9 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <button class="icon-btn" id="btnHelp" title="How to play (?)">?</button>
+    <button class="icon-btn" id="btnMenu" title="Settings">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="journey" id="journey" hidden>
+  <div class="journey-track"><i id="journeyFill"></i><b id="journeyBug">🦋</b></div>
+  <div class="journey-labels"><span>Ontario</span><span>Lake Erie</span><span>Farm belt</span><span>Texas</span><span>México</span><span>🌲</span></div>
+</div>
+
+<div class="hint" id="hint"><span id="hintText">Press SPACE again and again to chew out of your egg!</span></div>
+<div class="zone" id="zone" hidden><b id="zoneName">Northern meadows</b><span id="zonePlace">Ontario</span></div>
+<div class="toast" id="toast" hidden><span class="toast-ico" id="toastIco">⭐</span><div><b>New sticker!</b><span id="toastText">Hatched</span></div></div>
+
+<!-- ============================ FORECAST (at the roost) ============================ -->
+<aside class="forecast" id="forecast" hidden>
+  <div class="fc-head"><span class="fact-tag">Tonight’s roost</span><b id="fcTree">Bur oak</b></div>
+  <div class="fc-row"><span class="fc-ico" id="fcIcon">💨</span><div><span class="fc-k">Tomorrow’s forecast</span><b id="fcLabel">Tailwind from the north, clear skies</b></div></div>
+  <div class="fc-graph"><span class="fc-k">Today’s energy</span><canvas id="fcCanvas" width="280" height="60"></canvas><p class="tiny" id="fcSummary"></p></div>
+  <div class="fc-actions">
+    <button class="wide" id="btnFlyDawn">Fly at dawn</button>
+    <button class="wide ghost" id="btnWait">Wait a day</button>
+  </div>
+</aside>
+
+<!-- ============================ FACT CARD ============================ -->
+<aside class="fact" id="fact" hidden>
+  <div class="fact-head"><span class="fact-tag" id="factTag">Did you know?</span><button class="close" id="factClose">&times;</button></div>
+  <h3 id="factTitle">Title</h3>
+  <p id="factBody">Body</p>
+  <div class="fact-row">
+    <button class="wide" id="factOk">Got it!</button>
+    <a class="fact-more" id="factMore" href="#" target="_blank" rel="noopener">See the real thing ↗</a>
+  </div>
+</aside>
+
+<!-- ============================ SETTINGS DRAWER ============================ -->
+<aside class="drawer" id="drawer" hidden>
+  <div class="drawer-head"><h2>Settings</h2><button class="close" id="drawerClose">&times;</button></div>
+  <section>
+    <h4>Who is playing?</h4>
+    <div class="seg" id="diffPick">
+      <button data-diff="easy">Little kid</button>
+      <button data-diff="normal" class="on">Big kid</button>
+      <button data-diff="hard">Scientist</button>
+    </div>
+    <p class="tiny">Changes how much you must eat, how strong the wind and storms are, whether there are nights and a lake to cross, and whether ants, wasps, the mantis and birds bother you.</p>
+  </section>
+  <section>
+    <h4>Options</h4>
+    <div class="chips">
+      <button class="chip" id="tgAnts">Ants</button>
+      <button class="chip" id="tgWasp">Wasp &amp; mantis</button>
+      <button class="chip" id="tgBirds">Birds</button>
+      <button class="chip" id="tgCoop">Two players</button>
+      <button class="chip" id="tgScience">Science readouts</button>
+      <button class="chip" id="tgSlow">Slow &amp; gentle</button>
+      <button class="chip" id="tgSimple">Simple words</button>
+      <button class="chip" id="tgSpeak">Read aloud</button>
+      <button class="chip" id="tgLabels">Name tags</button>
+      <button class="chip" id="tgPad">Touch buttons</button>
+      <button class="chip on" id="tgSoundChip">Sound</button>
+    </div>
+    <p class="tiny">Two players: a friend flies the migration with you on <kbd>I</kbd><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd> and <kbd>Enter</kbd>.</p>
+  </section>
+  <section>
+    <h4>Reading</h4>
+    <div class="seg" id="readModeDrawer"><button data-rm="listen">&#128266; Read to me</button><button data-rm="play">&#128214; I read to play</button></div>
+    <div class="chips center level-chips" id="readLevelDrawer"></div>
+    <p class="tiny" id="readAboutDrawer"></p>
+    <div class="seg" id="readHelpPick" style="margin-top:8px"><button data-rh="auto">Help comes by itself</button><button data-rh="ask">Help only when asked</button></div>
+    <div class="chips" style="margin-top:8px"><button class="chip" id="tgReadMic">&#127908; Microphone on while I read</button><button class="chip on" id="tgReadSave">&#128190; Save their reading for me</button><button class="chip" id="btnMyWords">&#128292; My words</button><button class="chip" id="btnGrownup">&#128106; Grown-up corner</button></div>
+    <p class="tiny">In "I read to play" the action button shows words to read, the caterpillar only grows after reading a page, and missions are written, not spoken. Tap any word to hear it. With the microphone on, it listens while a page is open, lights each word as it is read, and helps with a stuck word; word cards can be answered by saying the word. Listening uses Chrome's speech service, so it needs the internet; recordings stay on this device.</p>
+  </section>
+  <section>
+    <h4>Time of day</h4>
+    <label class="ctl"><input type="range" id="sTod" min="0" max="100" value="36"></label>
+    <div class="chips"><button class="chip" id="tgClock">Clock running</button></div>
+  </section>
+  <section>
+    <h4>Your monarch</h4>
+    <div class="species-grid small" id="variantPickDrawer"></div>
+    <p class="tiny">Changes which butterfly you become when you come out of the chrysalis.</p>
+  </section>
+  <section>
+    <h4>Pages</h4>
+    <button class="wide ghost" id="btnGardenDrawer">&#127793; The milkweed garden</button>
+    <button class="wide ghost" id="btnCitizen">&#128300; Real monarchs near you</button>
+  </section>
+  <section>
+    <button class="wide" id="btnNewPlant">&#127793; Grow a new milkweed</button>
+    <button class="wide ghost" id="btnRestart">Start over as an egg</button>
+    <button class="wide ghost" id="btnSkipSouth">&#129419; Skip to the migration</button>
+    <button class="wide ghost" id="btnResetJournal">Erase the journal</button>
+  </section>
+</aside>
+
+<!-- ============================ TOUCH PAD ============================ -->
+<div class="pad" id="pad" hidden>
+  <div class="dpad">
+    <button data-dir="up" aria-label="up">&#9650;</button>
+    <button data-dir="left" aria-label="left">&#9664;</button>
+    <button data-dir="right" aria-label="right">&#9654;</button>
+    <button data-dir="down" aria-label="down">&#9660;</button>
+  </div>
+  <div class="pad-actions">
+    <button class="big" id="btnAction">GO!</button>
+  </div>
+</div>
+
+<!-- ============================ TITLE ============================ -->
+<div class="title" id="title">
+  <canvas id="titleCanvas"></canvas>
+  <div class="title-card">
+    <div class="title-logo">
+      <span class="t1">MONARCH</span><span class="t2">JOURNEY</span>
+      <em>From milkweed to Mexico</em>
+    </div>
+    <p class="lede">Hatch on a milkweed. Eat, molt, hang as a jade chrysalis… come out a butterfly. Fly 3,000 miles south to a mountain forest full of monarchs. Then bring the relay back north, one generation at a time.</p>
+
+    <h4>Pick your monarch</h4>
+    <div class="species-grid" id="variantPick"></div>
+    <p class="species-blurb" id="variantBlurb"></p>
+
+    <h4>Who is playing?</h4>
+    <div class="seg" id="diffPickTitle">
+      <button data-diff="easy">Little kid</button>
+      <button data-diff="normal" class="on">Big kid</button>
+      <button data-diff="hard">Scientist</button>
+    </div>
+
+    <h4>Reading</h4>
+    <div class="seg" id="readModeTitle"><button data-rm="listen">&#128266; Read to me</button><button data-rm="play">&#128214; I read to play</button></div>
+    <div class="chips center level-chips" id="readLevelTitle"></div>
+    <p class="tiny" id="readAboutTitle"></p>
+    <div class="chips center" id="readMicTitleRow"><button class="chip" id="tgReadMicTitle">&#127908; Listen to me read (microphone)</button></div>
+
+    <button class="start" id="btnStart">Hatch me! &#129419;</button>
+    <p class="keys-line" id="journalLine"></p>
+    <p class="keys-line"><kbd>&#8592;&#8593;&#8594;&#8595;</kbd> crawl / steer &nbsp;·&nbsp; <kbd>Space</kbd> bite · hang · fly · land &nbsp;·&nbsp; click the plant to walk there</p>
+  </div>
+</div>
+
+<!-- ============================ GO SOUTH ============================ -->
+<div class="modal" id="south" hidden>
+  <div class="sheet small-sheet">
+    <h2>&#129419; You are the super generation</h2>
+    <p>Most monarchs live a few weeks. You were born in late summer, when the days are getting short — so you will live <b>eight months</b>, fly <b>3,000 miles</b> to Mexico, sleep through winter, and fly north again in spring. Nobody will show you the way.</p>
+    <p class="tiny" id="southCoop" hidden>Two players: a friend flies with you. Player 2 steers with <kbd>I</kbd><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd> and flaps or lands with <kbd>Enter</kbd>.</p>
+    <div class="row">
+      <button class="start" id="btnGoSouth">Fly south! &#10145;&#65039;</button>
+      <button class="wide ghost" id="btnStay">Stay a little longer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ ARRIVED ============================ -->
+<div class="modal" id="arrived" hidden>
+  <div class="sheet">
+    <h2>&#127881; You made it to Mexico!</h2>
+    <p id="arrivedText">Three thousand miles, and you found the same mountain forest your great-great-grandparents left in spring.</p>
+    <div class="two-col">
+      <div>
+        <div class="stats" id="arrivedStats"></div>
+        <div class="recovery" id="recovery" hidden>
+          <span class="fact-tag">Tag recovery</span>
+          <b id="recCode">ABC 123</b>
+          <p id="recText"></p>
+        </div>
+      </div>
+      <div class="map-wrap"><canvas id="arrivedMap" width="640" height="460"></canvas><p class="tiny">Your route in orange. Dotted lines: real tagged monarchs and how long they took.</p></div>
+    </div>
+    <div class="row">
+      <button class="start" id="btnWinter">Sleep through the winter &#10145;&#65039; spring</button>
+      <button class="wide ghost" id="btnStayForest">Flutter around the forest</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ SPRING ============================ -->
+<div class="modal" id="spring" hidden>
+  <div class="sheet small-sheet">
+    <h2>&#127800; Spring!</h2>
+    <p id="springText"></p>
+    <p class="tiny" id="springSeeds"></p>
+    <div class="row">
+      <button class="wide ghost" id="btnGardenSpring">&#127793; Plant your seeds first</button>
+      <button class="start" id="btnNorth">Fly north to Texas</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ NEXT GENERATION (summer) ============================ -->
+<div class="modal" id="nextgen" hidden>
+  <div class="sheet small-sheet">
+    <h2 id="nextgenTitle">&#129370; Eggs laid!</h2>
+    <p id="nextgenText"></p>
+    <div class="row">
+      <button class="start" id="btnNextGen">Hatch the next generation</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ THE HOP NORTH (map) ============================ -->
+<div class="modal" id="hop" hidden>
+  <div class="sheet wide">
+    <h2 id="hopTitle">Flying north</h2>
+    <p id="hopText"></p>
+    <div class="map-wrap map-big"><canvas id="hopMap" width="900" height="600"></canvas></div>
+    <div class="row"><button class="start" id="btnHopDone" disabled>Land on the milkweed</button></div>
+  </div>
+</div>
+
+<!-- ============================ MAP ============================ -->
+<div class="modal" id="mapModal" hidden>
+  <div class="sheet wide">
+    <button class="close" id="mapClose">&times;</button>
+    <h2>Where you are</h2>
+    <p id="mapText">The whole journey: south in autumn, and back north in spring by a relay of generations.</p>
+    <div class="map-wrap map-big"><canvas id="bigMap" width="900" height="600"></canvas></div>
+  </div>
+</div>
+
+<!-- ============================ JOURNAL ============================ -->
+<div class="modal" id="journal" hidden>
+  <div class="sheet">
+    <button class="close" id="journalClose">&times;</button>
+    <h2>&#128211; Field journal <small id="journalCount"></small></h2>
+    <div class="jtabs" id="jtabs">
+      <button data-tab="milestones" class="on">Stickers</button>
+      <button data-tab="facts">Facts</button>
+      <button data-tab="plants">Nectar</button>
+      <button data-tab="trees">Trees</button>
+      <button data-tab="places">Places</button>
+      <button data-tab="tags">Tags</button>
+    </div>
+    <div class="jpage" id="jpage"></div>
+    <div class="row two">
+      <button class="wide ghost" id="btnGardenJournal">&#127793; Garden</button>
+      <button class="wide ghost" id="btnMapJournal">&#128506; Map</button>
+      <button class="wide ghost" id="btnCitizenJournal">&#128300; Real monarchs</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ GARDEN ============================ -->
+<div class="modal" id="garden" hidden>
+  <div class="sheet small-sheet">
+    <button class="close" id="gardenClose">&times;</button>
+    <h2>&#127793; Your milkweed patch</h2>
+    <p>Monarchs need milkweed and nothing else. Burst the seed pods on your milkweed as a butterfly to collect seeds, then plant them here. Every plant raises more monarchs next summer.</p>
+    <div class="plots" id="plots"></div>
+    <p class="garden-line"><b id="gardenSeeds">0</b> seeds in hand · <b id="gardenPlants">0</b> milkweeds planted · about <b id="gardenPop">6</b> monarchs raised each summer</p>
+    <div class="row">
+      <button class="start" id="btnPlant">Plant a seed &#127793;</button>
+      <button class="wide ghost" id="gardenOk">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ REAL MONARCHS ============================ -->
+<div class="modal" id="citizen" hidden>
+  <div class="sheet">
+    <button class="close" id="citizenClose">&times;</button>
+    <h2>&#128300; Real monarchs near you</h2>
+    <p>Where do you live? Pick a region to see when the real monarchs pass.</p>
+    <div class="seg wrap" id="regionPick"></div>
+    <div class="region-card" id="regionCard"></div>
+    <h2>How kids help scientists</h2>
+    <div class="links">
+      <a href="https://journeynorth.org/monarchs" target="_blank" rel="noopener"><b>Journey North</b><span>Report the first monarch you see each spring and each autumn. Your dot goes on a map with thousands of others.</span></a>
+      <a href="https://monarchwatch.org/tagging/" target="_blank" rel="noopener"><b>Monarch Watch tagging</b><span>Real tags, real codes, real recoveries in Mexico. Schools and families tag monarchs every September.</span></a>
+      <a href="https://www.monarchjointventure.org/get-involved/create-habitat-for-monarchs" target="_blank" rel="noopener"><b>Plant milkweed</b><span>Find the native milkweed for your region and plant it. No pesticides. Monarchs will find it.</span></a>
+      <a href="https://xerces.org/western-monarch-count" target="_blank" rel="noopener"><b>Western Monarch Count</b><span>West of the Rockies, volunteers count the clusters in California groves every Thanksgiving.</span></a>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ HELP ============================ -->
+<div class="modal" id="help" hidden>
+  <div class="sheet">
+    <button class="close" id="helpClose">&times;</button>
+    <h2>How to play</h2>
+    <div class="steps">
+      <div class="step"><b>1</b><div><h3>Hatch</h3><p>Press <kbd>Space</kbd> (or tap GO!) again and again to chew out of your egg.</p></div></div>
+      <div class="step"><b>2</b><div><h3>Crawl and eat</h3><p>Arrow keys or <kbd>WASD</kbd> move you along the stem. At a fork, hold the arrow pointing toward the leaf you want, or click anywhere on the plant to walk there. On a leaf, hold <kbd>Space</kbd> to bite. When a leaf is eaten up, find another.</p></div></div>
+      <div class="step"><b>3</b><div><h3>Molt five times</h3><p>Eat enough and you shed your skin. Monarch caterpillars have five instars. Ants shove, a wasp hunts and a mantis waits on one leaf: hold <kbd>&#8595;</kbd> to freeze, sit still on a leaf, or drop on a silk line and climb back.</p></div></div>
+      <div class="step"><b>4</b><div><h3>Hang the J, become a chrysalis</h3><p>When the 5th instar is full, find a glowing spot and press <kbd>Space</kbd>. You hang in a J, shed one last skin, and become a jade chrysalis with gold dots. Press <kbd>Space</kbd> to twitch.</p></div></div>
+      <div class="step"><b>5</b><div><h3>Emerge, drink, pop the pods</h3><p>Hang while your wings unfold and dry. Then <kbd>Space</kbd> to fly, steer with the arrows, and press <kbd>Space</kbd> at the pink milkweed flowers to drink nectar. Press <kbd>Space</kbd> at a ripe seed pod to burst it and collect seeds for your garden.</p></div></div>
+      <div class="step"><b>6</b><div><h3>Fly south</h3><p>The map scrolls: fly to the right. <kbd>Space</kbd> or <kbd>&#8593;</kbd> flaps (costs energy); let go to glide; <kbd>&#8595;</kbd> dives (fast, shakes off birds). Ride thermals up. Fly high in a tailwind, low in a headwind. Press <kbd>Space</kbd> at flowers to drink, at trees to roost for the night or shelter from a storm. At the roost, read tomorrow’s forecast and choose to fly at dawn or wait a day.</p></div></div>
+      <div class="step"><b>7</b><div><h3>Mexico, winter, and the relay north</h3><p>Reach the fir forest and press <kbd>Space</kbd> at a fir to join the cluster. Sleep through winter, plant your seeds, fly north to Texas, and live a short summer life: drink, then lay eggs (female) or find a mate (male). Three generations later you are back in Ontario, and a new super generation is born.</p></div></div>
+    </div>
+    <h2>Keyboard</h2>
+    <div class="keys">
+      <span><kbd>&#8592;&#8593;&#8594;&#8595;</kbd> / <kbd>WASD</kbd> move · steer</span>
+      <span><kbd>Space</kbd> hatch · bite · hang · twitch · fly · flap · land · pop a pod · lay an egg</span>
+      <span><kbd>&#8595;</kbd> (held) freeze from the wasp · dive from a bird</span>
+      <span><kbd>I</kbd><kbd>J</kbd><kbd>K</kbd><kbd>L</kbd> + <kbd>Enter</kbd> player 2 (two-player mode)</span>
+      <span><kbd>J</kbd> journal · <kbd>K</kbd> map</span>
+      <span><kbd>L</kbd> name tags · <kbd>M</kbd> sound · <kbd>V</kbd> read aloud</span>
+      <span><kbd>Wheel</kbd> zoom · <kbd>?</kbd> this page</span>
+      <span>Word cards: <kbd>1</kbd>–<kbd>4</kbd> or arrows + <kbd>Space</kbd> · <kbd>H</kbd> help me read · <kbd>Esc</kbd> not now</span>
+    </div>
+    <p class="fineprint">For the grown-ups: five instars, the latex trench, eating the shed skin, the silk lifeline, the J, the jade-and-gold chrysalis going clear, wing pumping, the eight-month super generation, the sun compass, thermal soaring, wind-waiting at the lakes, nectar turning to fat, roosting, the Texas funnel, the Day of the Dead arrival, the oyamel forests, the oriole and grosbeak, tagging and recoveries, and the three-generation relay north are all real monarch biology, simplified for play. A real trip south takes about two months.</p>
+  </div>
+</div>
+
+<!-- ============================ READ TO PLAY ============================ -->
+<div class="mission-card" id="missionCard" hidden>
+  <span class="mc-k">&#11088; Read and do</span>
+  <p class="mc-text" id="mcText"></p>
+  <button class="say" id="mcHelp" title="Help me read">&#128066;</button>
+</div>
+<div class="modal read-modal" id="readCard" hidden>
+  <div class="sheet read-card">
+    <div class="rc-top"><div id="rcPic"></div><p class="rc-prompt" id="rcPrompt">What will you do?</p></div>
+    <p class="rc-mic" id="rcMic" hidden>&#127908; Say the word!</p>
+    <div class="rc-choices" id="rcChoices"></div>
+    <div class="row inline center"><button class="chip" id="rcHelp">&#128066; Help me read</button><button class="chip" id="rcBack">Not now</button></div>
+  </div>
+</div>
+<div class="modal read-modal" id="readPage" hidden>
+  <div class="sheet read-page">
+    <div class="rp-head"><span class="rp-level" id="rpLevel">Level B</span><h2 id="rpTitle">The J</h2></div>
+    <div class="rp-body"><div id="rpPic"></div><div class="rp-text" id="rpText"></div></div>
+    <div class="rp-task" id="rpTask" hidden></div>
+    <div class="rp-mic" id="rpMicRow" hidden><span class="mic-dot"></span><span class="meter"><i id="rpMeter"></i></span><span id="rpHeard">I heard 0 words</span></div>
+    <p class="rp-msg" id="rpMsg"></p>
+    <div class="row inline center"><button class="chip" id="rpHelp">&#128066; Read it to me</button><button class="chip" id="rpMic">&#127908; I will read it out loud</button><button class="start rp-next" id="rpNext">I read it! &#10140;</button></div>
+  </div>
+</div>
+<div class="modal" id="myWords" hidden>
+  <div class="sheet">
+    <button class="close" id="wordsClose">&times;</button>
+    <h2>&#128292; My words <small id="wordsCount">0</small></h2>
+    <p class="tiny">Green words you know. Yellow words you are learning. Orange words are tricky: keep meeting them! Tap a word to hear it.</p>
+    <div class="words-grid" id="wordsGrid"></div>
+  </div>
+</div>
+<div class="modal" id="grownup" hidden>
+  <div class="sheet">
+    <button class="close" id="grownupClose">&times;</button>
+    <h2>&#128106; Grown-up corner</h2>
+    <p class="tiny">How the reading is going. Levels follow guided-reading levels A–E; every word on a card, page or mission is checked against the child's level.</p>
+    <h4>Reading report</h4>
+    <div class="read-report" id="readReport"></div>
+    <h4>Running records (reading out loud)</h4>
+    <div class="records" id="readRecords"></div>
+  </div>
+</div>
+
+<script src="js/core.js"></script>
+<script src="js/facts.js"></script>
+<script src="js/year.js"></script>
+<script src="js/journal.js"></script>
+<script src="js/plant.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/map.js"></script>
+<script src="js/particles.js"></script>
+<script src="js/cinematic.js"></script>
+<script src="js/critters.js"></script>
+<script src="js/predators.js"></script>
+<script src="js/mate.js"></script>
+<script src="js/migration.js"></script>
+<script src="js/player.js"></script>
+<script src="js/render.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/readlex.js"></script>
+<script src="js/listen.js"></script>
+<script src="js/reading.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

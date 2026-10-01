@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#5ea9e8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Hatch from an egg, eat aphids, molt, pupate and fly away a ladybug. A garden life-cycle game for kids.">
+<title>Ladybug Life — Aphid Hunter</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<canvas id="scene"></canvas>
+
+<!-- ============================ HUD ============================ -->
+<header class="hud" id="hud">
+  <div class="stage-card">
+    <div class="stage-icon"><canvas id="stageIcon" width="112" height="112"></canvas></div>
+    <div class="stage-txt">
+      <span class="stage-k" id="stageK">You are a</span>
+      <b class="stage-v" id="stageName">Egg</b>
+      <div class="prog"><i id="progBar"></i><span id="progText">Wriggle out!</span></div>
+    </div>
+  </div>
+
+  <ol class="wheel" id="wheel" aria-label="Life cycle"></ol>
+
+  <div class="readouts">
+    <div class="ro season" id="seasonRo" title="Season"><span class="ro-k" id="seasonBadge">Spring</span><b id="roDay">Day 1</b></div>
+    <div class="ro" title="Weather right now"><span class="ro-k">Sky</span><b id="weatherBadge">☀️</b></div>
+    <div class="ro" title="Aphids eaten in this life"><span class="ro-k">Eaten</span><b id="roTotal">0</b></div>
+    <div class="ro" title="Aphids in the garden"><span class="ro-k">Aphids</span><b id="roAphids">0</b></div>
+    <div class="ro" title="Generation"><span class="ro-k">Gen</span><b id="roGen">1</b></div>
+  </div>
+
+  <div class="top-actions">
+    <button class="icon-btn" id="btnVoice" title="Read aloud (V)">🔊</button>
+    <button class="icon-btn" id="btnPhoto" title="Take a photo (P)">📷</button>
+    <button class="icon-btn" id="btnScope" title="Microscope (Y)">🔬</button>
+    <button class="icon-btn" id="btnBook" title="Sticker book (B)">⭐</button>
+    <button class="icon-btn" id="btnJournal" title="Field journal (J)">📓</button>
+    <button class="icon-btn" id="btnLabels" title="Name tags (L)">Aa</button>
+    <button class="icon-btn" id="btnHelp" title="How to play (?)">?</button>
+    <button class="icon-btn" id="btnMenu" title="Settings">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- player 2 mini card -->
+<div class="p2card" id="p2card" hidden>
+  <canvas id="p2Icon" width="88" height="88"></canvas>
+  <div>
+    <span class="stage-k">Player 2 · <em id="p2Keys">IJKL + U</em></span>
+    <b id="p2Name">Egg</b>
+    <div class="prog small"><i id="p2Prog"></i><span id="p2Text"></span></div>
+  </div>
+</div>
+
+<div class="hint" id="hint"><span id="hintText">Press SPACE again and again to wriggle out of your egg!</span><button class="say" id="hintSay" title="Say it again">🔊</button></div>
+
+<!-- sticker toast -->
+<div class="toast" id="stickerToast" hidden>
+  <canvas id="stickerToastCanvas" width="160" height="160"></canvas>
+  <div><span class="stage-k">New sticker!</span><b id="stickerToastName">Hatched!</b></div>
+</div>
+
+<!-- ============================ FACT CARD ============================ -->
+<aside class="fact" id="fact" hidden>
+  <div class="fact-head"><span class="fact-tag">Did you know?</span><div><button class="say" id="factSay" title="Read it to me">🔊</button><button class="close" id="factClose">&times;</button></div></div>
+  <h3 id="factTitle">Title</h3>
+  <p id="factBody">Body</p>
+  <a class="more" id="factMore" href="#" target="_blank" rel="noopener" hidden>See the real thing ↗</a>
+  <button class="wide" id="factOk">Got it!</button>
+</aside>
+
+<!-- ============================ SCIENCE PANEL ============================ -->
+<aside class="science" id="science" hidden>
+  <div class="fact-head"><span class="fact-tag green">Garden science</span><button class="close" id="scienceClose">&times;</button></div>
+  <h3>Aphids over time</h3>
+  <canvas id="scienceCanvas"></canvas>
+  <p class="tiny" id="scienceNote">Stop hunting and watch the green line climb. Hunt, and watch it fall. Red ticks are your bites.</p>
+</aside>
+
+<!-- ============================ SETTINGS DRAWER ============================ -->
+<aside class="drawer" id="drawer" hidden>
+  <div class="drawer-head"><h2>Garden settings</h2><button class="close" id="drawerClose">&times;</button></div>
+  <section>
+    <h4>Difficulty</h4>
+    <div class="seg" id="diffPick">
+      <button data-diff="easy">Little kid</button>
+      <button data-diff="normal" class="on">Big kid</button>
+      <button data-diff="hard">Scientist</button>
+    </div>
+    <p class="tiny">Changes how many aphids each stage needs, how fast they flee, and whether ants and the bird show up.</p>
+  </section>
+  <section>
+    <h4>Reading &amp; listening</h4>
+    <div class="seg" id="readPickDrawer">
+      <button data-read="simple">Little words</button>
+      <button data-read="normal">Full facts</button>
+    </div>
+    <div class="chips" style="margin-top:8px">
+      <button class="chip on" id="tgVoice">🔊 Read aloud</button>
+      <button class="chip" id="tgLabels">Name tags</button>
+      <button class="chip on" id="tgSoundChip">Sound</button>
+    </div>
+  </section>
+  <section>
+    <h4>Reading</h4>
+    <div class="seg" id="readModeDrawer"><button data-rm="listen">🔊 Read to me</button><button data-rm="play">📖 I read to play</button></div>
+    <div class="chips center level-chips" id="readLevelDrawer"></div>
+    <p class="tiny" id="readAboutDrawer"></p>
+    <div class="seg" id="readHelpPick" style="margin-top:8px"><button data-rh="auto">Help comes by itself</button><button data-rh="ask">Help only when asked</button></div>
+    <div class="chips" style="margin-top:8px"><button class="chip" id="btnMyWords">🔤 My words &amp; reading report</button></div>
+    <p class="tiny">In "I read to play" the action button shows words to read, the ladybug only grows after reading a page, and missions are written, not spoken. Tap any word to hear it.</p>
+  </section>
+  <section>
+    <h4>Players</h4>
+    <div class="chips">
+      <button class="chip" id="tgP2">👫 Add player 2 (IJKL + U)</button>
+      <button class="chip" id="tgGpSwap">🎮 Gamepad drives player 2</button>
+    </div>
+    <p class="tiny" id="gpNote">No gamepad connected. Plug one in and press a button.</p>
+  </section>
+  <section>
+    <h4>Options</h4>
+    <div class="chips">
+      <button class="chip" id="tgAnts">Ants</button>
+      <button class="chip on" id="tgBird">Bird</button>
+      <button class="chip" id="tgSlow">Slow &amp; gentle</button>
+      <button class="chip" id="tgPad">Touch buttons</button>
+      <button class="chip" id="tgScience">📈 Science graph</button>
+    </div>
+    <label class="select"><span>Graphics</span>
+      <select id="selQuality">
+        <option value="auto">Auto</option>
+        <option value="high">High</option>
+        <option value="low">Low (older tablets)</option>
+      </select>
+    </label>
+  </section>
+  <section>
+    <h4>Time of day</h4>
+    <label class="ctl"><input type="range" id="sTod" min="0" max="100" value="35"></label>
+    <div class="chips"><button class="chip on" id="tgClock">Clock running</button><button class="chip" id="btnNextSeason">Skip to next season</button></div>
+  </section>
+  <section>
+    <h4>Your ladybug</h4>
+    <div class="species-grid small" id="speciesPickDrawer"></div>
+    <p class="tiny" id="speciesPower"></p>
+  </section>
+  <section>
+    <h4>Collections</h4>
+    <div class="chips">
+      <button class="chip" id="btnStickersDrawer">⭐ Sticker book</button>
+      <button class="chip" id="btnJournalDrawer">📓 Field journal</button>
+      <a class="chip link" id="btnHunt" href="hunt.html" target="_blank" rel="noopener">🔍 Print a scavenger hunt</a>
+    </div>
+  </section>
+  <section>
+    <button class="wide" id="btnNewGarden">&#127793; Grow a new garden</button>
+    <button class="wide ghost" id="btnRestart">Start over as an egg</button>
+    <p class="tiny" id="saveNote">Your garden saves itself every few seconds.</p>
+  </section>
+</aside>
+
+<!-- ============================ TOUCH PAD ============================ -->
+<div class="pad" id="pad" hidden>
+  <div class="dpad">
+    <button data-dir="up" aria-label="up">&#9650;</button>
+    <button data-dir="left" aria-label="left">&#9664;</button>
+    <button data-dir="right" aria-label="right">&#9654;</button>
+    <button data-dir="down" aria-label="down / freeze">&#9660;</button>
+  </div>
+  <div class="pad-actions">
+    <button class="big" id="btnAction">GO!</button>
+    <button class="big alt" id="btnEgg" hidden>Eggs</button>
+  </div>
+</div>
+
+<!-- ============================ TITLE ============================ -->
+<div class="title" id="title">
+  <canvas id="titleCanvas"></canvas>
+  <div class="title-card">
+    <div class="title-logo">
+      <span class="t1">LADYBUG</span><span class="t2">LIFE</span>
+      <em>Aphid Hunter</em>
+    </div>
+    <p class="lede">Hatch from an egg. Eat aphids. Molt, grow, become a pupa… fly away a ladybug, and sleep through the winter.</p>
+
+    <button class="start continue" id="btnContinue" hidden>Continue my garden &#127793;</button>
+
+    <h4>Pick your ladybug</h4>
+    <div class="species-grid" id="speciesPick"></div>
+    <p class="species-blurb" id="speciesBlurb"></p>
+
+    <div class="two-col">
+      <div>
+        <h4>Who is playing?</h4>
+        <div class="seg" id="diffPickTitle">
+          <button data-diff="easy">Little kid</button>
+          <button data-diff="normal" class="on">Big kid</button>
+          <button data-diff="hard">Scientist</button>
+        </div>
+      </div>
+      <div>
+        <h4>Words</h4>
+        <div class="seg" id="readPick">
+          <button data-read="simple" class="on">Little words</button>
+          <button data-read="normal">Full facts</button>
+        </div>
+      </div>
+    </div>
+    <h4>Reading</h4>
+    <div class="seg" id="readModeTitle"><button data-rm="listen">🔊 Read to me</button><button data-rm="play">📖 I read to play</button></div>
+    <div class="chips center level-chips" id="readLevelTitle"></div>
+    <p class="tiny" id="readAboutTitle"></p>
+    <div class="chips center" style="margin-top:10px"><button class="chip on" id="tgVoiceTitle">🔊 Read everything aloud</button></div>
+
+    <button class="start" id="btnStart">Hatch me! &#128030;</button>
+    <p class="keys-line"><kbd>&#8592;&#8593;&#8594;&#8595;</kbd> crawl &nbsp;·&nbsp; <kbd>Space</kbd> action &nbsp;·&nbsp; <kbd>E</kbd> lay eggs &nbsp;·&nbsp; <kbd>&#8595;</kbd> hold to freeze &nbsp;·&nbsp; 🎮 gamepad works too</p>
+  </div>
+</div>
+
+<!-- ============================ NEXT GENERATION ============================ -->
+<div class="modal" id="choice" hidden>
+  <div class="sheet small-sheet">
+    <h2>&#127881; You laid your eggs!</h2>
+    <p>Egg &rarr; larva &rarr; pupa &rarr; ladybug &rarr; eggs. A whole generation! What next?</p>
+    <div class="row">
+      <button class="start" id="btnHatchNext">Hatch the next generation</button>
+      <button class="wide ghost" id="btnKeep">Keep flying around</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ STICKER BOOK ============================ -->
+<div class="modal" id="stickerBook" hidden>
+  <div class="sheet">
+    <button class="close" id="stickerClose">&times;</button>
+    <h2>&#11088; Sticker book <span class="count" id="stickerCount">0 / 24</span></h2>
+    <p class="tiny">Tap a sticker to hear how you got it. Grey ones are still waiting for you.</p>
+    <div class="sticker-grid" id="stickerGrid"></div>
+  </div>
+</div>
+
+<!-- ============================ FIELD JOURNAL ============================ -->
+<div class="modal" id="journal" hidden>
+  <div class="sheet journal-sheet">
+    <button class="close" id="journalClose">&times;</button>
+    <h2>&#128211; Field journal</h2>
+    <div class="row inline">
+      <button class="wide small" id="journalPrint">🖨️ Print</button>
+      <button class="wide ghost small" id="journalClear">Clear</button>
+    </div>
+    <div id="journalList" class="journal-list"></div>
+  </div>
+</div>
+
+<!-- ============================ MICROSCOPE ============================ -->
+<div class="modal" id="microscope" hidden>
+  <div class="sheet scope-sheet">
+    <button class="close" id="scopeClose">&times;</button>
+    <h2>&#128300; Microscope</h2>
+    <div class="seg" id="scopePick">
+      <button data-subject="egg">Egg</button>
+      <button data-subject="larva" class="on">Larva</button>
+      <button data-subject="pupa">Pupa</button>
+      <button data-subject="adult">Ladybug</button>
+      <button data-subject="aphid">Aphid</button>
+      <button data-subject="ant">Ant</button>
+    </div>
+    <canvas id="scopeCanvas"></canvas>
+    <div class="row inline">
+      <button class="chip" id="scopeCut">Look inside</button>
+      <p class="scope-say" id="scopeSay">Tap a label to hear what it is and what it does.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ HELP ============================ -->
+<div class="modal" id="help" hidden>
+  <div class="sheet">
+    <button class="close" id="helpClose">&times;</button>
+    <h2>How to play</h2>
+    <div class="steps">
+      <div class="step"><b>1</b><div><h3>Hatch</h3><p>Press <kbd>Space</kbd> (or tap GO!) again and again to wriggle out of your egg.</p></div></div>
+      <div class="step"><b>2</b><div><h3>Crawl the branches</h3><p>Arrow keys or <kbd>WASD</kbd> move you along the stem. At a fork, hold the arrow pointing toward the branch you want. You can also click anywhere on the plant to walk there.</p></div></div>
+      <div class="step"><b>3</b><div><h3>Eat aphids</h3><p>Bump into an aphid and you grab it. Mash <kbd>Space</kbd> to chew faster. Sneak up quick — scared aphids drop off the plant!</p></div></div>
+      <div class="step"><b>4</b><div><h3>Molt and grow</h3><p>Eat enough and you shed your skin, growing into the next instar. There are four larval instars.</p></div></div>
+      <div class="step"><b>5</b><div><h3>Watch out</h3><p>Ants shove you off their aphids: go round by another branch. When a bird comes, hold <kbd>&#8595;</kbd> to freeze (or play dead as an adult), or hide under a leaf.</p></div></div>
+      <div class="step"><b>6</b><div><h3>Pupate</h3><p>When the 4th instar is full, find a glowing leaf spot and press <kbd>Space</kbd>. Press <kbd>Space</kbd> as a pupa to twitch.</p></div></div>
+      <div class="step"><b>7</b><div><h3>Fly and explore</h3><p>Once your wings dry, <kbd>Space</kbd> takes off. Fly to the other plants — each has its own aphids. Land near any branch with <kbd>Space</kbd>. Eat more, then press <kbd>E</kbd> at a leaf to lay eggs.</p></div></div>
+      <div class="step"><b>📖</b><div><h3>I read to play</h3><p>Pick "I read to play" and a level (A to E). Then <kbd>Space</kbd> shows words: tap the one that fits and your ladybug does it. Read a page to grow, and read the ⭐ missions to know where to go. Tap any word to hear it; <kbd>1</kbd>–<kbd>3</kbd> pick a word from the keyboard.</p></div></div>
+      <div class="step"><b>8</b><div><h3>A whole year</h3><p>Seasons turn. In autumn the leaves fall. When winter comes, fly to the warm crack in the garden wall and press <kbd>Space</kbd> to hibernate until spring.</p></div></div>
+    </div>
+    <h2>Keyboard &amp; gamepad</h2>
+    <div class="keys">
+      <span><kbd>&#8592;&#8593;&#8594;&#8595;</kbd> / <kbd>WASD</kbd> move · 🎮 stick</span>
+      <span><kbd>Space</kbd> hatch · chew · pupate · fly · land · 🎮 A</span>
+      <span><kbd>E</kbd> lay eggs · 🎮 B</span>
+      <span><kbd>&#8595;</kbd> hold: freeze / play dead</span>
+      <span><kbd>P</kbd> photo · 🎮 X</span>
+      <span><kbd>Y</kbd> microscope · 🎮 Y</span>
+      <span><kbd>B</kbd> sticker book</span>
+      <span><kbd>J</kbd> journal</span>
+      <span><kbd>V</kbd> read aloud on/off</span>
+      <span><kbd>L</kbd> name tags</span>
+      <span><kbd>M</kbd> sound</span>
+      <span><kbd>Wheel</kbd> zoom</span>
+      <span>Player 2: <kbd>IJKL</kbd> move · <kbd>U</kbd> action · <kbd>O</kbd> eggs</span>
+    </div>
+    <p class="fineprint">For the grown-ups: the stages, molts, dropping aphids, alarm scent, ant bodyguards and honeydew, pale spotless fresh adults, reflex bleeding, live-born aphids, winged migrants, autumn leaf drop and winter clustering are all real ladybug biology, simplified for play. To install on a tablet, host the folder on any web server (or GitHub Pages) and use "Add to Home Screen".</p>
+  </div>
+</div>
+
+<!-- ============================ READ TO PLAY ============================ -->
+<div class="modal read-modal" id="readCard" hidden>
+  <div class="sheet read-card">
+    <div class="rc-top"><div id="rcPic"></div><p class="rc-prompt" id="rcPrompt">What will you do?</p></div>
+    <div class="rc-choices" id="rcChoices"></div>
+    <div class="row inline center"><button class="chip" id="rcHelp">👂 Help me read</button><button class="chip" id="rcBack">Not now</button></div>
+  </div>
+</div>
+<div class="modal read-modal" id="readPage" hidden>
+  <div class="sheet read-page">
+    <div class="rp-head"><span class="rp-level" id="rpLevel">Level B</span><h2 id="rpTitle">A tiny egg</h2></div>
+    <div class="rp-body"><div id="rpPic"></div><div class="rp-text" id="rpText"></div></div>
+    <div class="rp-task" id="rpTask" hidden></div>
+    <p class="rp-msg" id="rpMsg"></p>
+    <div class="row inline center"><button class="chip" id="rpHelp">👂 Read it to me</button><button class="chip" id="rpMic">🎤 I will read it out loud</button><button class="start rp-next" id="rpNext">I read it! ➜</button></div>
+  </div>
+</div>
+<div class="mission-card" id="missionCard" hidden>
+  <span class="mc-k">⭐ Read and do</span>
+  <p class="mc-text" id="mcText"></p>
+  <button class="say" id="mcHelp" title="Help me read">👂</button>
+</div>
+<div class="modal" id="myWords" hidden>
+  <div class="sheet">
+    <button class="close" id="wordsClose">&times;</button>
+    <h2>🔤 My words <span class="count" id="wordsCount">0</span></h2>
+    <p class="tiny">Green words you know. Yellow words you are learning. Orange words are tricky: keep meeting them! Tap a word to hear it.</p>
+    <div class="words-grid" id="wordsGrid"></div>
+    <h4 class="report-h">For grown-ups: reading report</h4>
+    <div class="read-report" id="readReport"></div>
+  </div>
+</div>
+
+<script src="js/core.js"></script>
+<script src="js/facts.js"></script>
+<script src="js/readlex.js"></script>
+<script src="js/plant.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/particles.js"></script>
+<script src="js/critters.js"></script>
+<script src="js/wildlife.js"></script>
+<script src="js/garden.js"></script>
+<script src="js/cinematic.js"></script>
+<script src="js/player.js"></script>
+<script src="js/render.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/gamepad.js"></script>
+<script src="js/stickers.js"></script>
+<script src="js/journal.js"></script>
+<script src="js/microscope.js"></script>
+<script src="js/save.js"></script>
+<script src="js/reading.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

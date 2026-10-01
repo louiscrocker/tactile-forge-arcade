@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#000604" />
+  <title>Tactile Forge — Rubble Drift</title>
+
+  <link href="fonts/fonts.css" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles/tokens.css" />
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/game.css" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='none' stroke='%2300ff9d' stroke-width='3' d='M14 24 L24 12 L40 14 L52 26 L50 42 L36 52 L18 48 L10 36 Z'/%3E%3C/svg%3E" />
+</head>
+<body class="app">
+
+  <!-- ==================== ATMOSPHERE ==================== -->
+  <canvas id="bg-stars" class="bg-stars" aria-hidden="true"></canvas>
+  <div id="bg-vignette" class="bg-vignette" aria-hidden="true"></div>
+  <div id="bg-scanlines" class="bg-scanlines" aria-hidden="true"></div>
+
+  <!-- ==================== TOP BAR ==================== -->
+  <header class="topbar" id="topbar">
+    <div class="brand" data-action="goto-title">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32">
+          <path d="M7 12 L12 6 L20 7 L26 13 L25 21 L18 26 L9 24 L5 18 Z" />
+        </svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-line-1">TACTILE&nbsp;FORGE</span>
+        <span class="brand-line-2">Rubble Drift</span>
+      </span>
+    </div>
+    <nav class="topnav" id="topnav">
+      <button class="chip" data-action="goto-title">Home</button>
+      <button class="chip" data-action="goto-briefing">Briefing</button>
+      <button class="chip" data-action="goto-stats">Pilot Log</button>
+      <button class="chip" data-action="goto-settings" aria-label="Settings">⚙</button>
+    </nav>
+  </header>
+
+  <!-- ==================== TITLE ==================== -->
+  <section class="screen screen-title is-active" data-screen="title">
+    <canvas id="intro-canvas" class="intro-canvas" aria-hidden="true"></canvas>
+    <div class="title-stack">
+      <div class="eyebrow">
+        <span class="eyebrow-rule"></span>
+        <span class="eyebrow-text">VECTOR CABINET · FORGED 2026</span>
+        <span class="eyebrow-rule"></span>
+      </div>
+      <h1 class="display-title">
+        <span class="display-line">RUBBLE</span>
+        <span class="display-line display-line--accent">DRIFT</span>
+      </h1>
+      <p class="display-sub">
+        One ship. A belt of rocks. Saucers in the dark.<br/>
+        Survive the void or be ground to dust.
+      </p>
+
+      <div class="title-cta">
+        <button class="btn btn-primary btn-lg" data-action="goto-briefing">
+          <span class="btn-icon" aria-hidden="true">▶</span>
+          <span>Take the Helm</span>
+          <span class="btn-sub">Rotate · Thrust · Fire</span>
+        </button>
+        <button class="btn btn-ghost btn-lg" data-action="goto-stats">
+          <span class="btn-icon" aria-hidden="true">◆</span>
+          <span>Pilot Log</span>
+          <span class="btn-sub">Career stats</span>
+        </button>
+      </div>
+
+      <div class="title-foot">
+        <button class="link" data-action="goto-briefing">Briefing</button>
+        <span class="dotsep">·</span>
+        <button class="link" data-action="goto-settings">Settings</button>
+      </div>
+    </div>
+
+    <div class="title-marquee" aria-hidden="true">
+      <span>DEEP-SPACE PATROL</span><span class="dot">●</span>
+      <span>HULL NOMINAL · TORPEDO TUBES HOT</span><span class="dot">●</span>
+      <span>HYPERSPACE EXPERIMENTAL</span><span class="dot">●</span>
+      <span>SAUCER SIGHTINGS REPORTED</span><span class="dot">●</span>
+      <span>DEEP-SPACE PATROL</span><span class="dot">●</span>
+      <span>HULL NOMINAL · TORPEDO TUBES HOT</span><span class="dot">●</span>
+    </div>
+  </section>
+
+  <!-- ==================== BRIEFING ==================== -->
+  <section class="screen screen-briefing" data-screen="briefing">
+    <div class="panel panel-wide">
+      <header class="panel-head">
+        <h2 class="panel-title">Pilot Briefing</h2>
+        <p class="panel-sub">Pre-flight checks before you punch the void.</p>
+      </header>
+
+      <div class="brief-grid">
+
+        <fieldset class="card">
+          <legend class="card-title">Pilot</legend>
+          <label class="field">
+            <span>Call sign</span>
+            <input id="pilot-name" class="input input-mono" type="text" placeholder="ROGUE" maxlength="14" />
+          </label>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend class="card-title">Difficulty</legend>
+          <div class="seg-row" id="difficulty" role="radiogroup">
+            <button class="seg" data-value="cadet">Cadet</button>
+            <button class="seg is-active" data-value="pilot">Pilot</button>
+            <button class="seg" data-value="ace">Ace</button>
+          </div>
+          <p class="card-help">Faster rocks. Sooner saucers. Tighter shots.</p>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend class="card-title">Control</legend>
+          <p class="card-help">
+            <strong>Rotate</strong> A · D / ← → &nbsp;·&nbsp;
+            <strong>Thrust</strong> W / ↑ &nbsp;·&nbsp;
+            <strong>Fire</strong> Space &nbsp;·&nbsp;
+            <strong>Hyperspace</strong> Shift &nbsp;·&nbsp;
+            <strong>Pause</strong> P / Esc
+          </p>
+        </fieldset>
+
+      </div>
+
+      <div class="phase-strip">
+        <article class="phase-card">
+          <span class="phase-num">1</span>
+          <h3>Smash</h3>
+          <p>Large rocks split into mediums, mediums into smalls. Smalls vanish. Clear the field.</p>
+        </article>
+        <article class="phase-card">
+          <span class="phase-num">2</span>
+          <h3>Survive</h3>
+          <p>Saucers bracket you. Big ones spray; small ones aim. Don't fly straight lines.</p>
+        </article>
+        <article class="phase-card">
+          <span class="phase-num">3</span>
+          <h3>Push</h3>
+          <p>Hyperspace if you're cornered — just don't ask where you'll come out.</p>
+        </article>
+      </div>
+
+      <footer class="panel-foot">
+        <button class="btn btn-ghost" data-action="goto-title">← Back</button>
+        <button class="btn btn-primary btn-lg" id="btn-launch">Launch ▶</button>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ==================== STATS ==================== -->
+  <section class="screen screen-stats" data-screen="stats">
+    <div class="panel panel-wide">
+      <header class="panel-head">
+        <h2 class="panel-title">Pilot Log</h2>
+        <p class="panel-sub">Rocks split, saucers downed, the longest patrol.</p>
+      </header>
+      <div id="stats-body" class="stats-body"></div>
+      <div id="hs-table" class="hs-table"></div>
+      <footer class="panel-foot">
+        <button class="btn btn-ghost" data-action="goto-title">← Back</button>
+        <button class="btn btn-ghost btn-sm" id="btn-clear-stats">Reset Log</button>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ==================== SETTINGS ==================== -->
+  <section class="screen screen-settings" data-screen="settings">
+    <div class="panel">
+      <header class="panel-head">
+        <h2 class="panel-title">Settings</h2>
+      </header>
+      <div class="settings-list">
+        <div class="setting-row">
+          <span>Sound effects</span>
+          <button class="toggle" id="opt-sfx" aria-pressed="true">On</button>
+        </div>
+        <div class="setting-row">
+          <span>Pulse beat</span>
+          <button class="toggle" id="opt-music" aria-pressed="true">On</button>
+        </div>
+        <div class="setting-row">
+          <span>CRT scanlines</span>
+          <button class="toggle" id="opt-crt" aria-pressed="true">On</button>
+        </div>
+        <div class="setting-row">
+          <span>Phosphor color</span>
+          <div class="seg-row" id="opt-phosphor">
+            <button class="seg is-active" data-value="green">Green</button>
+            <button class="seg" data-value="amber">Amber</button>
+            <button class="seg" data-value="cyan">Cyan</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span>Bloom</span>
+          <div class="seg-row" id="opt-bloom">
+            <button class="seg" data-value="off">Off</button>
+            <button class="seg is-active" data-value="soft">Soft</button>
+            <button class="seg" data-value="hot">Hot</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span>CRT curve + chroma</span>
+          <button class="toggle" id="opt-curve" aria-pressed="true">On</button>
+        </div>
+        <div class="setting-row">
+          <span>Reduced motion</span>
+          <button class="toggle" id="opt-reduce-motion" aria-pressed="false">Off</button>
+        </div>
+      </div>
+      <footer class="panel-foot">
+        <button class="btn btn-ghost" data-action="goto-title">← Back</button>
+        <span class="settings-io">
+          <button class="btn btn-ghost btn-sm" id="btn-export">Export</button>
+          <button class="btn btn-ghost btn-sm" id="btn-import">Import</button>
+          <input id="import-file" type="file" accept=".json,application/json" hidden />
+        </span>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ==================== GAME ==================== -->
+  <section class="screen screen-game" data-screen="game">
+    <canvas id="game-canvas" class="game-canvas"></canvas>
+
+    <!-- Phase banner (transient, between waves) -->
+    <div class="phase-banner" id="phase-banner" hidden>
+      <span class="pb-num" id="pb-num">1</span>
+      <span class="pb-name" id="pb-name">Wave 01</span>
+      <span class="pb-sub" id="pb-sub">Rocks inbound</span>
+    </div>
+
+    <!-- Top-left: tactical readout -->
+    <aside class="hud hud-status">
+      <div class="hud-row">
+        <span class="kv"><span class="k">WAVE</span><span class="v" id="val-wave">01</span></span>
+        <span class="kv"><span class="k">SHIPS</span><span class="v" id="val-ships">▲▲▲</span></span>
+      </div>
+      <div class="hud-row">
+        <span class="kv"><span class="k">ROCKS</span><span class="v" id="val-rocks">4</span></span>
+        <span class="kv"><span class="k">SAUCER</span><span class="v" id="val-saucer">—</span></span>
+      </div>
+    </aside>
+
+    <!-- Top-right: score / time -->
+    <aside class="hud hud-score">
+      <div class="hud-row">
+        <span class="kv kv-big"><span class="k">SCORE</span><span class="v" id="val-score">0</span></span>
+      </div>
+      <div class="hud-row">
+        <span class="kv"><span class="k">HIGH</span><span class="v" id="val-high">0</span></span>
+        <span class="kv"><span class="k">TIME</span><span class="v" id="val-time">00:00</span></span>
+      </div>
+    </aside>
+
+    <!-- Bottom helper hint -->
+    <div class="comm" id="comm" aria-live="polite">
+      <span class="comm-tag">FLIGHT</span>
+      <span class="comm-text" id="comm-text">Rogue, you have the helm.</span>
+    </div>
+
+    <!-- Pause -->
+    <button class="game-menu-btn" id="game-menu-btn" aria-label="Menu">☰</button>
+    <div class="game-menu" id="game-menu" hidden>
+      <button id="btn-resume">Resume</button>
+      <button id="btn-restart">Restart Wave</button>
+      <button id="btn-quit">Stand Down</button>
+    </div>
+
+    <!-- Pause veil -->
+    <div class="paused-veil" id="paused-veil" hidden>
+      <span class="paused-text">PAUSED</span>
+      <span class="paused-sub">Press P or Esc to resume</span>
+    </div>
+  </section>
+
+  <!-- ==================== FINISH ==================== -->
+  <section class="screen screen-finish" data-screen="finish">
+    <div class="panel panel-wide">
+      <header class="panel-head">
+        <h2 class="panel-title" id="finish-title">Patrol Ends</h2>
+        <p class="panel-sub" id="finish-sub">Hull dust. Long silence.</p>
+      </header>
+
+      <div class="debrief">
+        <div class="debrief-stat">
+          <span class="ds-k">Score</span>
+          <span class="ds-v" id="ds-score">0</span>
+        </div>
+        <div class="debrief-stat">
+          <span class="ds-k">Waves</span>
+          <span class="ds-v" id="ds-waves">0</span>
+        </div>
+        <div class="debrief-stat">
+          <span class="ds-k">Rocks</span>
+          <span class="ds-v" id="ds-rocks">0</span>
+        </div>
+        <div class="debrief-stat">
+          <span class="ds-k">Saucers</span>
+          <span class="ds-v" id="ds-saucers">0</span>
+        </div>
+        <div class="debrief-stat">
+          <span class="ds-k">Accuracy</span>
+          <span class="ds-v" id="ds-acc">0%</span>
+        </div>
+        <div class="debrief-stat ds-medal">
+          <span class="ds-k">Rank</span>
+          <span class="ds-v" id="ds-rank">CADET</span>
+        </div>
+      </div>
+
+      <div class="hs-prompt" id="hs-prompt" hidden>
+        <span class="hs-tag">NEW HIGH SCORE — INITIALS</span>
+        <input id="hs-initials" class="input input-mono" type="text" maxlength="3" placeholder="AAA" />
+        <button class="btn btn-primary btn-sm" id="btn-hs-save">Enter</button>
+      </div>
+
+      <footer class="panel-foot">
+        <button class="btn btn-ghost" data-action="goto-title">Main Menu</button>
+        <button class="btn btn-primary btn-lg" id="btn-rematch">Fly Again ▶</button>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ==================== ENTRY POINT ==================== -->
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
