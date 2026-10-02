@@ -390,8 +390,11 @@ const Reading = (function () {
 
   /* ---------- reading aloud into the microphone ---------- */
   function SR() { return typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition); }
-  function micRead() {
+  async function micRead() {
     const R = SR(); if (!R || !page) return;
+    /* a grown-up says yes first: in Chrome and Edge the audio goes to an online speech service */
+    const pg = page;
+    if (!(await Grownups.confirmMicrophone()) || page !== pg) return;
     const spans = [...$('rpText').querySelectorAll('.rw')], want = spans.map(s => s.dataset.w);
     const heard = new Set();
     try { rec && rec.abort(); } catch (e) { /* fine */ }

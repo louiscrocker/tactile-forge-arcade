@@ -6,7 +6,7 @@
 
 import { state, bus } from '../state.js';
 import { gotoScreen } from './screens.js';
-import { CourseRenderer } from '../render/course.js';
+import { CourseRenderer, COMPACT } from '../render/course.js';
 import { WindRose } from '../render/wind-rose.js';
 import { YachtRaceEngine } from '../game/engine.js';
 import { YACHT_COLORS, YACHT_CLASSES, COURSES } from '../game/constants.js';
@@ -45,6 +45,13 @@ function bindGameButtons() {
     document.getElementById('handoff-back').hidden = true;
     syncUI();
   });
+  // On phones the standings collapse into a bar; tapping it opens the full list.
+  const standingsHud = document.getElementById('hud-standings');
+  standingsHud.addEventListener('click', () => {
+    if (!COMPACT.matches) return;
+    const open = standingsHud.classList.toggle('is-open');
+    standingsHud.setAttribute('aria-expanded', String(open));
+  });
   document.getElementById('game-menu-btn').addEventListener('click', () => {
     const m = document.getElementById('game-menu');
     m.hidden = !m.hidden;
@@ -76,18 +83,42 @@ function bindGameButtons() {
   });
 }
 
+// Pointer events cover mouse, touch and pen. A mouse previews the heading on
+// hover and sets it on click, as before. A finger previews it while pressed
+// (drag to adjust) and sets it on release, so no hover is needed.
 function bindCanvas() {
   const canvas = document.getElementById('course-canvas');
-  canvas.addEventListener('mousemove', (e) => {
+  let downId = null;
+  const aim = (e) => {
     if (!engine || engine.phase !== 'heading') { renderer.setHover(null); return; }
     const cur = engine.getCurrentPlayer();
     if (cur.isAI) { renderer.setHover(null); return; }
     if (state.online && cur.netId !== myPeerId()) { renderer.setHover(null); return; }
     const n = renderer.pickFromEvent(e);
     renderer.setHover(n.x, n.y);
+  };
+  canvas.addEventListener('pointerdown', (e) => {
+    if (e.button > 0) return;
+    downId = e.pointerId;
+    document.getElementById('hud-standings').classList.remove('is-open');
+    if (e.pointerType !== 'mouse') {
+      try { canvas.setPointerCapture(e.pointerId); } catch {}
+      aim(e);
+    }
   });
-  canvas.addEventListener('mouseleave', () => renderer.setHover(null));
-  canvas.addEventListener('click', (e) => {
+  canvas.addEventListener('pointermove', (e) => {
+    if (e.pointerType === 'mouse' || downId === e.pointerId) aim(e);
+  });
+  canvas.addEventListener('pointerleave', (e) => { if (downId !== e.pointerId) renderer.setHover(null); });
+  canvas.addEventListener('pointercancel', () => { downId = null; renderer.setHover(null); });
+  canvas.addEventListener('pointerup', (e) => {
+    if (downId !== e.pointerId) return;
+    downId = null;
+    if (e.pointerType !== 'mouse') renderer.setHover(null);
+    setHeadingFrom(e);
+  });
+
+  function setHeadingFrom(e) {
     if (!engine || engine.phase !== 'heading') return;
     const cur = engine.getCurrentPlayer();
     if (cur.isAI) return;
@@ -103,7 +134,7 @@ function bindCanvas() {
     renderer.setHover(null);
     syncUI();
     pushOnlineState();
-  });
+  }
 }
 
 function myPeerId() {

@@ -217,7 +217,9 @@
       case 'rhythm': settings.rhythm = !(settings.rhythm !== false); if (!settings.rhythm) Rhythm.stop(); break;
       case 'easyfont': settings.easyfont = !settings.easyfont; break;
       case 'keeperAny': settings.keeperAny = !settings.keeperAny; break;
-      case 'readMic': settings.readMic = !settings.readMic; if (settings.readMic && !Listener.supported()) UI.hint('This browser cannot listen. Try Chrome.'); break;
+      case 'readMic':
+        if (!settings.readMic) { micOn(); AudioFX.click(); return; }   /* turning it on asks a grown-up first */
+        settings.readMic = false; break;
       case 'readSave': settings.readSave = !(settings.readSave !== false); break;
       case 'tilt': settings.tilt = !settings.tilt; if (settings.tilt) Tilt.enable(); else Tilt.disable(); break;
       case 'slowmo': settings.slowmo = !settings.slowmo; break;
@@ -230,6 +232,13 @@
     saveSettings();
     UI.refreshToggles();
     AudioFX.click();
+  }
+  /* in Chrome and Edge the microphone's audio goes to an online speech service */
+  async function micOn() {
+    if (!(await Grownups.confirmMicrophone())) { UI.refreshToggles(); return; }
+    settings.readMic = true; if (!Listener.supported()) UI.hint('This browser cannot listen. Try Chrome.');
+    saveSettings();
+    UI.refreshToggles();
   }
 
   function photo() {
@@ -288,7 +297,8 @@
   Story.init(G);
   Rhythm.init(G);
   Keeper.init(G);
-  Grownups.init(G);
+  GrownupCorner.init(G);
+  Grownups.guardOutboundLinks();   /* "See the real thing ↗" and other websites ask a grown-up first */
   Reading.init(G, { saveSettings });
   Recorder.init(G);
   buildProfiles();
@@ -511,7 +521,7 @@
       guideTick();
       Reading.update(dt);
       Rhythm.update(rawDt);
-      Grownups.tick(rawDt);
+      GrownupCorner.tick(rawDt);
       G.hazards.update(dt, players, env);
       for (let i = G.eggMasses.length - 1; i >= 0; i--) {
         const m = G.eggMasses[i], age = G.time - (m.laidAt || 0);
@@ -646,12 +656,13 @@
   if (params.has('fakemic')) {
     /* a pretend child reads all but the last two words, then stops (for screenshots and testing) */
     settings.readMic = true;
+    Grownups.confirmMicrophone = () => Promise.resolve(true);   /* the pretend microphone hears nothing real */
     Listener.supported = () => true;
     let fake = null;
     Listener.start = (o) => { let i = 0; clearInterval(fake); fake = setInterval(() => { i++; o.onHeard(o.expected.slice(0, Math.min(i, Math.max(1, o.expected.length - 2)))); o.onLevel(.3 + Math.random() * .6); }, 250); return true; };
     Listener.stop = () => { clearInterval(fake); return { heard: [], seconds: 6, blob: Promise.resolve(null) }; };
   }
-  if (params.has('grownlater')) setTimeout(() => { UI.closeModals(); Grownups.open(); }, +params.get('grownlater') || 2500);
+  if (params.has('grownlater')) setTimeout(() => { UI.closeModals(); GrownupCorner.open(); }, +params.get('grownlater') || 2500);
   if (params.has('dumpread')) setInterval(() => { document.title = 'L=' + JSON.stringify(Reading._listen() && { k: Reading._listen().kind, got: Reading._listen().got && Reading._listen().got.size }) + ' R=' + Reading.records().length + ' P=' + Reading.pageOpen(); }, 100);
   if (params.has('mission')) Reading._missionNow();
   if (params.has('mywords')) setTimeout(() => { for (const w of ['i','can','see','the','frog','go','up','little','big','swim','hop','look','at','me','my']) { const d = Reading.stats(); d.words[w] = { r: 4, w: 0, h: 0 }; } Reading.stats().words.where = { r: 0, w: 3, h: 2 }; Reading.stats().words.jump = { r: 1, w: 1, h: 0 }; Reading.openWords(); }, 100);
@@ -673,7 +684,7 @@
       else if (o === 'guide') { for (const k of ['green', 'turtle', 'heron', 'nymph', 'lilypad', 'algae', 'fly']) Bus.emit('seen', k); FieldGuide.open(); }
       else if (o === 'story') Story.open(params.get('chapter') || 'legs', true);
       else if (o === 'safari') Safari.open(G);
-      else if (o === 'grownup') Grownups.open();
+      else if (o === 'grownup') GrownupCorner.open();
       else if (o === 'recorder') Recorder.open();
     }, 50);
   }

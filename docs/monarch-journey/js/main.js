@@ -24,6 +24,8 @@
   if (settings.readMode !== 'play') settings.readMode = 'listen';
   if (!READ_LEVELS.includes(settings.readLevel)) settings.readLevel = 'B';
   if (settings.readHelp !== 'ask') settings.readHelp = 'auto';
+  /* the microphone starts off on every load: a grown-up turns it on (Grownups.confirmMicrophone) */
+  settings.readMic = false;
   const saveSettings = () => { try { localStorage.setItem('monarch.settings', JSON.stringify(settings)); } catch (e) { /* private mode */ } };
   Journal.load();
 
@@ -238,7 +240,9 @@
   }, { passive: false });
 
   /* ---------- toggles ---------- */
-  function toggle(key) {
+  async function toggle(key) {
+    /* turning the microphone on needs a grown-up first; turning it off never does */
+    if (key === 'readMic' && !settings.readMic && !(await Grownups.confirmMicrophone())) { settings.readMic = false; UI.refreshToggles(); return; }
     switch (key) {
       case 'labels': settings.labels = !settings.labels; break;
       case 'sound': settings.sound = !settings.sound; AudioFX.setEnabled(settings.sound); break;
@@ -300,6 +304,7 @@
     onReadHelp: (h) => { settings.readHelp = h; saveSettings(); }
   });
   Voice.init();
+  Grownups.guardOutboundLinks();
   Reading.init(G, { saveSettings });
 
   function start() {

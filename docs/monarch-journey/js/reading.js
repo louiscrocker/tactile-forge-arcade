@@ -542,7 +542,13 @@ const Reading = (function () {
       onError: micError
     });
   }
-  function micRead() { if (!page || (listen && listen.kind === 'page')) return; listenPage(); }
+  async function micRead() {
+    if (!page || (listen && listen.kind === 'page')) return;
+    const p = page;
+    if (!(await Grownups.confirmMicrophone())) return;   /* a grown-up says no: the mic stays off */
+    if (page !== p || (listen && listen.kind === 'page')) return;
+    listenPage();
+  }
 
   /* ---------- missions ---------- */
   function topY() { const P = Gm.plant; return P && P.flowers.length ? Math.min(...P.flowers.map(f => f.y)) : (P ? P.bounds.top + 200 : -800); }

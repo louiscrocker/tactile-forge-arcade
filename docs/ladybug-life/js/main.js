@@ -269,6 +269,7 @@
   });
   Stickers.init(UI.onSticker);
   Journal.init(G);
+  Grownups.guardOutboundLinks();   /* "See the real thing ↗" and other websites ask a grown-up first */
   Voice.init();
   Voice.setEnabled(settings.voice);
   Reading.init(G, { saveSettings });

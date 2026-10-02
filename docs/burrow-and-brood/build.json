@@ -1,7 +1,7 @@
 {
   "slug": "burrow-and-brood",
-  "commit": "ae6e905",
-  "builtAt": "2026-10-01T21:51:51.589Z",
+  "commit": "1baa5b2",
+  "builtAt": "2026-10-02T19:13:18.706Z",
   "files": {
     "css/style.css": "f2731888ee61962d59f118511319d6577f1c08a1541571e701763d849fa0de44",
     "fonts/LICENSE-nunito.txt": "580df76c95a1ec5ab878ceb25bb3d85c6a076804e9c970c8c6972aea775fdf65",
@@ -12,20 +12,21 @@
     "icons/icon-192.png": "452d4b660609b6a9bbca79f439da1e7142a700b84a2c3317fec7c8f6d0c6aa81",
     "icons/icon-512.png": "10892e2388184bed8116c02cb1fb028cfc841519825edfde17a49a3bb712e9f8",
     "icons/icon.svg": "e6b66e5c3885873f6174a227a7b2eeeb414f3ee58b7c240ce27ff9f8bbecf0d9",
-    "index.html": "c684b641f7e054a25a52902ac9542637e67235bae45b507bc85245d891ecaa82",
+    "index.html": "ea0d7e50d81662435533f970d5308020e2f2ded04bcc27e8d4b541a51e0fd5fc",
     "js/audio.js": "c676bd2a5dc9ea07d6eaf7f885000b3bef4c10e99d27bfc7d9df1fd21147a6f3",
     "js/cinematic.js": "08cf40b386d0938e4b0498269461738d5b058dc855e76b90a2af9cff816b22a6",
     "js/colony.js": "0616ba22c6de23ee10b054d2292b99fea39b611f0b5f647478b186032533dfbb",
     "js/core.js": "256f0094900e3f6cb7cf1453e94da68c39115371091ccc6b4b5b235166b73ed3",
     "js/facts.js": "0d38274b70568fa77bed6f1330915684fdc883e3ac251bf1f7698ba62ff03c1c",
     "js/gamepad.js": "c1e1c59f057ac85f3f0c3d139c63666a618a741b69f83ba935fd8cfd49cac1a1",
+    "js/grownups.js": "45bfe5ed0ac3a453b47708dd7f19f2da1c9860742472a6836a3cebd1b445377f",
     "js/journal.js": "36e59eeff02ef1ed0aa583f9a66a8d9c73c1320649d5d2eb11c8a2ca78cc66cd",
-    "js/main.js": "17364e99967af77b5f5acf68ebc11f3032ba0fa99019833831f80d587a309df9",
+    "js/main.js": "3ed77ebe162440eed7512225558ec1f3472d22b1445d14118c68ea5420a10875",
     "js/microscope.js": "5132cfe01bb75761299fea461c0b344e99f95ab38d475a70364f67c2701d9665",
     "js/particles.js": "65c87d83900cd4cd4f06d857e29aa81ab8dc7139ccc2b262ffeea4446e5c874d",
     "js/plant.js": "badc90bf01ed18fc0a8df24120c5f4e63f694ca46b0914cab40c83b05e3cc2b8",
     "js/player.js": "b66f2479a807648e039317c7c96f594706f22a609c16a1044b502a51e695519b",
-    "js/reading.js": "bed09cb19f66ddc89025c4e243a59ab43ac4e12335e2cb4ebdcacca2077bc120",
+    "js/reading.js": "a2dd2e18873bb799465bae219bc3bfe206dbae8191f503c338e84e906b693ccf",
     "js/readlex.js": "cc2cd3b9b5017e45a034bd2d2215d9b35491da6ce2a17b0393edee92818b0190",
     "js/render.js": "73f731d10c212c02e52465ffdcf36ad8e3937467e2f2b6728799fc540d65489a",
     "js/save.js": "a9db4b030754cfc4800398d323bf7d3876f446310b69ef16d52e2518839b668c",
@@ -33,9 +34,9 @@
     "js/sprites.js": "1e82b5b546230d45ddb1eb18a485515e4e9934e56332ec1a53b4e8b6b8daf29c",
     "js/stickers.js": "fc9db56e5d5c9d091a7781c1bfa49da5ae7cb5a99710786d7d16462de41ad9bb",
     "js/ui.js": "f376131cb173ba1ea52b0043eeb0fe4c2b45d20e89e766e048dc2a5216acf63b",
-    "js/voice.js": "642efc21e19d6ab36337bb15b7f1922fa5e190308729cbde4f83e00e3b5b96cb",
+    "js/voice.js": "65e3b647dc97f683c6c71dfe8dcbbf71416999abe92fe3d4a30d9416aa99ca5b",
     "js/world.js": "468724004aa2eca883d20918a3469799372e14f2225c7e90c697cd3552e8082c",
     "manifest.webmanifest": "52606c365064c2ad861f144d3de842fc17c7f6d0dcdb5df57d2f050198faf549",
-    "sw.js": "271e9842f427bf05cc88dcd7238106bbd4f26b6cf85175f23b5a74147089a92d"
+    "sw.js": "a2c2c8125b5f7d09df811fa57a59843a2dab93fcb428c80b54b754e11c99edd0"
   }
 }

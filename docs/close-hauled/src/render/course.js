@@ -2,6 +2,9 @@
 // Tactile Forge — Course / Yacht renderer
 // =====================================================
 
+// Must match the breakpoint in styles/game.css.
+export const COMPACT = window.matchMedia('(max-width: 700px)');
+
 export class CourseRenderer {
   constructor(canvas) {
     this.canvas = canvas;
@@ -24,6 +27,7 @@ export class CourseRenderer {
     this.canvas.style.width = w + 'px';
     this.canvas.style.height = h + 'px';
     this.W = w; this.H = h;
+    this._compactArea = null;
   }
 
   setEngine(engine) { this.engine = engine; }
@@ -41,6 +45,7 @@ export class CourseRenderer {
 
   // Full-bleed playable area with safe margins so HUDs don't crush the action.
   _area() {
+    if (COMPACT.matches) return this._compact();
     const left = 260;   // wind HUD
     const right = 320;  // standings
     const top = 32;
@@ -50,6 +55,28 @@ export class CourseRenderer {
     const w = Math.max(200, this.W - left - right);
     const h = Math.max(200, this.H - top - bottom);
     return { x, y, w, h };
+  }
+
+  // Phones in portrait: the chart spans the width between the top strip
+  // (wind + standings bar) and the action dock. Measured from the layout
+  // (offsetTop ignores the screen-in transform) and cached until a resize;
+  // falls back to the CSS sizes while the game screen is still hidden.
+  _compact() {
+    if (this._compactArea) return this._compactArea;
+    const standings = document.getElementById('hud-standings');
+    const dock = document.querySelector('.action-dock');
+    const measured = !!(standings?.offsetParent && dock?.offsetHeight);
+    const top = (measured ? standings.offsetTop : 70) + 40 + 18;  // collapsed bar is 40px tall
+    const bottom = (measured ? this.H - dock.offsetTop : 190) + 16;
+    const side = 26;                                               // room for name tags at the edges
+    const w = Math.max(160, this.W - side * 2);
+    let h = Math.max(160, this.H - top - bottom);
+    let y = top;
+    const maxH = w * 1.5;                                          // don't stretch the course too tall
+    if (h > maxH) { y += (h - maxH) / 2; h = maxH; }
+    const area = { x: side, y, w, h };
+    if (measured) this._compactArea = area;
+    return area;
   }
 
   _toPx(nx, ny) {
@@ -283,8 +310,11 @@ export class CourseRenderer {
       ctx.save();
       ctx.font = '600 11px "JetBrains Mono", monospace';
       ctx.fillStyle = pos.color;
-      ctx.textAlign = 'left';
-      ctx.fillText(pos.name.toUpperCase(), end.x + 14, end.y + 4);
+      // Flip to the left of the cursor when the label would run off screen (narrow phones).
+      const label = pos.name.toUpperCase();
+      const flip = end.x + 14 + ctx.measureText(label).width > W - 4;
+      ctx.textAlign = flip ? 'right' : 'left';
+      ctx.fillText(label, flip ? end.x - 14 : end.x + 14, end.y + 4);
       ctx.restore();
     }
 

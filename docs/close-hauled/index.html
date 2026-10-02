@@ -256,10 +256,10 @@
     </aside>
 
     <!-- Top-right: standings -->
-    <aside class="hud hud-standings glass">
+    <aside class="hud hud-standings glass" id="hud-standings">
       <div class="hud-head">
         <span class="hud-eyebrow">Standings</span>
-        <span class="hud-tag" id="turn-tag">Turn 1</span>
+        <span class="hud-tag" id="turn-tag">Turn 1</span><span class="hud-chevron" aria-hidden="true"></span>
       </div>
       <ol class="standings" id="standings"></ol>
     </aside>
@@ -300,6 +300,7 @@
     <div class="heading-prompt glass" id="heading-prompt" hidden>
       <span class="hp-eyebrow">Set heading</span>
       <span class="hp-text">Click on the chart to choose your bearing</span>
+      <span class="hp-text hp-text--touch">Tap the chart to aim</span>
     </div>
 
     <!-- Game menu -->

@@ -430,9 +430,12 @@ const Reading = (function () {
   /* ---------- reading aloud into the microphone (Chrome, online) ---------- */
   function SR() { return typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition); }
   function stopMic() { if (rec) { try { rec.abort(); } catch (e) { /* fine */ } rec = null; } if (hasDom()) $('rpMic').classList.remove('listening'); }
-  function micRead() {
+  async function micRead() {
     const R = SR(); if (!R || !page || !hasDom()) return;
-    const pg = page, spans = [...$('rpText').querySelectorAll('.rw')], want = spans.map(s => s.dataset.w);
+    /* a grown-up says yes first: in Chrome and Edge the audio goes to an online speech service */
+    const pg = page;
+    if (!(await Grownups.confirmMicrophone()) || page !== pg) return;
+    const spans = [...$('rpText').querySelectorAll('.rw')], want = spans.map(s => s.dataset.w);
     const heard = new Set();
     stopMic();
     rec = new R(); rec.lang = 'en-US'; rec.interimResults = true; rec.continuous = true;

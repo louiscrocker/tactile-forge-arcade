@@ -68,11 +68,11 @@ const Voice = {
     const pickVoice = () => {
       const vs = speechSynthesis.getVoices();
       if (!vs.length) return;
-      const prefer = ['Google UK English Female', 'Microsoft Aria', 'Microsoft Jenny', 'Samantha', 'Karen', 'Google US English', 'Microsoft Zira', 'Microsoft Libby', 'Microsoft Sonia'];
-      let v = null;
-      for (const name of prefer) { v = vs.find(x => x.name.includes(name)); if (v) break; }
-      if (!v) v = vs.find(x => x.lang && x.lang.startsWith('en') && /female|woman/i.test(x.name)) || vs.find(x => x.lang && x.lang.startsWith('en')) || vs[0];
-      this.voice = v; this.ready = true;
+      /* only voices that run on this device: an online voice ("Google …" in
+         Chrome) would send the game's text away.  None?  The browser default. */
+      const prefer = ['Microsoft Aria', 'Microsoft Jenny', 'Samantha', 'Karen', 'Microsoft Zira', 'Microsoft Libby', 'Microsoft Sonia'];
+      const score = (x) => { const i = prefer.findIndex(n => x.name.includes(n)); return i >= 0 ? 100 - i : /female|woman/i.test(x.name) ? 10 : 0; };
+      this.voice = Grownups.pickLocalVoice(vs, 'en', score); this.ready = true;
     };
     pickVoice();
     speechSynthesis.onvoiceschanged = pickVoice;

@@ -20,11 +20,12 @@ const Voice = {
     const pickVoice = () => {
       const vs = speechSynthesis.getVoices();
       if (!vs.length) return;
+      /* only voices that run on this device (Grownups.pickLocalVoice): an online
+         voice would send the game's text away. None? Use the browser default. */
       const prefer = ['Google UK English Female', 'Microsoft Aria', 'Microsoft Jenny', 'Samantha', 'Karen', 'Google US English', 'Microsoft Zira', 'Microsoft Libby', 'Microsoft Sonia'];
-      let v = null;
-      for (const name of prefer) { v = vs.find(x => x.name.includes(name)); if (v) break; }
-      if (!v) v = vs.find(x => x.lang && x.lang.startsWith('en') && /female|woman/i.test(x.name)) || vs.find(x => x.lang && x.lang.startsWith('en')) || vs[0];
-      this.voice = v; this.ready = true;
+      const score = (x) => { const i = prefer.findIndex(name => x.name.includes(name)); return i >= 0 ? 2 + prefer.length - i : (/female|woman/i.test(x.name) ? 1 : 0); };
+      this.voice = typeof Grownups !== 'undefined' ? Grownups.pickLocalVoice(vs, 'en', score) : null;
+      this.ready = true;
     };
     pickVoice();
     speechSynthesis.onvoiceschanged = pickVoice;

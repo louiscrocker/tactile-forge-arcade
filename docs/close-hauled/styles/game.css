@@ -14,6 +14,7 @@
   z-index: 1;
   cursor: crosshair;
   display: block;
+  touch-action: none;   /* a finger on the chart aims; it must not pan or zoom */
 }
 
 /* Hud generic */
@@ -395,4 +396,198 @@
 .toast-text {
   font-family: var(--f-display); font-style: italic; font-size: var(--t-md);
   color: var(--c-foam);
+}
+
+/* Only used by the phone layout below. */
+.hud-chevron, .hp-text--touch { display: none; }
+
+/* =====================================================
+   Phones in portrait (≤ 700px wide)
+   Top: a wind strip and a standings bar (tap to open the full list).
+   Middle: the chart, full width (sized in src/render/course.js).
+   Bottom: the dock, three fixed rows: skipper + dice, the three pills,
+   and the action button (or the heading prompt while aiming).
+   The breakpoint must match COMPACT in src/render/course.js.
+   ===================================================== */
+@media (max-width: 700px) {
+  .hud { min-width: 0; padding: 6px 10px; }
+
+  /* Wind strip */
+  .hud-wind {
+    top: calc(8px + env(safe-area-inset-top));
+    left: 8px;
+    right: 60px;
+    width: auto;
+    height: 54px;
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    align-content: center;
+  }
+  .hud-wind .wind-rose { grid-row: 1 / span 2; width: 42px; margin: 0; }
+  .hud-wind .hud-head { margin: 0; justify-content: flex-start; }
+  .hud-wind .hud-row { margin: 0; justify-content: flex-start; gap: var(--sp-4); }
+  .hud-wind .kv { display: flex; align-items: baseline; gap: 5px; }
+  .hud-wind .kv .v { font-size: var(--t-sm); }
+
+  /* Standings: a one-line bar of chips; tap to open the full list */
+  .hud-standings {
+    top: calc(70px + env(safe-area-inset-top));
+    left: 8px;
+    right: 8px;
+    width: auto;
+    height: 40px;
+    max-height: none;
+    padding: 0 10px;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    gap: var(--sp-2);
+    cursor: pointer;
+  }
+  .hud-standings .hud-head { margin: 0; flex: none; gap: 6px; align-items: center; }
+  .hud-standings .hud-eyebrow { display: none; }
+  .hud-chevron {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-right: 1.5px solid var(--c-brass-2);
+    border-bottom: 1.5px solid var(--c-brass-2);
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform var(--d-fast);
+  }
+  .hud-standings .standings {
+    flex: 1; min-width: 0;
+    display: flex; gap: 6px;
+    max-height: none;
+    overflow: hidden;
+    mask-image: linear-gradient(to right, #000 85%, transparent);
+    -webkit-mask-image: linear-gradient(to right, #000 85%, transparent);
+  }
+  .hud-standings .standings li {
+    flex: none;
+    grid-template-columns: auto 10px auto;
+    gap: 5px;
+    padding: 2px 8px;
+    font-size: 12px;
+  }
+  .hud-standings .standings li .st-rank { font-size: var(--t-sm); }
+  .hud-standings .standings li .st-color { width: 10px; height: 10px; }
+  .hud-standings .standings li .st-name { max-width: 84px; }
+  .hud-standings .st-mark,
+  .hud-standings .st-lap,
+  .hud-standings .st-bar { display: none; }
+
+  .hud-standings.is-open {
+    height: auto;
+    display: block;
+    padding: 10px;
+  }
+  .hud-standings.is-open .hud-head { justify-content: space-between; margin-bottom: var(--sp-2); }
+  .hud-standings.is-open .hud-eyebrow { display: inline; }
+  .hud-standings.is-open .hud-chevron { transform: translateY(2px) rotate(-135deg); }
+  .hud-standings.is-open .standings {
+    display: grid;
+    max-height: 45vh;
+    overflow-y: auto;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+  .hud-standings.is-open .standings li {
+    grid-template-columns: 24px 12px 1fr auto auto;
+    padding: var(--sp-2) var(--sp-3);
+    font-size: var(--t-sm);
+  }
+  .hud-standings.is-open .standings li .st-name { max-width: none; }
+  .hud-standings.is-open .st-mark,
+  .hud-standings.is-open .st-lap,
+  .hud-standings.is-open .st-bar { display: initial; }
+  .hud-standings.is-open .st-bar { display: block; }
+
+  /* Menu: top right, beside the wind strip */
+  .game-menu-btn {
+    top: calc(13px + env(safe-area-inset-top));
+    bottom: auto;
+    left: auto;
+    right: 8px;
+  }
+  .game-menu {
+    top: calc(62px + env(safe-area-inset-top));
+    bottom: auto;
+    left: auto;
+    right: 8px;
+    z-index: 45;
+  }
+
+  /* Dock: three fixed rows so the chart never jumps */
+  .action-dock {
+    left: 8px;
+    right: 8px;
+    bottom: calc(8px + env(safe-area-inset-bottom));
+    width: auto;
+    transform: none;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: 44px 50px 48px;
+    grid-template-areas:
+      "player dice"
+      "stats  stats"
+      "act    act";
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: var(--r-3);
+  }
+  .dock-player { grid-area: player; min-width: 0; gap: var(--sp-2); }
+  .dock-color { width: 26px; height: 26px; flex: none; }
+  .dock-meta { min-width: 0; }
+  .dock-name {
+    font-size: var(--t-md);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .dock-sub { flex-wrap: wrap; column-gap: 6px; row-gap: 0; font-size: 10px; letter-spacing: .06em; line-height: 1.35; }
+
+  .dock-stats {
+    grid-area: stats;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .dock-pill { min-width: 0; padding: 5px 4px; align-content: center; }
+  .dock-pill .pill-k { font-size: 9px; letter-spacing: .1em; }
+  .dock-pill .pill-k,
+  .dock-pill .pill-v { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dock-pill .pill-v { font-size: var(--t-sm); }
+
+  .dock-actions { display: contents; }
+  .dice { grid-area: dice; padding: 4px 8px; gap: 6px; align-self: center; }
+  .die { font-size: 24px; }
+  .dice-total { font-size: var(--t-lg); min-width: 34px; }
+  #btn-roll, #btn-end-turn, #btn-rest { grid-area: act; align-self: stretch; padding: 0 var(--sp-4); }
+  #btn-roll, #btn-end-turn { width: 100%; }
+  #btn-rest { justify-self: end; }
+
+  /* Heading prompt sits in the dock's action row while aiming */
+  .heading-prompt {
+    top: auto;
+    bottom: calc(8px + env(safe-area-inset-bottom) + 11px);
+    left: 21px;
+    right: 21px;
+    height: 48px;
+    z-index: 41;
+    transform: none;
+    animation: none;
+    justify-content: center;
+    padding: 0 var(--sp-3);
+    border-radius: var(--r-2);
+    border-color: var(--c-brass-2);
+  }
+  .screen-game:has(#btn-rest:not([hidden])) .heading-prompt { right: 150px; }
+  .screen-game:has(#btn-rest:not([hidden])) .heading-prompt .hp-eyebrow { display: none; }
+  .heading-prompt .hp-eyebrow { letter-spacing: .18em; }
+  .heading-prompt .hp-text { display: none; }
+  .heading-prompt .hp-text--touch { display: inline; white-space: nowrap; }
+
+  .toast { max-width: calc(100% - 16px); padding: var(--sp-2) var(--sp-4); }
+  .toast-text { font-size: var(--t-base); }
+
+  .event-card, .handoff-card { padding: var(--sp-6) var(--sp-5); }
 }

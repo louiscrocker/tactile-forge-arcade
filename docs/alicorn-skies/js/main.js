@@ -267,6 +267,7 @@
   Voice.follow = settings.follow !== false;
   Stickers.init(UI.onSticker);
   Voice.init(); Voice.setEnabled(settings.voice);
+  Grownups.guardOutboundLinks();   /* "See the real thing ↗" asks a grown-up first */
 
   function start(resume) {
     if (G.started) return;

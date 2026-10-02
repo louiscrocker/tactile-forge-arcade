@@ -383,8 +383,19 @@ const Reading = (function () {
     if (hasDom()) { if (listen && listen.kind === 'page') $('rpMsg').textContent = msg; if (listen && listen.kind === 'card') $('rcMic').textContent = '🎤 ' + msg; }
     if (listen) listen.failed = code;
   }
-  function listenPage() {
+  /* a grown-up says yes before the microphone turns on (asked once per visit);
+     no: the microphone setting goes back off */
+  async function micAllowed() {
+    if (await Grownups.confirmMicrophone()) return true;
+    if (Gm.settings.readMic) { Gm.settings.readMic = false; cb.saveSettings && cb.saveSettings(); if (typeof UI !== 'undefined') UI.refreshToggles(); }
+    return false;
+  }
+  async function listenPage() {
     if (!page || !hasDom()) return;
+    const pg = page;
+    stopListening();
+    if (!(await micAllowed())) { if (page === pg) $('rpMic').hidden = !SR() || micOn(); return; }
+    if (page !== pg) return;
     stopListening();
     const spans = [...$('rpText').querySelectorAll('.rw')], expected = spans.map(s => s.dataset.w);
     listen = { kind: 'page', key: page.key, spans, expected, got: new Set(), next: 0, lastProgress: performance.now(), helpedIdx: new Set(), t0: performance.now(), prompted: -1 };
@@ -436,8 +447,12 @@ const Reading = (function () {
     if (Gm.settings.readSave !== false) r.blob.then((b) => { if (!b) return; const k = 'take:' + rec.when; Takes.put(k, b); rec.take = k; const old = (data.records || []).filter(x => x.take); if (old.length > 20) { Takes.del(old[0].take); delete old[0].take; } save(); });
     if (hasDom()) { $('rpMic').classList.remove('listening'); $('rpNext').classList.remove('pulse'); }
   }
-  function listenCard() {
+  async function listenCard() {
     if (!card || !hasDom()) return;
+    const c0 = card;
+    stopListening();
+    if (!(await micAllowed())) { if (card === c0) $('rcMic').hidden = !micOn(); return; }
+    if (card !== c0) return;
     stopListening();
     const c = card, words = c.choices.map(t => tokenize(t));
     listen = { kind: 'card', used: 0 };

@@ -118,7 +118,7 @@
     <p class="tiny" id="readAboutDrawer"></p>
     <div class="seg" id="readHelpPick" style="margin-top:8px"><button data-rh="auto">Help comes by itself</button><button data-rh="ask">Help only when asked</button></div>
     <div class="chips" style="margin-top:8px"><button class="chip" id="tgReadMic">&#127908; Microphone on while I read</button><button class="chip on" id="tgReadSave">&#128190; Save their reading for me</button><button class="chip" id="btnMyWords">&#128292; My words</button><button class="chip" id="btnGrownup">&#128106; Grown-up corner</button></div>
-    <p class="tiny">In "I read to play" the action button shows words to read, the caterpillar only grows after reading a page, and missions are written, not spoken. Tap any word to hear it. With the microphone on, it listens while a page is open, lights each word as it is read, and helps with a stuck word; word cards can be answered by saying the word. Listening uses Chrome's speech service, so it needs the internet; recordings stay on this device.</p>
+    <p class="tiny">In "I read to play" the action button shows words to read, the caterpillar only grows after reading a page, and missions are written, not spoken. Tap any word to hear it. With the microphone on, it listens while a page is open, lights each word as it is read, and helps with a stuck word; word cards can be answered by saying the word. Listening uses Chrome's speech service, so it needs the internet; recordings stay on this device. Read-aloud uses this device's own voices, and turning on the microphone or opening a link to another website asks a grown-up first.</p>
   </section>
   <section>
     <h4>Time of day</h4>
@@ -389,7 +389,7 @@
   <div class="sheet">
     <button class="close" id="grownupClose">&times;</button>
     <h2>&#128106; Grown-up corner</h2>
-    <p class="tiny">How the reading is going. Levels follow guided-reading levels A–E; every word on a card, page or mission is checked against the child's level.</p>
+    <p class="tiny">How the reading is going. Levels follow guided-reading levels A–E; every word on a card, page or mission is checked against the child's level. Read-aloud uses this device's own voices; the microphone and links to other websites ask a grown-up first.</p>
     <h4>Reading report</h4>
     <div class="read-report" id="readReport"></div>
     <h4>Running records (reading out loud)</h4>
@@ -413,6 +413,7 @@
 <script src="js/player.js"></script>
 <script src="js/render.js"></script>
 <script src="js/audio.js"></script>
+<script src="js/grownups.js"></script>
 <script src="js/voice.js"></script>
 <script src="js/readlex.js"></script>
 <script src="js/listen.js"></script>
