@@ -1,0 +1,10 @@
+{
+  "slug": "trenchfire",
+  "commit": "153a012",
+  "builtAt": "2026-10-02T14:39:04.142Z",
+  "files": {
+    "index.html": "a6effdbf32ddfa71b58e71e5afd3f0ef02dcf5cb58fe990d3d72c47155405c7b",
+    "trenchfire.wasm": "66a6baa08d8fbac78ac3508de2aa2b5f1947fc70ba3ac623ad5dc338294b7dfc",
+    "wasm_exec.js": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14"
+  }
+}

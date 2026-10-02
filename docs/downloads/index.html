@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Downloads — Tactile Forge Arcade</title>
+  <meta name="description" content="Free desktop Cabinet Editions of the Tactile Forge arcade games for Windows, Mac and Linux. Fixed 60 Hz, full-screen vector glow, works offline." />
+  <meta name="theme-color" content="#04070a" />
+  <meta property="og:title" content="Tactile Forge — Cabinet Editions" />
+  <meta property="og:description" content="Free desktop arcade games for Windows, Mac and Linux." />
+  <meta property="og:image" content="../assets/og.webp" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='none' stroke='%235cffaa' stroke-width='4' d='M32 6 L32 38 M22 18 L32 6 L42 18 M14 56 L32 38 L50 56 M14 56 L50 56'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="../assets/fonts/fonts.css" />
+  <link rel="stylesheet" href="../assets/site.css" />
+  <style>.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}</style>
+</head>
+<body>
+  <div class="backdrop" aria-hidden="true">
+    <div class="glow g1"></div><div class="glow g2"></div><div class="glow g3"></div><div class="glow g4"></div>
+  </div>
+  <canvas id="stars" aria-hidden="true"></canvas>
+  <div class="scan" aria-hidden="true"></div>
+
+  <header class="wrap">
+    <nav class="topbar glass" aria-label="Main">
+      <a class="brand" href="../">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4 L16 20 M11 9 L16 4 L21 9 M7 28 L16 20 L25 28 M7 28 L25 28" /></svg>
+        <span>TACTILE&nbsp;FORGE</span>
+      </a>
+      <div class="topnav">
+        <a href="../#arcade">Arcade</a>
+        <a href="../#nature">Nature &amp; Reading</a>
+        <a href="./" aria-current="page">Downloads</a>
+        <a href="https://github.com/louiscrocker/tactile-forge-arcade/issues/new?template=feedback.yml" target="_blank" rel="noopener">Feedback</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <span class="eyebrow glass">FREE · WINDOWS · MAC · LINUX</span>
+      <h1>Cabinet<br/><span class="amber">Editions</span></h1>
+      <p class="lede">The arcade games rebuilt as native desktop apps: a locked 60&nbsp;Hz game clock, full-screen vector glow and bloom, and no browser in the way. Free, offline, nothing to sign up for.</p>
+      <div class="stats glass" role="list">
+        <div class="stat" role="listitem"><b id="count-cabinet">–</b><span>Games</span></div>
+        <div class="stat" role="listitem"><b>5</b><span>Platforms</span></div>
+        <div class="stat" role="listitem"><b>~5&nbsp;MB</b><span>Each download</span></div>
+        <div class="stat" role="listitem"><b>$0</b><span>Forever</span></div>
+      </div>
+      <p class="lede" id="mobile-note" hidden style="margin-top:24px">On a phone or tablet? These are desktop apps — <a href="../">play in the browser</a> instead.</p>
+    </section>
+
+    <section aria-label="Downloads" id="dl-list"></section>
+
+    <section class="help glass" aria-label="Installing">
+      <div>
+        <h3>Windows</h3>
+        <ol>
+          <li>Unzip, open the game's folder, double-click the <code>.exe</code>.</li>
+          <li>If you see &ldquo;Windows protected your PC&rdquo;: click <b>More info</b> → <b>Run anyway</b>. The games are free and not code-signed yet, so Windows doesn't recognise them.</li>
+        </ol>
+      </div>
+      <div>
+        <h3>Mac</h3>
+        <ol>
+          <li>Unzip and drag the app to Applications.</li>
+          <li>Open it once; macOS will refuse because it isn't signed with an Apple Developer ID yet.</li>
+          <li>Go to <b>System Settings → Privacy &amp; Security</b> and click <b>Open Anyway</b>.</li>
+        </ol>
+        <p>Not sure which Mac you have? Apple menu → About This Mac: &ldquo;Apple M…&rdquo; means Apple Silicon.</p>
+      </div>
+      <div>
+        <h3>Linux</h3>
+        <ol>
+          <li>Unzip and run <code>./&lt;game&gt;/&lt;game&gt;</code>.</li>
+          <li>Needs a desktop with OpenGL (Mesa is fine) and sound via ALSA or PulseAudio.</li>
+        </ol>
+      </div>
+      <div>
+        <h3>Privacy</h3>
+        <p>No accounts, no ads, no tracking. Saves and high scores stay on your computer. Each download has a SHA-256 checksum so you can confirm it's the file we published.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <div>© <span id="year">2026</span> Tactile Forge · Free to play.</div>
+    <div class="small">Built with Go and Ebitengine. Downloads are hosted on GitHub Releases.</div>
+  </footer>
+
+  <script type="module" src="../assets/site.js"></script>
+  <script type="module" src="../assets/downloads.js"></script>
+</body>
+</html>

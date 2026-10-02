@@ -197,6 +197,47 @@ section.shelf { padding: clamp(40px, 7vw, 80px) 0 0; scroll-margin-top: 90px; }
 }
 .play:hover, .play:focus-visible { transform: translateY(-2px); filter: brightness(1.08); outline: none; }
 
+/* ---------- Cabinet Edition row on a card ---------- */
+.cabinet {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 4px; padding: 10px 12px; border-radius: var(--radius-md);
+  background: rgba(0, 0, 0, 0.22); border: 1px dashed rgba(255, 255, 255, 0.16);
+}
+.cab-tag { font: 400 15px/1 var(--font-mono); letter-spacing: 0.14em; color: var(--accent, var(--green)); }
+.cabinet .dl {
+  font-weight: 700; font-size: 13.5px; text-decoration: none; color: var(--ink);
+  padding: 7px 12px; border-radius: 999px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18);
+  transition: background 0.18s, border-color 0.18s;
+}
+.cabinet .dl:hover, .cabinet .dl:focus-visible { background: rgba(255,255,255,0.16); border-color: var(--accent, var(--glass-hi)); outline: none; }
+.cabinet .dl-all { font-size: 13px; color: var(--ink-soft); text-underline-offset: 3px; margin-left: auto; }
+
+/* ---------- Downloads page ---------- */
+.dl-game { padding: clamp(18px, 3vw, 28px); display: grid; gap: 20px; grid-template-columns: minmax(0, 340px) 1fr; align-items: start; scroll-margin-top: 100px; }
+.dl-game + .dl-game { margin-top: 22px; }
+.dl-game .shot { margin: 0; }
+.dl-game h3 { margin: 0 0 4px; font: 700 26px/1.1 var(--font-display); color: var(--accent, var(--ink)); }
+.dl-game .tagline { margin: 0 0 14px; }
+.plat-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+.plat {
+  display: flex; flex-direction: column; gap: 2px; text-decoration: none; padding: 12px 14px;
+  border-radius: var(--radius-md); background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);
+  transition: background 0.18s, border-color 0.18s, transform 0.18s;
+}
+.plat b { font-size: 15px; }
+.plat span { font-size: 12.5px; color: var(--ink-dim); }
+.plat:hover, .plat:focus-visible { background: rgba(255,255,255,0.10); border-color: var(--accent, var(--glass-hi)); transform: translateY(-2px); outline: none; }
+.plat.mine { border-color: var(--accent, var(--green)); box-shadow: 0 0 0 1px var(--accent, var(--green)) inset; }
+.plat.mine span::after { content: ' · your system'; color: var(--accent, var(--green)); }
+.dl-extra { margin-top: 12px; display: flex; gap: 16px; flex-wrap: wrap; font-size: 13.5px; }
+.dl-extra a { color: var(--ink-soft); text-underline-offset: 3px; }
+.help { margin-top: 40px; padding: clamp(22px, 4vw, 36px); display: grid; gap: 22px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+.help h3 { margin: 0 0 6px; font: 700 17px/1.2 var(--font-display); color: var(--green); }
+.help p, .help li { color: var(--ink-soft); font-size: 14.5px; }
+.help ol { margin: 0; padding-left: 20px; }
+.help code { font: 400 17px/1 var(--font-mono); color: var(--ink); background: rgba(0,0,0,0.3); padding: 1px 6px; border-radius: 6px; }
+@media (max-width: 760px) { .dl-game { grid-template-columns: 1fr; } }
+
 /* ---------- About / footer ---------- */
 .about { margin: clamp(56px, 8vw, 96px) 0 0; padding: clamp(24px, 4vw, 40px); display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
 .about h3 { margin: 0 0 6px; font: 700 17px/1.2 var(--font-display); letter-spacing: 0.04em; color: var(--green); }

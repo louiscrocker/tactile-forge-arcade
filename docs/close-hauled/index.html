@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#06121f" />
+  <title>Tactile Forge — Close-Hauled</title>
+
+  <link href="fonts/fonts.css" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles/tokens.css" />
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/game.css" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='0' y1='0' y2='1'%3E%3Cstop offset='0' stop-color='%23f5d486'/%3E%3Cstop offset='1' stop-color='%23a17125'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23g)' d='M32 4l4 36H28zM10 44h44L48 56H16z'/%3E%3C/svg%3E" />
+</head>
+<body class="app">
+
+  <!-- ====================== ATMOSPHERE LAYER ====================== -->
+  <canvas id="bg-water" class="bg-water" aria-hidden="true"></canvas>
+  <div id="bg-vignette" class="bg-vignette" aria-hidden="true"></div>
+
+  <!-- ====================== TOP BAR ====================== -->
+  <header class="topbar" id="topbar">
+    <div class="brand" data-action="goto-title">
+      <span class="brand-mark">
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M16 3 L19 21 L13 21 Z" />
+          <path d="M5 24 L27 24 L23 30 L9 30 Z" />
+        </svg>
+      </span>
+      <span class="brand-text">
+        <span class="brand-line-1">TACTILE&nbsp;FORGE</span>
+        <span class="brand-line-2">Close-Hauled</span>
+      </span>
+    </div>
+    <nav class="topnav" id="topnav">
+      <button class="chip" data-action="goto-title">Home</button>
+      <button class="chip" data-action="goto-rules">Rules</button>
+      <button class="chip" data-action="goto-stats">Stats</button>
+      <button class="chip" data-action="goto-settings">⚙</button>
+      <span class="net-badge" id="net-badge" hidden>
+        <span class="dot"></span><span class="net-label">Online</span>
+      </span>
+    </nav>
+  </header>
+
+  <!-- ====================== TITLE SCREEN ====================== -->
+  <section class="screen screen-title is-active" data-screen="title">
+    <div class="title-stack">
+      <div class="eyebrow">
+        <span class="eyebrow-rule"></span>
+        <span class="eyebrow-text">Open Water · Forged 2026</span>
+        <span class="eyebrow-rule"></span>
+      </div>
+      <h1 class="display-title">
+        <span class="display-line">Close-</span>
+        <span class="display-line display-line--accent">Hauled</span>
+      </h1>
+      <p class="display-sub">Wind, tide and a roll of the dice.<br/>Read the breeze, round the marks, beat the fleet home.</p>
+
+      <div class="title-cta">
+        <button class="btn btn-primary btn-lg" data-action="goto-setup">
+          <span class="btn-icon" aria-hidden="true">⛵</span>
+          <span>Quick Race</span>
+          <span class="btn-sub">vs AI · Hot-Seat</span>
+        </button>
+      </div>
+
+      <div class="title-foot">
+        <button class="link" data-action="goto-rules">How to play</button>
+        <span class="dotsep">·</span>
+        <button class="link" data-action="goto-stats">Career stats</button>
+        <span class="dotsep">·</span>
+        <button class="link" data-action="goto-settings">Settings</button>
+      </div>
+    </div>
+
+    <div class="title-marquee" aria-hidden="true">
+      <span>SOUTH-WEST 14 KTS</span><span class="dot">●</span>
+      <span>FLOOD TIDE</span><span class="dot">●</span>
+      <span>CLEAR SKIES</span><span class="dot">●</span>
+      <span>RACE OFFICER ON STATION</span><span class="dot">●</span>
+      <span>SOUTH-WEST 14 KTS</span><span class="dot">●</span>
+      <span>FLOOD TIDE</span><span class="dot">●</span>
+    </div>
+  </section>
+
+  <!-- ====================== SETUP SCREEN ====================== -->
+  <section class="screen screen-setup" data-screen="setup">
+    <div class="panel panel-wide">
+      <header class="panel-head">
+        <h2 class="panel-title">Race Setup</h2>
+        <p class="panel-sub">Choose your fleet, your course, and your conditions.</p>
+      </header>
+
+      <div class="setup-grid">
+
+        <fieldset class="card">
+          <legend class="card-title">Fleet</legend>
+          <div class="seg-row" id="player-count" role="radiogroup" aria-label="Number of racers">
+            <button class="seg" data-value="2">2</button>
+            <button class="seg is-active" data-value="3">3</button>
+            <button class="seg" data-value="4">4</button>
+            <button class="seg" data-value="5">5</button>
+            <button class="seg" data-value="6">6</button>
+          </div>
+          <div class="player-list" id="player-list"></div>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend class="card-title">Course</legend>
+          <div class="course-grid" id="course-grid"></div>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend class="card-title">Conditions</legend>
+          <div class="opt-row">
+            <span class="opt-label">Laps</span>
+            <div class="seg-row" id="laps" role="radiogroup">
+              <button class="seg" data-value="1">1</button>
+              <button class="seg is-active" data-value="2">2</button>
+              <button class="seg" data-value="3">3</button>
+            </div>
+          </div>
+          <div class="opt-row">
+            <span class="opt-label">Difficulty</span>
+            <div class="seg-row" id="difficulty" role="radiogroup">
+              <button class="seg" data-value="easy">Calm</button>
+              <button class="seg is-active" data-value="normal">Fair</button>
+              <button class="seg" data-value="hard">Stormy</button>
+            </div>
+          </div>
+        </fieldset>
+
+      </div>
+
+      <footer class="panel-foot">
+        <button class="btn btn-ghost" data-action="goto-title">← Back</button>
+        <button class="btn btn-primary btn-lg" id="btn-start-race">Start Race ⛵</button>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ====================== RULES ====================== -->
+  <section class="screen screen-rules" data-screen="rules">
+    <div class="panel panel-wide rules">
+      <header class="panel-head">
+        <h2 class="panel-title">How to Play</h2>
+        <p class="panel-sub">A short briefing before you cast off.</p>
+      </header>
+      <div class="rule-grid">
+        <article class="rule">
+          <div class="rule-icon">🌬️</div>
+          <h3>Wind & Sail</h3>
+          <p>Your speed depends on the angle between your heading and the wind.
+             <strong>Broad reach</strong> is fastest, <strong>in irons</strong> is dead stop.</p>
+        </article>
+        <article class="rule">
+          <div class="rule-icon">🎲</div>
+          <h3>The Turn</h3>
+          <p>Pick a heading on the chart, roll 2d6, then move that many spaces — modified by your point of sail.</p>
+        </article>
+        <article class="rule">
+          <div class="rule-icon">🚩</div>
+          <h3>Marks & Laps</h3>
+          <p>Round each mark in order on the correct side. Complete all laps and cross the finish to win.</p>
+        </article>
+        <article class="rule">
+          <div class="rule-icon">⚓</div>
+          <h3>Tack & Jibe</h3>
+          <p>Crossing the wind costs crew stamina and may fail. Plan your heading changes.</p>
+        </article>
+        <article class="rule">
+          <div class="rule-icon">🃏</div>
+          <h3>Event Cards</h3>
+          <p>Squalls, dolphins, broken halyards — fortune favors the prepared skipper.</p>
+        </article>
+        <article class="rule">
+          <div class="rule-icon">🛡️</div>
+          <h3>Right of Way</h3>
+          <p>Starboard tack has priority. Collisions earn a penalty turn for the violator.</p>
+        </article>
+      </div>
+      <footer class="panel-foot">
+        <button class="btn btn-ghost" data-action="goto-title">← Back</button>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ====================== STATS ====================== -->
+  <section class="screen screen-stats" data-screen="stats">
+    <div class="panel panel-wide">
+      <header class="panel-head">
+        <h2 class="panel-title">Career Log</h2>
+        <p class="panel-sub">Your races, victories, and milestones.</p>
+      </header>
+      <div id="stats-body" class="stats-body"></div>
+      <footer class="panel-foot">
+        <button class="btn btn-ghost" data-action="goto-title">← Back</button>
+        <button class="btn btn-ghost btn-sm" id="btn-clear-stats">Reset Career</button>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ====================== SETTINGS ====================== -->
+  <section class="screen screen-settings" data-screen="settings">
+    <div class="panel">
+      <header class="panel-head">
+        <h2 class="panel-title">Settings</h2>
+      </header>
+      <div class="settings-list">
+        <div class="setting-row">
+          <span>Sound effects</span>
+          <button class="toggle" id="opt-sfx" aria-pressed="true">On</button>
+        </div>
+        <div class="setting-row">
+          <span>Ambient music</span>
+          <button class="toggle" id="opt-music" aria-pressed="true">On</button>
+        </div>
+        <div class="setting-row">
+          <span>Animation</span>
+          <div class="seg-row" id="opt-speed">
+            <button class="seg" data-value="slow">Slow</button>
+            <button class="seg is-active" data-value="normal">Normal</button>
+            <button class="seg" data-value="fast">Fast</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span>Reduced motion</span>
+          <button class="toggle" id="opt-reduce-motion" aria-pressed="false">Off</button>
+        </div>
+      </div>
+      <footer class="panel-foot">
+        <button class="btn btn-ghost" data-action="goto-title">← Back</button>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ====================== GAME SCREEN ====================== -->
+  <section class="screen screen-game" data-screen="game">
+    <canvas id="course-canvas" class="course-canvas"></canvas>
+
+    <!-- Top-left: wind rose -->
+    <aside class="hud hud-wind glass">
+      <div class="hud-head">
+        <span class="hud-eyebrow">Wind</span>
+        <span class="hud-tag" id="wind-strength">Moderate</span>
+      </div>
+      <canvas id="wind-rose" class="wind-rose" width="160" height="160"></canvas>
+      <div class="hud-row">
+        <span class="kv"><span class="k">Dir</span><span class="v" id="wind-dir">NW</span></span>
+        <span class="kv"><span class="k">Tide</span><span class="v" id="wind-tide">Slack</span></span>
+        <span class="kv"><span class="k">Sky</span><span class="v" id="wind-sky">☀</span></span>
+      </div>
+    </aside>
+
+    <!-- Top-right: standings -->
+    <aside class="hud hud-standings glass">
+      <div class="hud-head">
+        <span class="hud-eyebrow">Standings</span>
+        <span class="hud-tag" id="turn-tag">Turn 1</span>
+      </div>
+      <ol class="standings" id="standings"></ol>
+    </aside>
+
+    <!-- Bottom: action bar -->
+    <div class="action-dock glass">
+      <div class="dock-player">
+        <span class="dock-color" id="dock-color"></span>
+        <div class="dock-meta">
+          <span class="dock-name" id="dock-name">Skipper</span>
+          <span class="dock-sub">
+            <span id="dock-class">All-Rounder</span>
+            <span class="dotsep">·</span>
+            <span>Stamina <strong id="dock-stamina">100%</strong></span>
+            <span class="dotsep">·</span>
+            <span>Lap <strong id="dock-lap">1/2</strong></span>
+          </span>
+        </div>
+      </div>
+      <div class="dock-stats">
+        <div class="dock-pill" id="pill-sail" title="Point of sail"><span class="pill-k">Point of Sail</span><span class="pill-v">Beam Reach</span></div>
+        <div class="dock-pill" id="pill-heading" title="Heading"><span class="pill-k">Heading</span><span class="pill-v">090°</span></div>
+        <div class="dock-pill" id="pill-mark" title="Next mark"><span class="pill-k">Next Mark</span><span class="pill-v">1</span></div>
+      </div>
+      <div class="dock-actions">
+        <div class="dice" id="dice" hidden>
+          <span class="die" id="die1">⚀</span>
+          <span class="die" id="die2">⚁</span>
+          <span class="dice-total" id="dice-total">+0</span>
+        </div>
+        <button class="btn btn-ghost" id="btn-rest" hidden>Rest Crew</button>
+        <button class="btn btn-primary btn-lg" id="btn-roll">Roll Dice</button>
+        <button class="btn btn-primary btn-lg" id="btn-end-turn" hidden>End Turn →</button>
+      </div>
+    </div>
+
+    <!-- Heading prompt (top center) -->
+    <div class="heading-prompt glass" id="heading-prompt" hidden>
+      <span class="hp-eyebrow">Set heading</span>
+      <span class="hp-text">Click on the chart to choose your bearing</span>
+    </div>
+
+    <!-- Game menu -->
+    <button class="game-menu-btn glass" id="game-menu-btn" aria-label="Menu">☰</button>
+    <div class="game-menu glass" id="game-menu" hidden>
+      <button data-action="goto-rules">Rules</button>
+      <button id="btn-quit">Quit Race</button>
+    </div>
+
+    <!-- Online chat -->
+    <div class="chat glass" id="chat" hidden>
+      <div class="chat-log" id="chat-log"></div>
+      <form class="chat-input" id="chat-form">
+        <input id="chat-text" class="input input-sm" maxlength="120" placeholder="Press Enter to chat…" autocomplete="off" />
+      </form>
+    </div>
+
+    <!-- Event card overlay -->
+    <div class="modal-back" id="event-back" hidden>
+      <article class="event-card" id="event-card">
+        <header class="event-head">
+          <span class="event-icon" id="event-icon">🌬️</span>
+          <span class="event-tag" id="event-tag">Neutral</span>
+        </header>
+        <h3 class="event-title" id="event-title">Wind Shift!</h3>
+        <p class="event-text" id="event-text">The wind veers clockwise.</p>
+        <div class="event-effect" id="event-effect">Wind shifts 45° clockwise</div>
+        <button class="btn btn-primary btn-lg" id="btn-event-ok">Continue</button>
+      </article>
+    </div>
+
+    <!-- Hot-seat handoff -->
+    <div class="modal-back" id="handoff-back" hidden>
+      <article class="handoff-card">
+        <p class="handoff-eyebrow">Pass the helm to</p>
+        <div class="handoff-row">
+          <span class="handoff-color" id="handoff-color"></span>
+          <span class="handoff-name" id="handoff-name">—</span>
+        </div>
+        <button class="btn btn-primary btn-lg" id="btn-handoff-ok">Ready!</button>
+      </article>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast" hidden>
+      <span class="toast-icon" id="toast-icon">⛵</span>
+      <span class="toast-text" id="toast-text"></span>
+    </div>
+  </section>
+
+  <!-- ====================== FINISH SCREEN ====================== -->
+  <section class="screen screen-finish" data-screen="finish">
+    <div class="panel panel-wide">
+      <header class="panel-head">
+        <h2 class="panel-title">Race Complete</h2>
+        <p class="panel-sub" id="finish-sub">A fine afternoon on the water.</p>
+      </header>
+      <div class="podium" id="podium"></div>
+      <div class="finish-stats" id="finish-stats"></div>
+      <footer class="panel-foot">
+        <button class="btn btn-ghost" data-action="goto-title">Main Menu</button>
+        <button class="btn btn-primary btn-lg" id="btn-rematch">Race Again ⛵</button>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ====================== ENTRY POINT ====================== -->
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

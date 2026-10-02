@@ -3,7 +3,7 @@
 export const GAMES = [
   // ---------------- The Arcade ----------------
   {
-    slug: 'last-silo', shelf: 'arcade', name: 'Last Silo', badge: 'MISSILE DEFENCE',
+    slug: 'last-silo', shelf: 'arcade', cabinet: true, name: 'Last Silo', badge: 'MISSILE DEFENCE',
     accent: '#ff9a62', glow: 'rgba(255,154,98,0.55)',
     tagline: 'Six cities. Three batteries. Every warhead is yours to stop.',
     description: 'Aim, fire and detonate counter-missiles before the inbound warheads reach the ground. Waves speed up, warheads split, and the last silo standing decides it.',
@@ -11,7 +11,7 @@ export const GAMES = [
     meta: 'Mouse or touch',
   },
   {
-    slug: 'soft-touchdown', shelf: 'arcade', name: 'Soft Touchdown', badge: 'PRECISION LANDING',
+    slug: 'soft-touchdown', shelf: 'arcade', cabinet: true, name: 'Soft Touchdown', badge: 'PRECISION LANDING',
     accent: '#9fe8ff', glow: 'rgba(159,232,255,0.5)',
     tagline: "Burn fuel. Find flat ground. Don't splatter.",
     description: 'Ease a fragile lander onto narrow pads across endless ridgelines, keeping speed, drift and tilt inside the limits. Every safe landing sends you to a tougher site with a fresh tank.',
@@ -19,7 +19,7 @@ export const GAMES = [
     meta: 'Keyboard',
   },
   {
-    slug: 'rubble-drift', shelf: 'arcade', name: 'Rubble Drift', badge: 'SPACE SHOOTER',
+    slug: 'rubble-drift', shelf: 'arcade', cabinet: true, name: 'Rubble Drift', badge: 'SPACE SHOOTER',
     accent: '#c9b8ff', glow: 'rgba(201,184,255,0.5)',
     tagline: 'One ship. A belt of rocks. Nowhere to hide.',
     description: 'Rotate, thrust and fire in a field that wraps at every edge, where each rock you hit splits into smaller, faster pieces. Watch for saucers, and jump to hyperspace when cornered — if you dare.',
@@ -27,7 +27,7 @@ export const GAMES = [
     meta: 'Keyboard',
   },
   {
-    slug: 'periscope-front', shelf: 'arcade', name: 'Periscope Front', badge: 'TANK COMMAND',
+    slug: 'periscope-front', shelf: 'arcade', cabinet: true, name: 'Periscope Front', badge: 'TANK COMMAND',
     accent: '#8dff6a', glow: 'rgba(141,255,106,0.5)',
     tagline: 'Raise the periscope. Hold the line.',
     description: 'Command a tank from behind its periscope in a glowing wireframe wasteland as enemy armour and saucers close in from every bearing. Read the radar, swing the hull and land your shells first.',
@@ -35,12 +35,29 @@ export const GAMES = [
     meta: 'Keyboard',
   },
   {
-    slug: 'lightwake', shelf: 'arcade', name: 'Lightwake', badge: 'ARENA RACER',
+    slug: 'lightwake', shelf: 'arcade', cabinet: true, name: 'Lightwake', badge: 'ARENA RACER',
     accent: '#4ad8ff', glow: 'rgba(74,216,255,0.55)',
     tagline: 'Leave a wall of light. Make them hit it.',
     description: 'Race light bikes around a sealed neon arena where every bike leaves a solid wall behind it. Box in your rivals, boost through the gaps and be the last rider moving.',
     features: ['More rivals each round', 'Boost for escapes and traps', 'High scores with initials'],
     meta: 'Keyboard',
+  },
+
+  {
+    slug: 'trenchfire', shelf: 'arcade', cabinet: true, name: 'Trenchfire', badge: 'SPACE ASSAULT',
+    accent: '#ffd36a', glow: 'rgba(255,211,106,0.5)',
+    tagline: 'Three phases. One torpedo. Hold your vector.',
+    description: "Fly a vector-tube fighter through fighter screens, tower fields and a narrowing channel to put a single breach torpedo into the Citadel's reactor vent. Pick a ship, stack upgrade cards between phases and chase the high-score table.",
+    features: ['Mouse-aim flight', 'Lock-on torpedo run', 'Upgrade cards'],
+    meta: 'Keyboard and mouse · 21 MB first load',
+  },
+  {
+    slug: 'close-hauled', shelf: 'arcade', name: 'Close-Hauled', badge: 'SAILING RACE',
+    accent: '#7fd8d0', glow: 'rgba(127,216,208,0.5)',
+    tagline: 'Read the wind. Roll the dice. Round the marks first.',
+    description: 'Set your heading against a shifting breeze, roll the dice and race a fleet of yachts around island courses where tide, squalls and stamina all matter. Play solo against computer skippers or pass the helm around the table.',
+    features: ['Wind-and-dice racing', '2–6 skippers, hot-seat', 'Squalls, tides and event cards'],
+    meta: 'Mouse or touch · best on a laptop or tablet',
   },
 
   // ---------------- Nature & Reading ----------------

@@ -1,0 +1,102 @@
+/* =====================================================
+   TACTILE FORGE — Design Tokens
+   ===================================================== */
+
+:root {
+  /* ----- Color: deep maritime palette ----- */
+  --c-abyss:        #03080f;
+  --c-deep:         #06121f;
+  --c-navy:         #0a1f33;
+  --c-slate:        #143049;
+  --c-mist:         #1d4467;
+  --c-spray:        #6f9bbf;
+  --c-foam:         #d6e6f2;
+  --c-paper:        #f5efe2;
+
+  /* Brass / brand accent */
+  --c-brass-1:      #f5d486;
+  --c-brass-2:      #c8a45a;
+  --c-brass-3:      #a17125;
+  --c-brass-glow:   rgba(245, 212, 134, .35);
+
+  /* Signal accents */
+  --c-signal:       #5fd3c4;   /* teal compass */
+  --c-warning:      #ffb454;
+  --c-danger:       #ff6b6b;
+  --c-success:      #5fe3a1;
+
+  /* Surfaces */
+  --s-glass:        rgba(10, 24, 41, .55);
+  --s-glass-strong: rgba(10, 24, 41, .78);
+  --s-glass-light:  rgba(214, 230, 242, .06);
+  --s-stroke:       rgba(245, 212, 134, .22);
+  --s-stroke-soft:  rgba(214, 230, 242, .08);
+  --s-stroke-hard:  rgba(245, 212, 134, .55);
+
+  /* Type */
+  --f-display:      "Cormorant Garamond", "Times New Roman", serif;
+  --f-sans:         "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:         "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --t-xs:    11px;
+  --t-sm:    13px;
+  --t-base:  15px;
+  --t-md:    17px;
+  --t-lg:    20px;
+  --t-xl:    26px;
+  --t-2xl:   34px;
+  --t-3xl:   48px;
+  --t-4xl:   72px;
+  --t-display: clamp(64px, 12vw, 168px);
+
+  /* Space scale (4px base) */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  20px;
+  --sp-6:  24px;
+  --sp-7:  32px;
+  --sp-8:  44px;
+  --sp-9:  64px;
+  --sp-10: 96px;
+
+  /* Radius */
+  --r-1: 6px;
+  --r-2: 10px;
+  --r-3: 16px;
+  --r-4: 22px;
+  --r-pill: 999px;
+
+  /* Shadow */
+  --sh-1: 0 1px 2px rgba(0,0,0,.25);
+  --sh-2: 0 6px 22px rgba(0,0,0,.35);
+  --sh-3: 0 18px 48px rgba(0,0,0,.45);
+  --sh-glow: 0 0 0 1px var(--s-stroke), 0 0 32px var(--c-brass-glow);
+
+  /* Motion */
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --ease-in:  cubic-bezier(.4, 0, 1, 1);
+  --ease-emph:cubic-bezier(.2, .8, .2, 1);
+  --d-fast:   .18s;
+  --d-base:   .32s;
+  --d-slow:   .55s;
+
+  /* Layout */
+  --topbar-h: 60px;
+  --max-w:    1280px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --d-fast: 0s;
+    --d-base: 0s;
+    --d-slow: 0s;
+  }
+}
+
+[data-reduce-motion="true"] {
+  --d-fast: 0s;
+  --d-base: 0s;
+  --d-slow: 0s;
+}

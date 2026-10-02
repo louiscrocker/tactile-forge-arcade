@@ -4,12 +4,29 @@
 // =====================================================
 
 import { GAMES } from './games.js';
+import { assetURL, detectOS, primaryFor } from './cabinet.js';
+
+const OS = detectOS();
+const PRIMARY = primaryFor(OS);
 
 // Feedback goes to a GitHub issue form for grown-ups; nothing is collected on this site.
 const FEEDBACK = 'https://github.com/louiscrocker/tactile-forge-arcade/issues/new?template=feedback.yml';
 const feedbackFor = (name) => `${FEEDBACK}&game=${encodeURIComponent(name)}`;
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function cabinetRow(g) {
+  if (!g.cabinet) return '';
+  const main = PRIMARY
+    ? `<a class="dl" href="${assetURL(g.slug, PRIMARY.label)}">⤓ Download for ${PRIMARY.name}</a>`
+    : `<a class="dl" href="downloads/#${g.slug}">⤓ Desktop editions</a>`;
+  return `
+      <div class="cabinet">
+        <span class="cab-tag">CABINET EDITION</span>
+        ${main}
+        <a class="dl-all" href="downloads/#${g.slug}">All platforms</a>
+      </div>`;
+}
 
 function card(g) {
   const shots = `
@@ -24,7 +41,7 @@ function card(g) {
       <h3>${esc(g.name)}</h3>
       <p class="tagline">${esc(g.tagline)}</p>
       <p class="desc">${esc(g.description)}</p>
-      <ul class="feats">${g.features.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>
+      <ul class="feats">${g.features.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>${cabinetRow(g)}
       <div class="card-foot">
         <span class="meta">${esc(g.meta)} · <a class="fb" href="${feedbackFor(g.name)}" target="_blank" rel="noopener">Feedback<span class="sr"> on ${esc(g.name)}</span></a></span>
         <a class="play" href="${g.slug}/">Play <span aria-hidden="true">▶</span><span class="sr"> ${esc(g.name)}</span></a>
@@ -33,14 +50,21 @@ function card(g) {
   </article>`;
 }
 
+// The downloads page shares this script for its starfield but has no game grids.
 for (const shelf of ['arcade', 'nature']) {
+  const grid = document.getElementById(`grid-${shelf}`);
+  if (!grid) continue;
   const list = GAMES.filter((g) => g.shelf === shelf);
-  document.getElementById(`grid-${shelf}`).innerHTML = list.map(card).join('');
+  grid.innerHTML = list.map(card).join('');
   const count = document.getElementById(`count-${shelf}`);
   if (count) count.textContent = list.length;
 }
-document.getElementById('count-all').textContent = GAMES.length;
-document.getElementById('year').textContent = new Date().getFullYear();
+const countAll = document.getElementById('count-all');
+if (countAll) countAll.textContent = GAMES.length;
+const countCab = document.getElementById('count-cabinet');
+if (countCab) countCab.textContent = GAMES.filter((g) => g.cabinet).length;
+const year = document.getElementById('year');
+if (year) year.textContent = new Date().getFullYear();
 
 // ---------- Starfield (paused when reduced motion is preferred or tab hidden) ----------
 const canvas = document.getElementById('stars');

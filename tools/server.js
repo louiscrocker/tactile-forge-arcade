@@ -36,6 +36,8 @@ const MIME = {
   '.woff2':'font/woff2',
   '.woff': 'font/woff',
   '.map':  'application/json; charset=utf-8',
+  '.wasm': 'application/wasm',
+  '.webmanifest': 'application/manifest+json',
 };
 
 /** Resolve a URL path to a file inside ROOT, or null if it escapes the root. */
