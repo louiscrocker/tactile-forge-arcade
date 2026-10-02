@@ -17,7 +17,7 @@ const OUT  = join(ROOT, 'itch');
 await mkdir(OUT, { recursive: true });
 
 const all = (await readdir(DOCS, { withFileTypes: true }))
-  .filter((e) => e.isDirectory() && e.name !== 'assets').map((e) => e.name);
+  .filter((e) => e.isDirectory() && !['assets', 'downloads'].includes(e.name)).map((e) => e.name);
 const slugs = process.argv.length > 2 ? process.argv.slice(2) : all;
 
 for (const slug of slugs) {
