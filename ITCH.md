@@ -60,6 +60,7 @@ Copy the tagline and description from `docs/assets/games.js`. Add one line at th
 | Monarch Journey | Educational | kids, reading, nature, butterflies, migration, educational, local-co-op, family-friendly, browser, cute |
 | Alicorn Skies | Adventure | kids, reading, unicorn, fantasy, cute, family-friendly, educational, exploration, browser, singleplayer |
 | Burrow & Brood | Simulation | kids, ants, colony-sim, nature, educational, reading, family-friendly, sandbox, browser, singleplayer |
+| Hercules: Rainforest Giant | Adventure | kids, beetles, insects, life-cycle, nature, educational, reading, family-friendly, browser, singleplayer |
 | Storm Lab | Educational | weather, tornado, science, simulation, educational, kids, stem, webgl, radar, browser |
 
 Tag names must not mention the original arcade titles. "asteroids-like" and
