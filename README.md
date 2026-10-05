@@ -26,6 +26,12 @@ within a couple of minutes.
 
 The game list and card text live in `docs/assets/games.js`.
 
+## Audit
+
+`pwsh tools/audit.ps1` compares every live game with its repo's latest commit, lists game folders that
+aren't published, probes every live page for failed or third-party requests, and reports
+Cabinet Edition download counts and open feedback issues. Run it before and after an update.
+
 ## Feedback and itch.io
 
 - **Feedback:** players send it through the **Game feedback** issue form
