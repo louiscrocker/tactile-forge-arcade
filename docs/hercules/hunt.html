@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beetle Hunt — Hercules: Rainforest Giant</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root { --ink: #2a2016; --dim: #6a5a46; --line: #d8cdb8; --gold: #a8902a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9e4d6; color: var(--ink); font-family: "Nunito", "Segoe UI", system-ui, sans-serif; }
+  .page { width: 210mm; min-height: 297mm; margin: 12px auto; padding: 14mm 14mm 10mm; background: #fffdf6; box-shadow: 0 6px 30px rgba(0,0,0,.15); }
+  h1 { margin: 0; font-size: 34px; font-weight: 900; letter-spacing: .04em; }
+  h1 span { color: var(--gold); }
+  .sub { margin: 4px 0 14px; color: var(--dim); font-weight: 700; }
+  h2 { font-size: 18px; font-weight: 900; margin: 18px 0 8px; border-bottom: 2px solid var(--line); padding-bottom: 4px; }
+  .cycle { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; align-items: end; }
+  .cycle figure { margin: 0; text-align: center; }
+  .cycle canvas { width: 100%; height: auto; border: 2px dashed var(--line); border-radius: 12px; background: #fff; }
+  .cycle figcaption { font-weight: 900; margin-top: 4px; }
+  .cycle small { display: block; color: var(--dim); font-weight: 700; font-size: 11px; }
+  .hunt { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; }
+  .hunt label { display: flex; gap: 10px; align-items: flex-start; font-weight: 700; padding: 6px 0; border-bottom: 1px dotted var(--line); }
+  .box { flex: 0 0 22px; height: 22px; border: 2.5px solid var(--ink); border-radius: 5px; }
+  .hunt small { display: block; color: var(--dim); font-size: 12px; font-weight: 600; }
+  .draw { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .draw div { height: 64mm; border: 2px solid var(--line); border-radius: 12px; padding: 8px; font-weight: 800; color: var(--dim); }
+  .measure { font-weight: 800; margin-top: 10px; }
+  .ruler { width: 170mm; height: 9mm; margin-top: 4px; border: 2px solid var(--ink); border-radius: 3px; background: repeating-linear-gradient(90deg, var(--ink) 0 .5mm, transparent .5mm 10mm); position: relative; }
+  .ruler::after { content: "0 cm ………………………………………… 17 cm"; position: absolute; left: 0; right: 0; top: 100%; font-size: 10px; color: var(--dim); text-align: justify; }
+  .note { font-size: 12px; color: var(--dim); font-weight: 600; margin-top: 12px; line-height: 1.45; }
+  .bar { display: flex; gap: 8px; justify-content: center; margin: 12px auto 0; width: 210mm; }
+  .bar button { font: inherit; font-weight: 900; padding: 10px 18px; border-radius: 12px; border: none; background: #c0501a; color: #fff; cursor: pointer; }
+  @media print { body { background: #fff; } .page { margin: 0; box-shadow: none; } .bar { display: none; } }
+</style>
+</head>
+<body>
+<div class="bar"><button onclick="print()">🖨️ Print this page</button></div>
+<div class="page">
+  <h1>Beetle <span>Hunt</span></h1>
+  <p class="sub">Name: ______________________ &nbsp; Date: ____________ &nbsp; Where I looked: ____________________</p>
+
+  <h2>1 · The life cycle (colour it in!)</h2>
+  <div class="cycle">
+    <figure><canvas data-draw="egg" width="260" height="220"></canvas><figcaption>Egg</figcaption><small>in rotting wood</small></figure>
+    <figure><canvas data-draw="grub" width="260" height="220"></canvas><figcaption>Grub</figcaption><small>eats wood, moults twice</small></figure>
+    <figure><canvas data-draw="pupa" width="260" height="220"></canvas><figcaption>Pupa</figcaption><small>in a room of soil</small></figure>
+    <figure><canvas data-draw="male" width="260" height="220"></canvas><figcaption>Male</figcaption><small>two horns</small></figure>
+    <figure><canvas data-draw="female" width="260" height="220"></canvas><figcaption>Female</figcaption><small>no horns, lays eggs</small></figure>
+  </div>
+
+  <h2>2 · What can you find? (look, don't take)</h2>
+  <div class="hunt">
+    <label><span class="box"></span><span>A beetle<small>Count its legs. Beetles have six.</small></span></label>
+    <label><span class="box"></span><span>Hard wing cases<small>A beetle's front wings are a shell.</small></span></label>
+    <label><span class="box"></span><span>A rotting log or stump<small>Is the wood soft? Can you see holes?</small></span></label>
+    <label><span class="box"></span><span>Fungus on wood<small>White threads, or a shelf-shaped mushroom.</small></span></label>
+    <label><span class="box"></span><span>A tunnel in old wood<small>Something ate its way through!</small></span></label>
+    <label><span class="box"></span><span>A grub<small>Curled like a C. Put the wood back gently.</small></span></label>
+    <label><span class="box"></span><span>Something that eats fruit<small>Look near fallen fruit.</small></span></label>
+    <label><span class="box"></span><span>An animal out at night<small>Moths? Frogs? A torch helps.</small></span></label>
+    <label><span class="box"></span><span>A beetle with horns<small>Rhinoceros and stag beetles have them.</small></span></label>
+    <label><span class="box"></span><span>Something that changes colour<small>A leaf? Wet sand? A beetle?</small></span></label>
+  </div>
+
+  <h2>3 · Draw what you found</h2>
+  <div class="draw"><div>My best find:</div><div>A close-up (use a magnifying glass):</div></div>
+  <div class="measure">How long is a big Hercules beetle? About 17 cm, this long:<div class="ruler"></div></div>
+
+  <p class="note">For grown-ups: many beetle larvae (grubs) live in rotting logs and are a vital part of how forests recycle wood. Roll logs back exactly as you found them, handle animals gently and briefly (or not at all), and wash hands afterwards. Hercules beetles live in Central and South America and the Caribbean; wherever you are, rhinoceros beetles, stag beetles or other wood-eating beetles are worth looking for.</p>
+</div>
+<script src="js/core.js"></script>
+<script src="js/facts.js"></script>
+<script src="js/wood.js"></script>
+<script src="js/forest.js"></script>
+<script src="js/sprites.js"></script>
+<script>
+  /* outline drawings to colour in: draw each sprite, then turn it into a line drawing */
+  for (const c of document.querySelectorAll('canvas[data-draw]')) {
+    const g = c.getContext('2d'), k = c.dataset.draw;
+    g.translate(c.width / 2, c.height / 2 + 10);
+    if (k === 'egg') { g.scale(12, 12); Sprites.drawEgg(g, { grow: .3 }); }
+    if (k === 'grub') Sprites.drawGrub(g, Sprites.grubShape(40, .85, 0), 40, { instar: 3 });
+    if (k === 'pupa') { g.translate(-10, 0); Sprites.drawPupa(g, { s: 1.6, lengthMM: 160, progress: .2 }); }
+    if (k === 'male') { g.translate(-66, 4); Sprites.drawBeetle(g, { s: 1.12, form: 'hercules', lengthMM: 160, seed: 3 }); }
+    if (k === 'female') { g.translate(-10, 0); Sprites.drawBeetle(g, { s: 2, male: false, form: 'hercules', lengthMM: 60, seed: 5 }); }
+    /* keep only the edges: a colouring-book outline */
+    const img = g.getImageData(0, 0, c.width, c.height), d = img.data, w = c.width, h = c.height, out = g.createImageData(w, h), o = out.data;
+    const lum = (i) => d[i * 4 + 3] < 40 ? 255 : (d[i * 4] + d[i * 4 + 1] + d[i * 4 + 2]) / 3, al = (i) => d[i * 4 + 3];
+    const edge = new Uint8Array(w * h);
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x, e = Math.abs(lum(i) - lum(i + 1)) + Math.abs(lum(i) - lum(i + w)) + (Math.abs(al(i) - al(i + 1)) + Math.abs(al(i) - al(i + w))) * .8;
+      if (e > 45) edge[i] = 1;
+    }
+    /* thicken the lines a little so they print */
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x, on = edge[i] || edge[i + 1] || edge[i + w];
+      const v = on ? 25 : 255; o[i * 4] = o[i * 4 + 1] = o[i * 4 + 2] = v; o[i * 4 + 3] = 255;
+    }
+    g.setTransform(1, 0, 0, 1, 0, 0); g.putImageData(out, 0, 0);
+  }
+</script>
+</body>
+</html>

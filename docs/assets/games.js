@@ -102,6 +102,14 @@ export const GAMES = [
     meta: 'Keyboard or touch',
   },
   {
+    slug: 'hercules', shelf: 'nature', name: 'Hercules: Rainforest Giant', badge: 'AGES 4–8',
+    accent: '#c8e04a', glow: 'rgba(200,224,74,0.5)',
+    tagline: 'Hatch in a rotting log, grow into a giant, and become champion of the rainforest night.',
+    description: "Play a Hercules beetle's real life cycle: chew through the log as a grub, change in a pupal room, then fly, lift sticks and horn-wrestle rivals, where nothing ever gets hurt. Everything is read aloud, and Read to Play turns levelled reading into how you play.",
+    features: ['Real life cycle', 'Read to Play', 'Plays offline'],
+    meta: 'Keyboard, touch or gamepad',
+  },
+  {
     slug: 'storm-lab', shelf: 'nature', name: 'Storm Lab', badge: 'AGES 8–13',
     accent: '#8fb8ff', glow: 'rgba(143,184,255,0.5)',
     tagline: 'Build a tornado, watch it work, and read the damage like a scientist.',
