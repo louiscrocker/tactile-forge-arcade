@@ -351,9 +351,9 @@ const Reading = (function () {
   function SR() { return typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition); }
   async function micRead() {
     const R = SR(); if (!R || !page) return;
-    const p = page;
+    const pg = page;
     if (!(await Grownups.confirmMicrophone())) return;   /* a grown-up says no: the mic stays off */
-    if (page !== p) return;
+    if (page !== pg) return;
     const spans = [...$('rpText').querySelectorAll('.rw')], want = spans.map(s => s.dataset.w);
     const heard = new Set();
     try { rec && rec.abort(); } catch (e) { /* fine */ }

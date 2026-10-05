@@ -186,9 +186,7 @@
   });
   Stickers.init(UI.onSticker);
   Journal.init(G);
-  Voice.init();
-  Grownups.guardOutboundLinks();
-  Voice.setEnabled(settings.voice);
+  Voice.init(); Grownups.guardOutboundLinks(); Voice.setEnabled(settings.voice);
   Reading.init(G, { saveSettings });
 
   function start(resume) {

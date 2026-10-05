@@ -1,7 +1,7 @@
 {
   "slug": "hercules",
-  "commit": "0c9d6bd",
-  "builtAt": "2026-10-05T17:44:12.316Z",
+  "commit": "2a519ba",
+  "builtAt": "2026-10-05T17:54:59.233Z",
   "files": {
     "css/style.css": "23af65cfb84e52349602d18908a194f1a5939e2d1201738636edfa500f3f8682",
     "fonts/LICENSE-nunito.txt": "580df76c95a1ec5ab878ceb25bb3d85c6a076804e9c970c8c6972aea775fdf65",
@@ -21,11 +21,11 @@
     "js/gamepad.js": "c1e1c59f057ac85f3f0c3d139c63666a618a741b69f83ba935fd8cfd49cac1a1",
     "js/grownups.js": "45bfe5ed0ac3a453b47708dd7f19f2da1c9860742472a6836a3cebd1b445377f",
     "js/journal.js": "ca934662118acb26ba3bcaf0e348d6054589680a3bd13dc96ec3e0734e49a292",
-    "js/main.js": "328da6320bc7133bef3cd467d1fea1d6df11b549842ce89f23e6453a1c3ed525",
+    "js/main.js": "966693a249449fe35262bb2e8fcea109b9d3719f285ef51cffb033f9191bb9be",
     "js/microscope.js": "b4c7fd02af39d9251b7b7ccf70282c272d6e8ca8e13bf7d023f3b7d826c507ae",
     "js/particles.js": "11b72a9f2c75f730a432423f136767750d634a0ea72dc34ba27533f4312c94af",
     "js/player.js": "9c3328b7b887df5cf735107f42e3b9e642a64baf7e743fef397036d3bd1c121d",
-    "js/reading.js": "99859d4d075daf2965f6a2a100dbfb0654053738a02c46a38d0e7bfd6aa5af9f",
+    "js/reading.js": "f519fb6d580e8cdb86bbdd12cb6f80b972ad88e517a6e385bdea15d767abfaa8",
     "js/readlex.js": "bd4c3b60896ef5d00b707cdf8a3efc9cb81a7badc1fc6a2a26e455cf7e04bb64",
     "js/render.js": "21dfb4c0507d4859898bac82d4efcc92da7469bf368b97a661c9b41ab4f05cb2",
     "js/save.js": "7c9fc9540c12c31aec1b8519f928c4c5d3cba9f63f82b8d1339cbcc64195e9bd",
