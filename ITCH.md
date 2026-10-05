@@ -31,7 +31,7 @@ Both outputs land in `itch/`, which git ignores. Rebuild them after republishing
 | Kind of project | HTML |
 | Upload | `itch/<slug>.zip`, tick **This file will be played in the browser** |
 | Embed options | Embed in page · viewport **1280 × 800** · tick **Fullscreen button** · tick **Click to launch in fullscreen** on phones only if offered |
-| Mobile friendly | **Off** for the keyboard games (Soft Touchdown, Rubble Drift, Periscope Front, Lightwake, Monarch Journey). **On** for Last Silo and the touch-capable nature games |
+| Mobile friendly | **Off** for the keyboard or mouse games (Soft Touchdown, Rubble Drift, Periscope Front, Lightwake, Trenchfire, Monarch Journey). **On** for Last Silo, Close-Hauled and the touch-capable nature games |
 | SharedArrayBuffer | Off (no game needs it) |
 | Pricing | **No payments** (or "Donate" if you want a tip jar) |
 | Classification | Games |
@@ -55,6 +55,8 @@ Copy the tagline and description from `docs/assets/games.js`. Add one line at th
 | Rubble Drift | Shooter | arcade, retro, vector, space, asteroids-like, webgl, singleplayer, high-score, neon, browser |
 | Periscope Front | Shooter | arcade, retro, vector, tanks, first-person, wireframe, 3d, webgl, singleplayer, browser |
 | Lightwake | Action | arcade, retro, neon, racing, snake-like, webgl, singleplayer, high-score, light-bikes, browser |
+| Trenchfire | Shooter | arcade, retro, vector, space, rail-shooter, wireframe, webassembly, singleplayer, high-score, browser |
+| Close-Hauled | Board game | sailing, dice, racing, turn-based, hot-seat, local-multiplayer, family-friendly, strategy, browser, singleplayer |
 | Frog Pond | Educational | kids, reading, nature, frogs, life-cycle, educational, cute, family-friendly, browser, singleplayer |
 | Ladybug Life | Educational | kids, reading, nature, insects, life-cycle, educational, cute, family-friendly, browser, singleplayer |
 | Monarch Journey | Educational | kids, reading, nature, butterflies, migration, educational, local-co-op, family-friendly, browser, cute |
