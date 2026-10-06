@@ -110,6 +110,14 @@ export const GAMES = [
     meta: 'Keyboard, touch or gamepad',
   },
   {
+    slug: 'red-crab', shelf: 'nature', name: 'Red Crab: The Great March', badge: 'AGES 4–8',
+    accent: '#ff6a4a', glow: 'rgba(255,106,74,0.5)',
+    tagline: 'Hatch in the sea, ride a jellyfish home, and join the great march of the red crabs.',
+    description: "Live a Christmas Island red crab's real life: a tiny zoea eating glowing plankton beside a whale shark, a megalopa riding a jellyfish to the reef, a baby crab climbing the cliff, years of burrow moults in the rainforest, then the great migration over the crab bridge to the sea. Play as a boy or a girl crab; nothing ever gets hurt. Everything is read aloud, and Read to Play turns levelled reading into how you play.",
+    features: ['Real life cycle', 'Read to Play', 'Plays offline'],
+    meta: 'Keyboard, touch or gamepad',
+  },
+  {
     slug: 'storm-lab', shelf: 'nature', name: 'Storm Lab', badge: 'AGES 8–13',
     accent: '#8fb8ff', glow: 'rgba(143,184,255,0.5)',
     tagline: 'Build a tornado, watch it work, and read the damage like a scientist.',

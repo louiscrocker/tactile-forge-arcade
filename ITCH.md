@@ -63,6 +63,7 @@ Copy the tagline and description from `docs/assets/games.js`. Add one line at th
 | Alicorn Skies | Adventure | kids, reading, unicorn, fantasy, cute, family-friendly, educational, exploration, browser, singleplayer |
 | Burrow & Brood | Simulation | kids, ants, colony-sim, nature, educational, reading, family-friendly, sandbox, browser, singleplayer |
 | Hercules: Rainforest Giant | Adventure | kids, beetles, insects, life-cycle, nature, educational, reading, family-friendly, browser, singleplayer |
+| Red Crab: The Great March | Adventure | kids, crabs, ocean, migration, life-cycle, nature, educational, reading, family-friendly, browser |
 | Storm Lab | Educational | weather, tornado, science, simulation, educational, kids, stem, webgl, radar, browser |
 
 Tag names must not mention the original arcade titles. "asteroids-like" and

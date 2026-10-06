@@ -1,0 +1,16 @@
+{
+  "name": "Red Crab: The Great March",
+  "short_name": "Red Crab",
+  "description": "Be a Christmas Island red crab: hatch in the sea as a tiny zoea, ride a jellyfish home, climb into the rainforest, grow up, and join the great march to the sea.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#1a4a7a",
+  "theme_color": "#1a4a7a",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

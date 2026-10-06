@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crab Hunt — Red Crab: The Great March</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root { --ink: #2a2016; --dim: #6a5a46; --line: #d8cdb8; --red: #c8281a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9e4d6; color: var(--ink); font-family: "Nunito", "Segoe UI", system-ui, sans-serif; }
+  .page { width: 210mm; min-height: 297mm; margin: 12px auto; padding: 14mm 14mm 10mm; background: #fffdf6; box-shadow: 0 6px 30px rgba(0,0,0,.15); }
+  h1 { margin: 0; font-size: 34px; font-weight: 900; letter-spacing: .04em; }
+  h1 span { color: var(--red); }
+  .sub { margin: 4px 0 14px; color: var(--dim); font-weight: 700; }
+  h2 { font-size: 18px; font-weight: 900; margin: 18px 0 8px; border-bottom: 2px solid var(--line); padding-bottom: 4px; }
+  .cycle { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; align-items: end; }
+  .cycle figure { margin: 0; text-align: center; }
+  .cycle canvas { width: 100%; height: auto; border: 2px dashed var(--line); border-radius: 12px; background: #fff; }
+  .cycle figcaption { font-weight: 900; margin-top: 4px; font-size: 14px; }
+  .cycle small { display: block; color: var(--dim); font-weight: 700; font-size: 10.5px; line-height: 1.25; }
+  .arrow { text-align: center; font-weight: 900; color: var(--dim); margin: 4px 0 0; font-size: 13px; }
+  .hunt { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; }
+  .hunt label { display: flex; gap: 10px; align-items: flex-start; font-weight: 700; padding: 6px 0; border-bottom: 1px dotted var(--line); }
+  .box { flex: 0 0 22px; height: 22px; border: 2.5px solid var(--ink); border-radius: 5px; }
+  .hunt small { display: block; color: var(--dim); font-size: 12px; font-weight: 600; }
+  .draw { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .draw div { height: 58mm; border: 2px solid var(--line); border-radius: 12px; padding: 8px; font-weight: 800; color: var(--dim); }
+  .measure { font-weight: 800; margin-top: 10px; }
+  .ruler { width: 116mm; height: 9mm; margin-top: 4px; border: 2px solid var(--ink); border-radius: 3px; background: repeating-linear-gradient(90deg, var(--ink) 0 .5mm, transparent .5mm 10mm); position: relative; }
+  .ruler::after { content: "0 cm ………………………………… 11.6 cm"; position: absolute; left: 0; right: 0; top: 100%; font-size: 10px; color: var(--dim); text-align: justify; }
+  .note { font-size: 12px; color: var(--dim); font-weight: 600; margin-top: 16px; line-height: 1.45; }
+  .bar { display: flex; gap: 8px; justify-content: center; margin: 12px auto 0; width: 210mm; }
+  .bar button { font: inherit; font-weight: 900; padding: 10px 18px; border-radius: 12px; border: none; background: var(--red); color: #fff; cursor: pointer; }
+  @media print { body { background: #fff; } .page { margin: 0; box-shadow: none; } .bar { display: none; } }
+</style>
+</head>
+<body>
+<div class="bar"><button onclick="print()">🖨️ Print this page</button></div>
+<div class="page">
+  <h1>Crab <span>Hunt</span></h1>
+  <p class="sub">Name: ______________________ &nbsp; Date: ____________ &nbsp; Where I looked: ____________________</p>
+
+  <h2>1 · The red crab's life cycle (colour it in!)</h2>
+  <div class="cycle">
+    <figure><canvas data-draw="egg" width="220" height="200"></canvas><figcaption>Eggs</figcaption><small>shaken into the sea at dawn</small></figure>
+    <figure><canvas data-draw="zoea" width="220" height="200"></canvas><figcaption>Zoea</figcaption><small>a tiny larva in the plankton</small></figure>
+    <figure><canvas data-draw="megalopa" width="220" height="200"></canvas><figcaption>Megalopa</figcaption><small>claws and a tail: swims home</small></figure>
+    <figure><canvas data-draw="baby" width="220" height="200"></canvas><figcaption>Baby crab</figcaption><small>5 mm, climbs to the forest</small></figure>
+    <figure><canvas data-draw="boy" width="220" height="200"></canvas><figcaption>Boy</figcaption><small>big claws, digs by the sea</small></figure>
+    <figure><canvas data-draw="girl" width="220" height="200"></canvas><figcaption>Girl</figcaption><small>carries 100,000 eggs</small></figure>
+  </div>
+  <p class="arrow">eggs → zoea → megalopa → baby crab → young crab → adult → the great march → eggs again</p>
+
+  <h2>2 · What can you find? (look, don't take)</h2>
+  <div class="hunt">
+    <label><span class="box"></span><span>A crab<small>Count its legs: eight legs and two claws.</small></span></label>
+    <label><span class="box"></span><span>Eyes on stalks<small>Crabs, snails and some shrimps have them.</small></span></label>
+    <label><span class="box"></span><span>A crab hole<small>On a beach, a river bank or in mud.</small></span></label>
+    <label><span class="box"></span><span>An empty crab shell<small>Is it a moult? Look for a crack at the back.</small></span></label>
+    <label><span class="box"></span><span>A rock pool<small>What is hiding under the seaweed?</small></span></label>
+    <label><span class="box"></span><span>A jellyfish<small>Look, but never touch.</small></span></label>
+    <label><span class="box"></span><span>Something walking sideways<small>Which way does it go fastest?</small></span></label>
+    <label><span class="box"></span><span>Fallen leaves being eaten<small>Who has been nibbling them?</small></span></label>
+    <label><span class="box"></span><span>A seabird<small>A gull, a tern, or something bigger?</small></span></label>
+    <label><span class="box"></span><span>The moon<small>Is it a full moon, or a half moon?</small></span></label>
+  </div>
+
+  <h2>3 · Draw what you found</h2>
+  <div class="draw"><div>My best find:</div><div>A close-up (use a magnifying glass):</div></div>
+  <div class="measure">How wide is a big red crab's shell? About 11.6 cm, this wide:<div class="ruler"></div></div>
+
+  <p class="note">For grown-ups: Christmas Island red crabs live only on Christmas Island (and the nearby Cocos Islands) in the Indian Ocean, but crabs and their relatives live on almost every coast. Turn rocks back gently the way you found them, keep animals in water if you look at them, and put them back where they came from. Never touch jellyfish, even ones washed up on the beach.</p>
+</div>
+<script src="js/core.js"></script>
+<script src="js/facts.js"></script>
+<script src="js/island.js"></script>
+<script src="js/world.js"></script>
+<script src="js/sprites.js"></script>
+<script>
+  /* outline drawings to colour in: draw each sprite, then turn it into a line drawing */
+  for (const c of document.querySelectorAll('canvas[data-draw]')) {
+    const g = c.getContext('2d'), k = c.dataset.draw;
+    g.translate(c.width / 2, c.height / 2);
+    if (k === 'egg') { for (const [x, y] of [[-30, -10], [0, -24], [26, -6], [-12, 18], [16, 22], [40, 26], [-40, 22]]) { g.save(); g.translate(x, y); Sprites.drawEgg(g, { s: 12, eye: true }); g.restore(); } }
+    if (k === 'zoea') { g.translate(10, 0); Sprites.drawZoea(g, { s: 7, ph: .8, form: 'red', instar: 3 }); }
+    if (k === 'megalopa') { g.translate(6, 0); Sprites.drawMegalopa(g, { s: 6.4, ph: .8, form: 'red' }); }
+    if (k === 'baby') { g.translate(0, -6); Sprites.drawCrab(g, { s: .5, form: 'red', sex: 'boy', seed: 3 }); }
+    if (k === 'boy') { g.translate(0, -8); Sprites.drawCrab(g, { s: .66, form: 'red', sex: 'boy', seed: 3 }); }
+    if (k === 'girl') { g.translate(0, -8); Sprites.drawCrab(g, { s: .66, form: 'red', sex: 'girl', eggs: .8, seed: 5 }); }
+    /* keep only the edges: a colouring-book outline */
+    const img = g.getImageData(0, 0, c.width, c.height), d = img.data, w = c.width, h = c.height, out = g.createImageData(w, h), o = out.data;
+    const lum = (i) => d[i * 4 + 3] < 40 ? 255 : (d[i * 4] + d[i * 4 + 1] + d[i * 4 + 2]) / 3, al = (i) => d[i * 4 + 3];
+    const edge = new Uint8Array(w * h);
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x, e = Math.abs(lum(i) - lum(i + 1)) + Math.abs(lum(i) - lum(i + w)) + (Math.abs(al(i) - al(i + 1)) + Math.abs(al(i) - al(i + w))) * .8;
+      if (e > 45) edge[i] = 1;
+    }
+    /* thicken the lines a little so they print */
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x, on = edge[i] || edge[i + 1] || edge[i + w];
+      const v = on ? 25 : 255; o[i * 4] = o[i * 4 + 1] = o[i * 4 + 2] = v; o[i * 4 + 3] = 255;
+    }
+    g.setTransform(1, 0, 0, 1, 0, 0); g.putImageData(out, 0, 0);
+  }
+</script>
+</body>
+</html>
