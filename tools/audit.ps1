@@ -16,8 +16,11 @@ $web = [ordered]@{
   'last-silo'='MISSILE_ATTACK'; 'soft-touchdown'='LUNAR_LANDER'; 'rubble-drift'='ASTEROIDS'; 'periscope-front'='TANK_BATTLE';
   'lightwake'='TRON'; 'trenchfire'='TRENCHFIRE_GO'; 'close-hauled'='YACHT_RACE'; 'frog-pond'='FROG_POND';
   'ladybug-life'='LADYBUG'; 'monarch-journey'='MONARCH_JOURNEY'; 'alicorn-skies'='ALICORN';
-  'burrow-and-brood'='ANT_KINGDOM'; 'hercules'='HERCULES'; 'storm-lab'='TORNADO'
+  'burrow-and-brood'='ANT_KINGDOM'; 'hercules'='HERCULES'; 'red-crab'='RED_CRAB'; 'storm-lab'='TORNADO'
 }
+# Files that never ship (same idea as package-game.mjs's deny list): a repo that
+# is ahead of the live build only in these is still current.
+$notShipped = '^(tools|docs|tests?|shots|bin|\.claude)/|^[^/]+\.(md|png)$|^(package(-lock)?\.json|server\.js|smoke\.js|build\.ps1|go\.(mod|sum)|\.gitignore)$|_test\.go$|^_[^/]*\.html$'
 # slug -> Go source folder (Cabinet Editions)
 $cab = [ordered]@{
   'last-silo'='MISSILE_ATTACK_GO'; 'soft-touchdown'='LUNAR_LANDER_GO'; 'rubble-drift'='ASTEROIDS_GO';
@@ -43,9 +46,13 @@ foreach ($slug in $web.Keys) {
   try { $live = (Invoke-RestMethod "$Base$slug/build.json" -TimeoutSec 20).commit } catch { $live = $null }
   $verdict = if (-not $live) { 'NOT LIVE' }
     elseif ((git -C $path rev-parse $live 2>$null) -eq (git -C $path rev-parse HEAD)) { 'current' }
-    else { "BEHIND ($(git -C $path rev-list --count "$live..HEAD") commit(s))" }
+    else {
+      $changed = @(git -C $path diff --name-only $live HEAD 2>$null | Where-Object { $_ -notmatch $notShipped })
+      if ($changed.Count) { "BEHIND ($(git -C $path rev-list --count "$live..HEAD") commit(s); $($changed.Count) shipped file(s): $(($changed | Select-Object -First 3) -join ', '))" }
+      else { 'current (newer commits are notes/tooling only)' }
+    }
   $flags = @(); if ($st.dirty) { $flags += "$($st.dirty) uncommitted" }; if ($st.ahead) { $flags += "$($st.ahead) unpushed" }
-  if ($verdict -ne 'current') { $problems += "$slug $verdict" }
+  if ($verdict -notlike 'current*') { $problems += "$slug $verdict" }
   '{0,-17} live={1,-8} repo={2,-8} {3,-12} {4}' -f $slug, $live, $st.head, $verdict, ($flags -join ', ')
 }
 
@@ -60,7 +67,12 @@ foreach ($slug in $cab.Keys) {
   '{0,-17} {1} assets in {2}, downloads={3}, go repo={4}{5}' -f $slug, $assets.Count, $rel.tagName, $dl, $st.head, $(if ($st.dirty) { " ($($st.dirty) uncommitted)" } else { '' })
 }
 
-"`n=== 3. Game folders not on the site"
+"`n=== 3. Site folders missing from this script's map"
+Get-ChildItem (Join-Path $PSScriptRoot '..\docs') -Directory | Where-Object { $_.Name -notin 'assets','downloads' -and -not $web.Contains($_.Name) } | ForEach-Object {
+  $problems += "docs/$($_.Name) is live but not in audit.ps1's map"; "docs/$($_.Name): add it to `$web in tools/audit.ps1"
+}
+
+"`n=== 3b. Game folders not on the site"
 Get-ChildItem $Dev -Directory -Filter 'TACTILE_FORGE_*' | ForEach-Object {
   $k = $_.Name -replace '^TACTILE_FORGE_',''
   if ($notGames -contains $k) { return }
