@@ -65,6 +65,7 @@ Copy the tagline and description from `docs/assets/games.js`. Add one line at th
 | Hercules: Rainforest Giant | Adventure | kids, beetles, insects, life-cycle, nature, educational, reading, family-friendly, browser, singleplayer |
 | Red Crab: The Great March | Adventure | kids, crabs, ocean, migration, life-cycle, nature, educational, reading, family-friendly, browser |
 | Lobster: Shell by Shell | Adventure | kids, lobster, ocean, sea-life, life-cycle, nature, educational, reading, family-friendly, browser |
+| Wolf: Song of the Valley | Adventure | kids, wolves, animals, yellowstone, life-cycle, nature, educational, reading, family-friendly, browser |
 | Storm Lab | Educational | weather, tornado, science, simulation, educational, kids, stem, webgl, radar, browser |
 
 Tag names must not mention the original arcade titles. "asteroids-like" and

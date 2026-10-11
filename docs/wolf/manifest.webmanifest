@@ -1,0 +1,16 @@
+{
+  "name": "Wolf: Song of the Valley",
+  "short_name": "Wolf",
+  "description": "Be a gray wolf: born blind in a den, play with your litter-mates, follow the pack down the valley, run with them in the snow, then leave home, find a mate, dig a den and raise the next litter.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#1a2238",
+  "theme_color": "#1a2238",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

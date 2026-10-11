@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#1a2238">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Be a gray wolf: born blind in a den under a hill, play with your litter-mates, follow the pack down the valley, swim the river, read tracks, howl when you are lost, run with the pack in the snow, then leave home, find a mate, dig a den and raise the next litter.">
+<title>Wolf: Song of the Valley</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<canvas id="scene"></canvas>
+
+<!-- ============================ HUD ============================ -->
+<header class="hud" id="hud">
+  <div class="stage-card">
+    <div class="stage-icon"><canvas id="stageIcon" width="112" height="112"></canvas></div>
+    <div class="stage-txt">
+      <span class="stage-k" id="stageK">You are</span>
+      <b class="stage-v" id="stageName">Newborn pup</b>
+      <div class="prog"><i id="progBar"></i><span id="progText">Drink milk…</span></div>
+    </div>
+  </div>
+
+  <ol class="wheel" id="wheel" aria-label="The life cycle"></ol>
+
+  <div class="readouts">
+    <div class="ro season" title="Which day it is, and the season"><span class="ro-k" id="roSeason">🌱 Spring</span><b id="roDay">Day 1</b></div>
+    <div class="ro" title="Weather right now"><span class="ro-k">Sky</span><b id="weatherBadge">☀️</b></div>
+    <div class="ro" title="How heavy you are"><span class="ro-k">⚖️ Weight</span><b id="roSize">—</b></div>
+    <div class="ro" title="How warm you are: snow, the river and the night use it up"><span class="ro-k">🔥 Warm</span><b id="roWater">—</b></div>
+    <div class="ro" title="The moon"><span class="ro-k">Moon</span><b id="roMoon">🌒</b></div>
+  </div>
+
+  <div class="top-actions">
+    <button class="icon-btn" id="btnVoice" title="Read aloud (V)">🔊</button>
+    <button class="icon-btn" id="btnFast" title="Time-lapse (F)">⏩</button>
+    <button class="icon-btn" id="btnPhoto" title="Take a photo (P)">📷</button>
+    <button class="icon-btn" id="btnScope" title="Microscope (Y)">🔬</button>
+    <button class="icon-btn" id="btnBook" title="Sticker book (B)">⭐</button>
+    <button class="icon-btn" id="btnJournal" title="Field journal (J)">📓</button>
+    <button class="icon-btn" id="btnLabels" title="Name tags (L)">Aa</button>
+    <button class="icon-btn" id="btnHelp" title="How to play (?)">?</button>
+    <button class="icon-btn" id="btnMenu" title="Settings">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="hint" id="hint"><span id="hintText">You are a newborn wolf pup in a dark den.</span><button class="say" id="hintSay" title="Say it again">🔊</button></div>
+
+<div class="toast" id="stickerToast" hidden>
+  <canvas id="stickerToastCanvas" width="160" height="160"></canvas>
+  <div><span class="stage-k">New sticker!</span><b id="stickerToastName">Milk!</b></div>
+</div>
+
+<!-- ============================ FACT CARD ============================ -->
+<aside class="fact" id="fact" hidden>
+  <div class="fact-head"><span class="fact-tag">Did you know?</span><div><button class="say" id="factSay" title="Read it to me">🔊</button><button class="close" id="factClose">&times;</button></div></div>
+  <h3 id="factTitle">Title</h3>
+  <p id="factBody">Body</p>
+  <a class="more" id="factMore" href="#" target="_blank" rel="noopener" hidden>See the real thing ↗</a>
+  <button class="wide" id="factOk">Got it!</button>
+</aside>
+
+<aside class="science" id="science" hidden>
+  <div class="fact-head"><span class="fact-tag green">Growth graph</span><button class="close" id="scienceClose">&times;</button></div>
+  <h3>How heavy am I?</h3>
+  <canvas id="scienceCanvas"></canvas>
+  <p class="tiny">Your weight in kilograms. Each line up the side is ten times heavier than the one below, so a half-kilo newborn and a fifty-kilo wolf fit on one graph. Each dashed line is a growing-up.</p>
+</aside>
+
+<!-- ============================ SETTINGS DRAWER ============================ -->
+<aside class="drawer" id="drawer" hidden>
+  <div class="drawer-head"><h2>Settings</h2><button class="close" id="drawerClose">&times;</button></div>
+  <section>
+    <h4>Difficulty</h4>
+    <div class="seg" id="diffPick">
+      <button data-diff="easy">Little kid</button>
+      <button data-diff="normal" class="on">Big kid</button>
+      <button data-diff="hard">Scientist</button>
+    </div>
+    <p class="tiny">Changes how much a wolf must eat to grow, how fast the cold gets to it, how strong a litter-mate pushes, how many howls find the pack, and whether summer storms come.</p>
+  </section>
+  <section>
+    <h4>Words &amp; listening</h4>
+    <div class="seg" id="readPickDrawer"><button data-read="simple">Little words</button><button data-read="normal">Full facts</button></div>
+    <div class="chips" style="margin-top:8px">
+      <button class="chip on" id="tgVoice">🔊 Read aloud</button>
+      <button class="chip" id="tgLabels">Name tags</button>
+      <button class="chip on" id="tgSoundChip">Sound</button>
+    </div>
+  </section>
+  <section>
+    <h4>Reading</h4>
+    <div class="seg" id="readModeDrawer"><button data-rm="listen">🔊 Read to me</button><button data-rm="play">📖 I read to play</button></div>
+    <div class="chips center level-chips" id="readLevelDrawer"></div>
+    <p class="tiny" id="readAboutDrawer"></p>
+    <div class="seg" id="readHelpPick" style="margin-top:8px"><button data-rh="auto">Help comes by itself</button><button data-rh="ask">Help only when asked</button></div>
+    <div class="chips" style="margin-top:8px"><button class="chip" id="btnMyWords">🔤 My words &amp; reading report</button></div>
+    <p class="tiny">In "I read to play" the buttons show words to read, each big step of the life cycle waits for a page, and missions are written, not spoken. Tap any word to hear it.</p>
+  </section>
+  <section>
+    <h4>Options</h4>
+    <div class="chips">
+      <button class="chip on" id="tgVisitors">🦅 Visitors (ravens, storms, the scientist)</button>
+      <button class="chip" id="tgSlow">Slow &amp; gentle</button>
+      <button class="chip" id="tgPad">Touch buttons</button>
+      <button class="chip" id="tgScience">📈 Growth graph</button>
+    </div>
+    <label class="select"><span>Graphics</span>
+      <select id="selQuality"><option value="auto">Auto</option><option value="high">High</option><option value="low">Low (older tablets)</option></select>
+    </label>
+    <p class="tiny" id="gpNote">Gamepads work too: stick to move, A to act, B to howl (hold it).</p>
+  </section>
+  <section>
+    <h4>Time of day</h4>
+    <label class="ctl"><input type="range" id="sTod" min="0" max="100" value="30"></label>
+    <div class="chips"><button class="chip on" id="tgClock">Clock running</button></div>
+  </section>
+  <section>
+    <h4>Your wolf</h4>
+    <div class="species-grid three small" id="formPickDrawer"></div>
+    <div class="seg sex-pick" id="sexPickDrawer"><button data-sex="boy">👦 Boy wolf</button><button data-sex="girl">👧 Girl wolf</button></div>
+    <p class="tiny" id="formPower"></p>
+    <p class="tiny">A new colour or a boy or girl wolf starts with the next generation.</p>
+  </section>
+  <section>
+    <h4>Collections</h4>
+    <div class="chips">
+      <button class="chip" id="btnStickersDrawer">⭐ Sticker book</button>
+      <button class="chip" id="btnJournalDrawer">📓 Field journal</button>
+      <a class="chip link" id="btnHunt" href="hunt.html" target="_blank" rel="noopener">🔍 Print a wolf tracker sheet</a>
+    </div>
+  </section>
+  <section>
+    <button class="start" id="btnNextGenDrawer" hidden>🐾 Be born as one of the new pups</button>
+    <button class="wide" id="btnNewGame">🐾 Start again as a newborn pup</button>
+    <p class="tiny" id="saveNote">Your wolf saves itself every few seconds.</p>
+  </section>
+</aside>
+
+<!-- ============================ TOUCH PAD ============================ -->
+<div class="pad" id="pad" hidden>
+  <div class="dpad">
+    <button data-dir="up" aria-label="up">&#9650;</button>
+    <button data-dir="left" aria-label="left">&#9664;</button>
+    <button data-dir="right" aria-label="right">&#9654;</button>
+    <button data-dir="down" aria-label="down / dig">&#9660;</button>
+  </div>
+  <div class="pad-actions">
+    <button class="big alt" id="btnDash" hidden>🐺<br>HOWL</button>
+    <button class="big" id="btnAction">GO!</button>
+  </div>
+</div>
+
+<!-- ============================ TITLE ============================ -->
+<div class="title" id="title">
+  <canvas id="titleCanvas"></canvas>
+  <div class="title-card">
+    <div class="title-logo"><span class="t1">WOLF</span><span class="t2">SONG OF THE VALLEY</span><em>From the den to the long howl</em></div>
+    <p class="lede">Be a gray wolf! Born blind in a den under a hill, you drink, play and howl your first tiny yip. Follow the pack down the valley in autumn: read the tracks, swim the river, break trail through the snow and run with the pack. Then leave home, find a mate, dig a den of your own… and the whole story begins again.</p>
+    <button class="start continue" id="btnContinue" hidden>Continue my wolf 🐺</button>
+    <h4>Pick your wolf</h4>
+    <div class="species-grid three" id="formPick"></div>
+    <div class="seg sex-pick" id="sexPick"><button data-sex="boy">👦 Boy wolf: bring food to the den, guard it</button><button data-sex="girl">👧 Girl wolf: have the pups, feed them</button></div>
+    <p class="species-blurb" id="formBlurb"></p>
+    <div class="two-col">
+      <div><h4>Who is playing?</h4>
+        <div class="seg" id="diffPickTitle"><button data-diff="easy">Little kid</button><button data-diff="normal" class="on">Big kid</button><button data-diff="hard">Scientist</button></div></div>
+      <div><h4>Words</h4>
+        <div class="seg" id="readPick"><button data-read="simple" class="on">Little words</button><button data-read="normal">Full facts</button></div></div>
+    </div>
+    <h4>Reading</h4>
+    <div class="seg" id="readModeTitle"><button data-rm="listen">🔊 Read to me</button><button data-rm="play">📖 I read to play</button></div>
+    <div class="chips center level-chips" id="readLevelTitle"></div>
+    <p class="tiny" id="readAboutTitle"></p>
+    <div class="chips center" style="margin-top:10px"><button class="chip on" id="tgVoiceTitle">🔊 Read everything aloud</button></div>
+    <button class="start" id="btnStart">Into the den, little pup! 🐾</button>
+    <p class="keys-line"><kbd>&#8592;&#8593;&#8594;&#8595;</kbd> walk &amp; dig · <kbd>Space</kbd> action · hold <kbd>E</kbd> to howl · 🎮 gamepad works too</p>
+  </div>
+</div>
+
+<!-- ============================ NEXT GENERATION ============================ -->
+<div class="modal" id="choice" hidden>
+  <div class="sheet small-sheet">
+    <h2>🐾 A new pack!</h2>
+    <p>Newborn → pup → big pup → yearling → lone wolf → a pair with a valley → a den full of pups. That is the whole life cycle of a wolf!</p>
+    <div class="row">
+      <button class="start" id="btnNextGen">Be born as one of the new pups</button>
+      <button class="wide ghost" id="btnKeep">Keep playing as this wolf</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="stickerBook" hidden>
+  <div class="sheet">
+    <button class="close" id="stickerClose">&times;</button>
+    <h2>&#11088; Sticker book <span class="count" id="stickerCount">0</span></h2>
+    <p class="tiny">Tap a sticker to hear how you got it. Grey ones are still waiting for you.</p>
+    <div class="sticker-grid" id="stickerGrid"></div>
+  </div>
+</div>
+
+<div class="modal" id="journal" hidden>
+  <div class="sheet journal-sheet">
+    <button class="close" id="journalClose">&times;</button>
+    <h2>&#128211; Field journal</h2>
+    <div class="row inline"><button class="wide small" id="journalPrint">🖨️ Print</button><button class="wide ghost small" id="journalClear">Clear</button></div>
+    <div id="journalList" class="journal-list"></div>
+  </div>
+</div>
+
+<div class="modal" id="microscope" hidden>
+  <div class="sheet scope-sheet">
+    <button class="close" id="scopeClose">&times;</button>
+    <h2>&#128300; Microscope</h2>
+    <div class="seg scope-pick" id="scopePick">
+      <button data-subject="newborn">Newborn</button>
+      <button data-subject="pup">Pup</button>
+      <button data-subject="boy" class="on">Boy wolf</button>
+      <button data-subject="girl">Girl wolf</button>
+      <button data-subject="paw">Paw &amp; tracks</button>
+    </div>
+    <canvas id="scopeCanvas"></canvas>
+    <div class="row inline"><button class="chip" id="scopeCut">Show the teeth</button><p class="scope-say" id="scopeSay">Tap a label to hear what it is and what it does.</p></div>
+  </div>
+</div>
+
+<div class="modal" id="help" hidden>
+  <div class="sheet">
+    <button class="close" id="helpClose">&times;</button>
+    <h2>How to play</h2>
+    <div class="steps">
+      <div class="step"><b>1</b><div><h3>In the den</h3><p>You are a newborn pup: blind, deaf and hungry, in a dark den under a hill. Wriggle with the arrows to your mum (she is warm) and press <kbd>Space</kbd> to drink her milk. Milk makes you grow. After a while your eyes open: everything is blue!</p></div></div>
+      <div class="step"><b>2</b><div><h3>Out of the den</h3><p>At three weeks you wobble out into the light. Press <kbd>Space</kbd> by a brother or sister to play-fight: tap <kbd>Space</kbd> to push and press <kbd>E</kbd> (or ▲) when the ring turns <b>green</b> for a big pounce. Hold <kbd>E</kbd> to howl your first yip. When a grown-up comes home with a meal, go to it and press <kbd>Space</kbd> to eat.</p></div></div>
+      <div class="step"><b>3</b><div><h3>The summer meadow</h3><p>The pack moves you to a meadow. Creep up to grasshoppers and voles and press <kbd>Space</kbd> to pounce (they always get away: it is practice). Walk into a coloured wisp and press <kbd>Space</kbd> to sniff it. When thunder rolls, get under the big tree.</p></div></div>
+      <div class="step"><b>4</b><div><h3>Autumn: on the move</h3><p>Follow the pack down the valley, one behind another. Press <kbd>Space</kbd> at footprints to read them, swim the river (it is cold!), sniff the scent post at the edge of your territory. If the pack goes on ahead in the dark, hold <kbd>E</kbd> to howl and let go when the ring is <b>green</b>: the pack will answer and come back.</p></div></div>
+      <div class="step"><b>5</b><div><h3>Winter</h3><p>Deep snow. Walk in the trail the lead wolf breaks. <b>Keep warm</b> (🔥): snow, the river and the night use up your warmth; the den, a tree and the sun bring it back. Too cold? You curl up with your tail over your nose and rest. Near the herd, press <kbd>Space</kbd> to test it, then hold ▶ to run with the pack and watch your puff. The herd gets away (it mostly does). The pack finds a meal, feasts and sleeps it off.</p></div></div>
+      <div class="step"><b>6</b><div><h3>A yearling</h3><p>Spring: you are one year old and there are new pups at the den. Play with them and press <kbd>Space</kbd> at the den mouth to keep watch. Then it is time to leave: a lone wolf over the ridge, through the tunnel under the road (never on top!), into a new valley.</p></div></div>
+      <div class="step"><b>7</b><div><h3>A pair, a valley, a den</h3><p>Find the other lone wolf and press <kbd>Space</kbd> to say hi. Mark the scent posts, then howl together (hold <kbd>E</kbd>, let go on green). In spring, push <b>down</b> on the soft hillside to dig a den. Deep enough? Press <kbd>Space</kbd> to finish it.</p></div></div>
+      <div class="step"><b>8</b><div><h3>Boy or girl</h3><p><b>Boys</b> bring meals home (press <kbd>Space</kbd> to carry one, <kbd>Space</kbd> at the den to give it), bark a nosy raven away, and watch the first pups come out. <b>Girls</b> have the pups in the den, press <kbd>Space</kbd> to feed them, carry a wanderer back, and come out for the litter's first howl.</p></div></div>
+      <div class="step"><b>📖</b><div><h3>I read to play</h3><p>Pick "I read to play" and a level (A to E). The buttons show words: tap the one that fits. Read a page at each big step of the life cycle, and read the ⭐ missions to know what to do.</p></div></div>
+    </div>
+    <h2>Keyboard &amp; gamepad</h2>
+    <div class="keys">
+      <span><kbd>&#8592;&#8593;&#8594;&#8595;</kbd> / <kbd>WASD</kbd> walk · wriggle · dig (down) · 🎮 stick</span>
+      <span><kbd>Space</kbd> drink · eat · play · pounce · sniff · look · mark · hi · carry · give · feed · bark · run · 🎮 A</span>
+      <span>hold <kbd>E</kbd> howl · big pounce in a play-fight · 🎮 B</span>
+      <span>Tap to walk there</span>
+      <span><kbd>F</kbd> time-lapse · <kbd>G</kbd> growth graph</span>
+      <span><kbd>P</kbd> photo · 🎮 X</span>
+      <span><kbd>Y</kbd> microscope · 🎮 Y</span>
+      <span><kbd>B</kbd> stickers · <kbd>J</kbd> journal</span>
+      <span><kbd>V</kbd> read aloud · <kbd>L</kbd> name tags · <kbd>M</kbd> sound</span>
+      <span><kbd>Wheel</kbd> zoom</span>
+    </div>
+    <p class="fineprint">For the grown-ups: read-aloud uses this device's own voices, and the microphone and every link to another website ask a grown-up first. The gray wolf's life is real, simplified for play: pups born in April in a hillside den, blind and deaf, eyes opening at about two weeks (blue, turning amber); out of the den at three weeks; fed with food the grown-ups carry home; a rendezvous site from about eight weeks with a babysitting yearling; travelling with the pack by autumn, reading tracks and scents, swimming rivers, scent-marking the territory's edges and howling to find each other; single file through deep snow with the leader breaking trail; chases of elk and bison that mostly fail; feast and famine; radio collars and the 1995–96 return of wolves to Yellowstone; yearlings babysitting the next litter; dispersal at one to three years, wildlife crossings under roads, a pair for life, a den dug into a dry hillside. The pack is a family led by the parents, not "alphas". Nothing in the game is ever hurt: the herd gets away, pounces miss, a lost play-fight is a roll in the grass, cold means a curl-up and a rest, and food for the pack stays off screen. To install on a tablet, host the folder on any web server (or GitHub Pages) and use "Add to Home Screen".</p>
+  </div>
+</div>
+
+<!-- ============================ READ TO PLAY ============================ -->
+<div class="modal read-modal" id="readCard" hidden>
+  <div class="sheet read-card">
+    <div class="rc-top"><div id="rcPic"></div><p class="rc-prompt" id="rcPrompt">What will you do?</p></div>
+    <div class="rc-choices" id="rcChoices"></div>
+    <div class="row inline center"><button class="chip" id="rcHelp">👂 Help me read</button><button class="chip" id="rcBack">Not now</button></div>
+  </div>
+</div>
+<div class="modal read-modal" id="readPage" hidden>
+  <div class="sheet read-page">
+    <div class="rp-head"><span class="rp-level" id="rpLevel">Level B</span><h2 id="rpTitle">Born in the den</h2></div>
+    <div class="rp-body"><div id="rpPic"></div><div class="rp-text" id="rpText"></div></div>
+    <div class="rp-task" id="rpTask" hidden></div>
+    <p class="rp-msg" id="rpMsg"></p>
+    <div class="row inline center"><button class="chip" id="rpHelp">👂 Read it to me</button><button class="chip" id="rpMic">🎤 I will read it out loud</button><button class="start rp-next" id="rpNext">I read it! ➜</button></div>
+  </div>
+</div>
+<div class="mission-card" id="missionCard" hidden>
+  <span class="mc-k">⭐ Read and do</span>
+  <p class="mc-text" id="mcText"></p>
+  <button class="say" id="mcHelp" title="Help me read">👂</button>
+</div>
+<div class="modal" id="myWords" hidden>
+  <div class="sheet">
+    <button class="close" id="wordsClose">&times;</button>
+    <h2>🔤 My words <span class="count" id="wordsCount">0</span></h2>
+    <p class="tiny">Green words you know. Yellow words you are learning. Orange words are tricky: keep meeting them! Tap a word to hear it.</p>
+    <div class="words-grid" id="wordsGrid"></div>
+    <h4 class="report-h">For grown-ups: reading report</h4>
+    <div class="read-report" id="readReport"></div>
+  </div>
+</div>
+
+<script src="js/core.js"></script>
+<script src="js/facts.js"></script>
+<script src="js/readlex.js"></script>
+<script src="js/valley.js"></script>
+<script src="js/world.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/particles.js"></script>
+<script src="js/cinematic.js"></script>
+<script src="js/player.js"></script>
+<script src="js/render.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/grownups.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/gamepad.js"></script>
+<script src="js/stickers.js"></script>
+<script src="js/journal.js"></script>
+<script src="js/microscope.js"></script>
+<script src="js/save.js"></script>
+<script src="js/reading.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

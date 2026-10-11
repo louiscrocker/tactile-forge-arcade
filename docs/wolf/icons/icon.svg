@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0c1230"/>
+      <stop offset=".55" stop-color="#3a2a5c"/>
+      <stop offset=".8" stop-color="#e8805a"/>
+      <stop offset="1" stop-color="#ffc890"/>
+    </linearGradient>
+    <linearGradient id="snow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4f8ff"/>
+      <stop offset="1" stop-color="#a8b8d0"/>
+    </linearGradient>
+    <linearGradient id="fur" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4e493f"/>
+      <stop offset=".55" stop-color="#8f8a7e"/>
+      <stop offset="1" stop-color="#e8e2d2"/>
+    </linearGradient>
+    <radialGradient id="moon" cx=".4" cy=".35" r=".7">
+      <stop offset="0" stop-color="#fffdf0"/>
+      <stop offset="1" stop-color="#d9dcc8"/>
+    </radialGradient>
+    <clipPath id="round"><rect width="512" height="512" rx="112"/></clipPath>
+  </defs>
+  <g clip-path="url(#round)">
+    <rect width="512" height="512" fill="url(#sky)"/>
+    <g fill="#fff" opacity=".8"><circle cx="70" cy="60" r="3"/><circle cx="150" cy="110" r="2.4"/><circle cx="250" cy="48" r="2.6"/><circle cx="440" cy="190" r="2.2"/><circle cx="96" cy="190" r="2"/><circle cx="210" cy="160" r="1.8"/></g>
+    <circle cx="370" cy="128" r="70" fill="#fff8e8" opacity=".18"/>
+    <circle cx="370" cy="128" r="50" fill="url(#moon)"/>
+    <circle cx="352" cy="118" r="9" fill="#c8c8b0" opacity=".45"/><circle cx="385" cy="145" r="7" fill="#c8c8b0" opacity=".4"/>
+    <path d="M0 330 L70 270 L120 300 L190 230 L250 290 L320 250 L400 300 L460 260 L512 290 L512 512 L0 512 Z" fill="#5a6a90"/>
+    <path d="M190 230 L215 255 L200 262 L178 244 Z M320 250 L345 268 L328 274 L305 262 Z M70 270 L92 288 L76 292 L55 283 Z" fill="#e8f0fa"/>
+    <g fill="#1c2a36">
+      <path d="M20 390 l20 -60 l20 60 z"/><path d="M60 395 l16 -48 l16 48 z"/><path d="M440 392 l18 -56 l18 56 z"/><path d="M478 396 l14 -44 l14 44 z"/>
+    </g>
+    <path d="M0 420 Q130 360 250 380 T512 400 L512 512 L0 512 Z" fill="url(#snow)"/>
+  </g>
+  <!-- the wolf, howling on the snow, side on -->
+  <g stroke="#2a2620" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+    <!-- tail -->
+    <path d="M150 352 Q100 360 82 392 Q118 380 160 366 Z" fill="url(#fur)"/>
+    <!-- far legs -->
+    <path d="M168 360 L160 412" fill="none" stroke="#3a3530" stroke-width="20"/>
+    <path d="M268 352 L276 412" fill="none" stroke="#3a3530" stroke-width="20"/>
+    <!-- body -->
+    <path d="M140 352 C140 312 190 300 240 302 C280 304 300 318 300 340 C300 372 260 382 220 382 C175 382 140 380 140 352 Z" fill="url(#fur)"/>
+    <!-- near legs -->
+    <path d="M180 370 L176 420" fill="none" stroke="#8f8a7e" stroke-width="20"/>
+    <path d="M282 358 L292 420" fill="none" stroke="#8f8a7e" stroke-width="20"/>
+    <!-- a thick ruff, then the head with its muzzle pointing up to the moon -->
+    <path d="M246 336 C246 298 262 270 290 258 L326 274 C318 300 306 322 300 346 Z" fill="url(#fur)"/>
+    <path d="M292 250 L282 212 L312 238 Z" fill="#6a655a"/>
+    <path d="M284 270 C278 248 294 232 314 234 C330 236 338 250 334 264 C328 280 302 286 290 280 Z" fill="url(#fur)"/>
+    <path d="M318 242 L360 200 C365 195 372 200 368 207 L336 262 C328 262 320 254 318 242 Z" fill="#d8d2c2"/>
+  </g>
+  <ellipse cx="365" cy="203" rx="7" ry="6" fill="#1a1612"/>
+  <circle cx="318" cy="252" r="4.5" fill="#e0a428"/><circle cx="319" cy="252" r="2" fill="#1a1612"/>
+  <g stroke="#fff3c0" stroke-width="7" fill="none" stroke-linecap="round" opacity=".85">
+    <path d="M384 178 q20 -14 20 -40"/><path d="M398 192 q34 -22 32 -66"/>
+  </g>
+</svg>

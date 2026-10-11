@@ -126,6 +126,14 @@ export const GAMES = [
     meta: 'Keyboard, touch or gamepad',
   },
   {
+    slug: 'wolf', shelf: 'nature', name: 'Wolf: Song of the Valley', badge: 'AGES 4–8',
+    accent: '#f0a830', glow: 'rgba(240,168,48,0.5)',
+    tagline: 'Open your eyes in the den, run with your family, and howl a song of your own.',
+    description: "Live a gray wolf's real life in a Yellowstone valley: a blind newborn pup in the den, play-fights and first yips, a summer meadow full of grasshoppers that always hop away, autumn tracks and a river swim, deep winter snow beside the elk and bison, then leaving home, finding a mate and digging a den of your own. Play as a boy or a girl wolf, gray, black or white; nothing ever gets hurt. Everything is read aloud, and Read to Play turns levelled reading into how you play.",
+    features: ['Real life cycle', 'Read to Play', 'Plays offline'],
+    meta: 'Keyboard, touch or gamepad',
+  },
+  {
     slug: 'storm-lab', shelf: 'nature', name: 'Storm Lab', badge: 'AGES 8–13',
     accent: '#8fb8ff', glow: 'rgba(143,184,255,0.5)',
     tagline: 'Build a tornado, watch it work, and read the damage like a scientist.',
