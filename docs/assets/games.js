@@ -118,6 +118,14 @@ export const GAMES = [
     meta: 'Keyboard, touch or gamepad',
   },
   {
+    slug: 'lobster', shelf: 'nature', name: 'Lobster: Shell by Shell', badge: 'AGES 4–8',
+    accent: '#e2552f', glow: 'rgba(226,85,47,0.5)',
+    tagline: 'Float free as a tiny larva, find a hole under a cobble, and grow shell by shell.',
+    description: "Live an American lobster's real life in the Gulf of Maine: a tiny larva in the plankton dodging herring and a basking shark, a stage IV superlobster hunting for a hole under a cobble, years of moults and tail flips, a friendly lobsterman's gauge, and the long walk to the deep for winter. Play as a boy or a girl lobster in five real colours, even blue; nothing ever gets hurt. Everything is read aloud, and Read to Play turns levelled reading into how you play.",
+    features: ['Real life cycle', 'Read to Play', 'Plays offline'],
+    meta: 'Keyboard, touch or gamepad',
+  },
+  {
     slug: 'storm-lab', shelf: 'nature', name: 'Storm Lab', badge: 'AGES 8–13',
     accent: '#8fb8ff', glow: 'rgba(143,184,255,0.5)',
     tagline: 'Build a tornado, watch it work, and read the damage like a scientist.',
