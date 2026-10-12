@@ -134,6 +134,22 @@ export const GAMES = [
     meta: 'Keyboard, touch or gamepad',
   },
   {
+    slug: 'polar-bear', shelf: 'nature', name: 'Polar Bear: Children of the Ice', badge: 'AGES 4–8',
+    accent: '#5fb4e8', glow: 'rgba(95,180,232,0.5)',
+    tagline: 'Open your eyes in a snow den, follow Mum onto the sea ice, and grow into the biggest bear on Earth.',
+    description: "Live a polar bear's real life on an Arctic coast: a tiny blind cub in a snow den with a twin, sliding down spring drifts beside an Arctic fox, waiting by a seal's breathing hole (the seals always slip away), swimming floe to floe when the ice breaks up, a summer ashore with the scientists' tundra buggy, the northern lights, then out on the ice on your own. Play as a boy or a girl bear in white, cream or gold; nothing ever gets hurt. Everything is read aloud, and Read to Play turns levelled reading into how you play.",
+    features: ['Real life cycle', 'Read to Play', 'Plays offline'],
+    meta: 'Keyboard, touch or gamepad',
+  },
+  {
+    slug: 'snake', shelf: 'nature', name: 'Garter Snake: Skin by Skin', badge: 'AGES 4–8',
+    accent: '#e8c83a', glow: 'rgba(232,200,58,0.5)',
+    tagline: 'Wiggle out of your little bag, smell with your tongue, and grow skin by skin.',
+    description: "Live a common garter snake's real life in a northern meadow: born in a thin bag in late summer, flicking your tongue to smell for snacks, basking on warm rocks and hiding from the hawk under a board, cloudy blue eyes before your first shed, then following the scent trail to a winter den deep in the rock with hundreds of other snakes. Play as a boy or a girl snake in five real colours; nothing ever gets hurt. Everything is read aloud, and Read to Play turns levelled reading into how you play.",
+    features: ['Real life cycle', 'Read to Play', 'Plays offline'],
+    meta: 'Keyboard, touch or gamepad',
+  },
+  {
     slug: 'storm-lab', shelf: 'nature', name: 'Storm Lab', badge: 'AGES 8–13',
     accent: '#8fb8ff', glow: 'rgba(143,184,255,0.5)',
     tagline: 'Build a tornado, watch it work, and read the damage like a scientist.',

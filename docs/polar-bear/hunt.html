@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Polar Bear Tracker — Polar Bear: Children of the Ice</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root { --ink: #1e2a36; --dim: #5a6a7a; --line: #c8d6e2; --ice: #2a5a8a; --aurora: #2aa878; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #dfe8f0; color: var(--ink); font-family: "Nunito", "Segoe UI", system-ui, sans-serif; }
+  .page { width: 210mm; min-height: 297mm; margin: 12px auto; padding: 14mm 14mm 10mm; background: #fdfeff; box-shadow: 0 6px 30px rgba(0,0,0,.15); }
+  h1 { margin: 0; font-size: 34px; font-weight: 900; letter-spacing: .04em; color: var(--ice); }
+  h1 span { color: var(--aurora); }
+  .sub { margin: 4px 0 14px; color: var(--dim); font-weight: 700; }
+  h2 { font-size: 18px; font-weight: 900; margin: 18px 0 8px; border-bottom: 2px solid var(--line); padding-bottom: 4px; }
+  .cycle { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; align-items: end; }
+  .cycle figure { margin: 0; text-align: center; }
+  .cycle canvas { width: 100%; height: auto; border: 2px dashed var(--line); border-radius: 12px; background: #fff; }
+  .cycle figcaption { font-weight: 900; margin-top: 4px; font-size: 14px; }
+  .cycle small { display: block; color: var(--dim); font-weight: 700; font-size: 10.5px; line-height: 1.25; }
+  .arrow { text-align: center; font-weight: 900; color: var(--dim); margin: 4px 0 0; font-size: 13px; }
+  .tracks { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .tracks figure { margin: 0; text-align: center; }
+  .tracks canvas { width: 100%; height: auto; border: 2px solid var(--line); border-radius: 10px; background: #fff; }
+  .tracks figcaption { font-weight: 900; font-size: 13px; }
+  .hunt { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; }
+  .hunt label { display: flex; gap: 10px; align-items: flex-start; font-weight: 700; padding: 6px 0; border-bottom: 1px dotted var(--line); }
+  .box { flex: 0 0 22px; height: 22px; border: 2.5px solid var(--ink); border-radius: 5px; }
+  .hunt small { display: block; color: var(--dim); font-size: 12px; font-weight: 600; }
+  .draw { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .draw div { height: 44mm; border: 2px solid var(--line); border-radius: 12px; padding: 8px; font-weight: 800; color: var(--dim); }
+  .measure { font-weight: 800; margin-top: 10px; }
+  .paw { width: 30mm; height: 30mm; border: 2.5px dashed var(--ink); border-radius: 50%; display: inline-block; vertical-align: middle; margin-left: 10px; }
+  .note { font-size: 12px; color: var(--dim); font-weight: 600; margin-top: 16px; line-height: 1.45; }
+  .bar { display: flex; gap: 8px; justify-content: center; margin: 12px auto 0; width: 210mm; }
+  .bar button { font: inherit; font-weight: 900; padding: 10px 18px; border-radius: 12px; border: none; background: var(--ice); color: #fff; cursor: pointer; }
+  @media print { body { background: #fff; } .page { margin: 0; box-shadow: none; } .bar { display: none; } }
+</style>
+</head>
+<body>
+<div class="bar"><button onclick="print()">🖨️ Print this page</button></div>
+<div class="page">
+  <h1>Polar Bear <span>Tracker</span></h1>
+  <p class="sub">Name: ______________________ &nbsp; Date: ____________ &nbsp; Where I looked: ____________________</p>
+
+  <h2>1 · The polar bear's life cycle (colour it in!)</h2>
+  <div class="cycle">
+    <figure><canvas data-draw="newborn" width="220" height="200"></canvas><figcaption>Newborn</figcaption><small>tiny and blind, in a snow den</small></figure>
+    <figure><canvas data-draw="cub" width="220" height="200"></canvas><figcaption>Cub</figcaption><small>out of the den in spring</small></figure>
+    <figure><canvas data-draw="seacub" width="220" height="200"></canvas><figcaption>On the ice</figcaption><small>walks to the frozen sea with Mum</small></figure>
+    <figure><canvas data-draw="yearling" width="220" height="200"></canvas><figcaption>Yearling</figcaption><small>still with Mum, practising</small></figure>
+    <figure><canvas data-draw="young" width="220" height="200"></canvas><figcaption>Young bear</figcaption><small>on its own at 2½ years</small></figure>
+    <figure><canvas data-draw="mother" width="220" height="200"></canvas><figcaption>Grown up</figcaption><small>a mother digs a den for new cubs</small></figure>
+  </div>
+  <p class="arrow">newborn → cub → cub on the sea ice → yearling → young bear on its own → grown bear → new cubs in a snow den</p>
+
+  <h2>2 · Whose tracks? Write the right name under each track</h2>
+  <p class="sub" id="trackNames"></p>
+  <div class="tracks" id="tracks"></div>
+
+  <h2>3 · What can you find? (look, don't take)</h2>
+  <div class="hunt">
+    <label><span class="box"></span><span>Something white<small>Snow, frost, a cloud, a white bird? Is it really white, or does it just look white?</small></span></label>
+    <label><span class="box"></span><span>A dog's paw print<small>In mud, sand or snow. A polar bear's print would be as wide as a dinner plate!</small></span></label>
+    <label><span class="box"></span><span>Ice<small>In a puddle, a pond or the freezer. Put a piece in water: does it float, like sea ice?</small></span></label>
+    <label><span class="box"></span><span>A bird's footprint<small>How many toes point forwards? A ptarmigan has three.</small></span></label>
+    <label><span class="box"></span><span>The wind<small>Stand up tall like a bear and sniff. What can you smell?</small></span></label>
+    <label><span class="box"></span><span>A hole in the ground<small>Who might live there? Look, but never reach in.</small></span></label>
+    <label><span class="box"></span><span>Keep very still for one minute<small>Like a bear by a seal's hole. What did you see or hear?</small></span></label>
+    <label><span class="box"></span><span>A slope to roll or slide down<small>Bears slide down snowy hills on their tummies, just for fun!</small></span></label>
+    <label><span class="box"></span><span>The moon or the stars<small>Far in the north, people can see the northern lights.</small></span></label>
+    <label><span class="box"></span><span>Something that floats<small>A leaf, a stick, a toy boat. Floes are floating pieces of sea ice.</small></span></label>
+  </div>
+
+  <h2>4 · Draw what you found</h2>
+  <div class="draw"><div>My best find:</div><div>A polar bear on the sea ice:</div></div>
+  <div class="measure">This dashed circle is 3 cm across. A grown polar bear's paw print can be 30 cm wide: ten circles in a row! How many of your hands fit across 30 cm?<span class="paw"></span></div>
+
+  <p class="note">For grown-ups: polar bears live around the Arctic Ocean (Canada, Alaska, Greenland, Norway's Svalbard and Russia) and depend on the sea ice. You will not meet one on a walk, but the same noticing skills work everywhere: tracks of dogs, cats and birds, ice and snow, the wind. Look at animal homes without touching them, leave burrows and nests alone, and wash hands after a nature walk. Real polar bears are dangerous to people: they are watched only from safe places like the tundra buggies in the game.</p>
+</div>
+<script src="js/core.js"></script>
+<script src="js/facts.js"></script>
+<script src="js/arctic.js"></script>
+<script src="js/world.js"></script>
+<script src="js/sprites.js"></script>
+<script>
+  /* outline drawings to colour in: draw each sprite, then turn it into a line drawing */
+  function outline(c) {
+    const g = c.getContext('2d');
+    const img = g.getImageData(0, 0, c.width, c.height), d = img.data, w = c.width, h = c.height, out = g.createImageData(w, h), o = out.data;
+    const lum = (i) => d[i * 4 + 3] < 40 ? 255 : (d[i * 4] + d[i * 4 + 1] + d[i * 4 + 2]) / 3, al = (i) => d[i * 4 + 3];
+    const edge = new Uint8Array(w * h);
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x, e = Math.abs(lum(i) - lum(i + 1)) + Math.abs(lum(i) - lum(i + w)) + (Math.abs(al(i) - al(i + 1)) + Math.abs(al(i) - al(i + w))) * .8;
+      if (e > 30) edge[i] = 1;
+    }
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x, on = edge[i] || edge[i + 1] || edge[i + w];
+      const v = on ? 25 : 255; o[i * 4] = o[i * 4 + 1] = o[i * 4 + 2] = v; o[i * 4 + 3] = 255;
+    }
+    g.setTransform(1, 0, 0, 1, 0, 0); g.putImageData(out, 0, 0);
+  }
+  for (const c of document.querySelectorAll('canvas[data-draw]')) {
+    const g = c.getContext('2d'), k = c.dataset.draw;
+    g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+    g.translate(c.width / 2, c.height / 2 + 6);
+    const f = 'cream';
+    if (k === 'newborn') { g.translate(0, 10); Sprites.drawBear(g, { s: 2.2, form: f, age: 0, lie: true, eyes: 0, seed: 3 }); }
+    if (k === 'cub') Sprites.drawBear(g, { s: 1.7, form: f, age: .22, seed: 3 });
+    if (k === 'seacub') Sprites.drawBear(g, { s: 1.4, form: f, age: .5, seed: 3, moving: true, walk: 1 });
+    if (k === 'yearling') { g.translate(0, 4); Sprites.drawBear(g, { s: 1.25, form: f, age: .82, sit: true, seed: 3 }); }
+    if (k === 'young') { g.translate(-4, -10); Sprites.drawBear(g, { s: 1.05, form: f, age: .95, stand: 1, seed: 3 }); }
+    if (k === 'mother') { g.translate(-14, 0); Sprites.drawBear(g, { s: 1.1, form: f, age: 1, sex: 'girl', seed: 5 }); g.translate(58, 26); Sprites.drawBear(g, { s: .45, form: f, age: .22, seed: 3 }); }
+    outline(c);
+  }
+  /* the tracks, shuffled, with blank lines: a real matching task */
+  const kinds = ['bear', 'fox', 'hare', 'caribou', 'ptarmigan', 'wolf'];
+  const names = { bear: 'Polar bear', fox: 'Arctic fox', hare: 'Arctic hare', caribou: 'Caribou', ptarmigan: 'Ptarmigan', wolf: 'Arctic wolf' };
+  document.getElementById('trackNames').textContent = kinds.map(k => names[k]).sort().join(' · ');
+  const order = kinds.slice().sort(() => Math.random() - .5), box = document.getElementById('tracks');
+  for (const k of order) {
+    const fig = document.createElement('figure'), c = document.createElement('canvas'); c.width = 160; c.height = 110;
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, 160, 110); g.translate(80, 55); g.scale(2.6, 2.6); Sprites.drawTracks(g, k, 1, '#1e2a36');
+    const cap = document.createElement('figcaption'); cap.textContent = '__________';
+    fig.append(c, cap); box.appendChild(fig);
+  }
+</script>
+</body>
+</html>

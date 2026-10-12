@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Snake Spotter — Garter Snake: Skin by Skin</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root { --ink: #2a2016; --dim: #6a5a46; --line: #d8cdb8; --red: #c0501a; --green: #3a7a2a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9e4d6; color: var(--ink); font-family: "Nunito", "Segoe UI", system-ui, sans-serif; }
+  .page { width: 210mm; min-height: 297mm; margin: 12px auto; padding: 12mm 14mm 10mm; background: #fffdf6; box-shadow: 0 6px 30px rgba(0,0,0,.15); }
+  h1 { margin: 0; font-size: 34px; font-weight: 900; letter-spacing: .04em; }
+  h1 span { color: var(--green); }
+  .sub { margin: 4px 0 10px; color: var(--dim); font-weight: 700; }
+  h2 { font-size: 18px; font-weight: 900; margin: 14px 0 8px; border-bottom: 2px solid var(--line); padding-bottom: 4px; }
+  .cycle { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; align-items: end; }
+  .cycle figure { margin: 0; text-align: center; }
+  .cycle canvas { width: 100%; height: auto; border: 2px dashed var(--line); border-radius: 12px; background: #fff; }
+  .cycle figcaption { font-weight: 900; margin-top: 4px; font-size: 14px; }
+  .cycle small { display: block; color: var(--dim); font-weight: 700; font-size: 10.5px; line-height: 1.25; }
+  .arrow { text-align: center; font-weight: 900; color: var(--dim); margin: 4px 0 0; font-size: 13px; }
+  .match { display: grid; grid-template-columns: 1fr 1fr; gap: 0 30px; align-items: center; }
+  .match .pics, .match .names { display: grid; gap: 6px; }
+  .match canvas { width: 100%; height: 56px; border: 2px solid var(--line); border-radius: 10px; background: #fff; }
+  .match .names div { height: 56px; display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 15px; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; border: 2.5px solid var(--ink); flex: 0 0 14px; }
+  .hunt { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 18px; }
+  .hunt label { display: flex; gap: 10px; align-items: flex-start; font-weight: 700; padding: 5px 0; border-bottom: 1px dotted var(--line); }
+  .box { flex: 0 0 22px; height: 22px; border: 2.5px solid var(--ink); border-radius: 5px; }
+  .hunt small { display: block; color: var(--dim); font-size: 12px; font-weight: 600; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .two > div { border: 2px solid var(--line); border-radius: 12px; padding: 8px 10px; font-weight: 700; font-size: 13px; color: var(--dim); min-height: 34mm; }
+  .two b { color: var(--ink); }
+  .ruler { width: 180mm; height: 9mm; margin-top: 6px; border: 2px solid var(--ink); border-radius: 3px; background: repeating-linear-gradient(90deg, var(--ink) 0 .5mm, transparent .5mm 10mm); position: relative; }
+  .ruler::after { content: "0 cm ………………………………………………… a newborn garter snake is about 18 cm long ……"; position: absolute; left: 0; right: 0; top: 100%; font-size: 10px; color: var(--dim); text-align: justify; }
+  .note { font-size: 11.5px; color: var(--dim); font-weight: 600; margin-top: 18px; line-height: 1.45; }
+  .safe { margin-top: 8px; padding: 8px 12px; border-radius: 10px; background: #fff3d8; font-weight: 800; font-size: 13px; }
+  .bar { display: flex; gap: 8px; justify-content: center; margin: 12px auto 0; width: 210mm; }
+  .bar button { font: inherit; font-weight: 900; padding: 10px 18px; border-radius: 12px; border: none; background: var(--green); color: #fff; cursor: pointer; }
+  @media print { body { background: #fff; } .page { margin: 0; box-shadow: none; } .bar { display: none; } }
+</style>
+</head>
+<body>
+<div class="bar"><button onclick="print()">🖨️ Print this page</button></div>
+<div class="page">
+  <h1>Snake <span>Spotter</span></h1>
+  <p class="sub">Name: ______________________ &nbsp; Date: ____________ &nbsp; Where I looked: ____________________</p>
+
+  <h2>1 · The garter snake's life cycle (colour it in!)</h2>
+  <div class="cycle">
+    <figure><canvas data-draw="sac" width="220" height="200"></canvas><figcaption>Born</figcaption><small>in a thin clear bag, in late summer</small></figure>
+    <figure><canvas data-draw="baby" width="220" height="200"></canvas><figcaption>Newborn</figcaption><small>about 18 cm, flicks its tongue</small></figure>
+    <figure><canvas data-draw="shed" width="220" height="200"></canvas><figcaption>Shed skin</figcaption><small>it crawls out, inside out</small></figure>
+    <figure><canvas data-draw="den" width="220" height="200"></canvas><figcaption>Winter den</figcaption><small>deep below the frost line</small></figure>
+    <figure><canvas data-draw="adult" width="220" height="200"></canvas><figcaption>Grown up</figcaption><small>after two or three summers</small></figure>
+    <figure><canvas data-draw="litter" width="220" height="200"></canvas><figcaption>A new litter</figcaption><small>ten, twenty, even forty babies</small></figure>
+  </div>
+  <p class="arrow">born → first shed → first winter in the den → growing and shedding → the spring gathering → a new litter</p>
+
+  <h2>2 · Match each snake to its name</h2>
+  <div class="match"><div class="pics" id="pics"></div><div class="names" id="names"></div></div>
+
+  <h2>3 · What can you find? (look, don't touch)</h2>
+  <div class="hunt">
+    <label><span class="box"></span><span>A flat rock in the sun<small>Touch it at lunchtime. Is it warm? Snakes bask on rocks like this.</small></span></label>
+    <label><span class="box"></span><span>A board or a log<small>With a grown-up, lift it gently, look, and put it back exactly as it was.</small></span></label>
+    <label><span class="box"></span><span>A shed snake skin<small>Can you see the eye caps and the print of every scale?</small></span></label>
+    <label><span class="box"></span><span>A frog by a pond<small>Does it jump in with a plop?</small></span></label>
+    <label><span class="box"></span><span>A worm after rain<small>Garter snakes find small creatures like these by smell.</small></span></label>
+    <label><span class="box"></span><span>A hawk circling high up<small>Watch its shadow slide across the grass.</small></span></label>
+    <label><span class="box"></span><span>A stone wall or a rock pile<small>Lots of cracks for hiding and for winter dens.</small></span></label>
+    <label><span class="box"></span><span>Fireflies on a summer night<small>Count the flashes. Do they blink in a pattern?</small></span></label>
+    <label><span class="box"></span><span>A garter snake!<small>How many stripes? What colour are they?</small></span></label>
+    <label><span class="box"></span><span>The moon<small>Is it full, half or a thin crescent tonight?</small></span></label>
+  </div>
+  <div class="safe">🐍 Look, don't touch. Never pick up a snake. Garter snakes are harmless, but they can make a very stinky smell, and some other snakes can bite.</div>
+
+  <h2>4 · Be a scientist</h2>
+  <div class="two">
+    <div><b>Warm rock, cool rock.</b> Put a dark stone and a light stone in the sun. After ten minutes, which one feels warmer? Which would a snake choose for basking?<br><br>Dark: ______ &nbsp; Light: ______</div>
+    <div><b>Draw what you found</b> (use a magnifying glass for a close-up):</div>
+  </div>
+  <div style="font-weight:800;margin-top:10px">A newborn garter snake is this long:<div class="ruler"></div></div>
+
+  <p class="note">For grown-ups: the common garter snake (<i>Thamnophis sirtalis</i>) lives across most of North America, from Canada to Florida and coast to coast, more widely than any other snake there. It is harmless to people (it may release a smelly musk if handled) and is protected in some places; the San Francisco garter snake is an endangered species. Garter snakes are born live in late summer, spend the winter in shared dens below the frost line, and come out in spring. Coverboards (boards or metal sheets laid on the ground) are how scientists survey snakes: if you look under one, lift it towards you, look quickly, and put it back exactly where it was. Never handle wild snakes, and if you are outside North America, look for your own local reptiles.</p>
+</div>
+<script src="js/core.js"></script>
+<script src="js/facts.js"></script>
+<script src="js/land.js"></script>
+<script src="js/world.js"></script>
+<script src="js/particles.js"></script>
+<script src="js/sprites.js"></script>
+<script>
+  /* outline drawings to colour in: draw each sprite, then turn it into a line drawing */
+  for (const c of document.querySelectorAll('canvas[data-draw]')) {
+    const g = c.getContext('2d'), k = c.dataset.draw;
+    g.translate(c.width / 2, c.height / 2 + 10);
+    if (k === 'sac') { Sprites.drawSac(g, 0, 40, 6, 0, 0, 'eastern'); }
+    if (k === 'baby') { g.scale(1.6, 1.6); Sprites.snakeIcon(g, 'eastern', { len: 90, thick: 9, baby: 1, tongue: .5 }); }
+    if (k === 'shed') { Sprites.drawExuvia(g, { x: 0, y: 10, len: 180, thick: 20, face: 1, seed: 2, looked: true }); }
+    if (k === 'den') { g.scale(1.9, 1.9); Sprites.drawIcon(g, 'den', 100, 'eastern'); }
+    if (k === 'adult') { g.scale(1.55, 1.55); Sprites.snakeIcon(g, 'eastern', { len: 120, thick: 11, tongue: .5 }); }
+    if (k === 'litter') { g.scale(1.8, 1.8); Sprites.drawIcon(g, 'babies', 100, 'eastern'); }
+    /* keep only the edges: a colouring-book outline */
+    const img = g.getImageData(0, 0, c.width, c.height), d = img.data, w = c.width, h = c.height, out = g.createImageData(w, h), o = out.data;
+    const lum = (i) => d[i * 4 + 3] < 40 ? 255 : (d[i * 4] + d[i * 4 + 1] + d[i * 4 + 2]) / 3, al = (i) => d[i * 4 + 3];
+    const edge = new Uint8Array(w * h);
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x, e = Math.abs(lum(i) - lum(i + 1)) + Math.abs(lum(i) - lum(i + w)) + (Math.abs(al(i) - al(i + 1)) + Math.abs(al(i) - al(i + w))) * .8;
+      if (e > 45) edge[i] = 1;
+    }
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x, on = edge[i] || edge[i + 1] || edge[i + w];
+      const v = on ? 25 : 255; o[i * 4] = o[i * 4 + 1] = o[i * 4 + 2] = v; o[i * 4 + 3] = 255;
+    }
+    g.setTransform(1, 0, 0, 1, 0, 0); g.putImageData(out, 0, 0);
+  }
+  /* the matching task: pictures in one order, names in a shuffled order */
+  const pics = document.getElementById('pics'), names = document.getElementById('names');
+  const order = FORM_KEYS.slice(), shuffled = FORM_KEYS.slice();
+  for (let i = shuffled.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; }
+  if (shuffled.every((k, i) => k === order[i])) shuffled.push(shuffled.shift());
+  for (const k of order) {
+    const row = document.createElement('div'); row.style.display = 'flex'; row.style.alignItems = 'center'; row.style.gap = '10px';
+    const c = document.createElement('canvas'); c.width = 520; c.height = 112;
+    const g = c.getContext('2d'); g.translate(250, 66); g.scale(1.5, 1.5); Sprites.snakeIcon(g, k, { len: 220, thick: 16, tongue: .5 });
+    row.appendChild(c); const d = document.createElement('span'); d.className = 'dot'; row.appendChild(d); pics.appendChild(row);
+  }
+  for (const k of shuffled) { const r = document.createElement('div'); const d = document.createElement('span'); d.className = 'dot'; r.appendChild(d); r.appendChild(document.createTextNode(FORMS[k].name)); names.appendChild(r); }
+</script>
+</body>
+</html>

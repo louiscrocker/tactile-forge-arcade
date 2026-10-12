@@ -16,7 +16,7 @@ $web = [ordered]@{
   'last-silo'='MISSILE_ATTACK'; 'soft-touchdown'='LUNAR_LANDER'; 'rubble-drift'='ASTEROIDS'; 'periscope-front'='TANK_BATTLE';
   'lightwake'='TRON'; 'trenchfire'='TRENCHFIRE_GO'; 'close-hauled'='YACHT_RACE'; 'frog-pond'='FROG_POND';
   'ladybug-life'='LADYBUG'; 'monarch-journey'='MONARCH_JOURNEY'; 'alicorn-skies'='ALICORN';
-  'burrow-and-brood'='ANT_KINGDOM'; 'hercules'='HERCULES'; 'red-crab'='RED_CRAB'; 'lobster'='LOBSTER'; 'wolf'='WOLF'; 'storm-lab'='TORNADO'
+  'burrow-and-brood'='ANT_KINGDOM'; 'hercules'='HERCULES'; 'red-crab'='RED_CRAB'; 'lobster'='LOBSTER'; 'wolf'='WOLF'; 'polar-bear'='POLAR_BEAR'; 'snake'='SNAKE'; 'storm-lab'='TORNADO'
 }
 # Files that never ship (same idea as package-game.mjs's deny list): a repo that
 # is ahead of the live build only in these is still current.
