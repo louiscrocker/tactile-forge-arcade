@@ -20,7 +20,7 @@ const STICKERS = [
   { key: 'slide', name: 'Wheee!', simple: 'I slid down a snowy hill on my tummy!', icon: 'slide', col: '#cfe4ff', test: (S) => S.slides >= 1 },
   { key: 'slide5', name: 'Snow Slider', simple: 'I slid down five times!', icon: 'slide', col: '#9fd0ff', test: (S) => S.slides >= 5 },
   { key: 'fox', name: 'Little Shadow', simple: 'An Arctic fox came by!', icon: 'fox', col: '#e8eef4', test: (S) => S.events.has('foxNear') },
-  { key: 'trek', name: 'To the Sea', simple: 'I walked to the sea ice with Mum!', icon: 'mum', col: '#d9d2c4', test: (S) => S.age >= 3 },
+  { key: 'trek', name: 'To the Sea', simple: 'I set off for the sea with Mum!', icon: 'mum', col: '#d9d2c4', test: (S) => S.age >= 3 },
   { key: 'tracks', name: 'Tracker', simple: 'I read some tracks!', icon: 'tracks', col: '#d9e4f0', test: (S) => S.looks >= 1 },
   { key: 'tracks4', name: 'Master Tracker', simple: 'I know four kinds of tracks!', icon: 'paw', col: '#c8d8e8', test: (S) => S.tracks >= 4 },
   { key: 'blizzard', name: 'Blizzard!', simple: 'I curled up behind the rock in a blizzard!', icon: 'blizzard', col: '#b8c0d8', test: (S) => S.shelters >= 1 },

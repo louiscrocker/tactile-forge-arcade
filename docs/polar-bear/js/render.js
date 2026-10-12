@@ -277,7 +277,7 @@ const Render = (function () {
       ctx.fillStyle = `rgba(220,232,246,${.13 * (1 - night * .6)})`; ctx.fillRect(0, y + h * .5, W, H);
     });
     ctx.filter = 'none';
-    ctx.fillStyle = night > .5 ? '#0c1420' : snowy ? '#d4e0ec' : cam.x > WORLD.shoreX - 200 ? '#5a84a4' : '#5a6a52'; ctx.fillRect(0, horizon + 80, W, H);
+    ctx.fillStyle = night > .5 ? (snowy ? '#43547e' : '#0c1420') : snowy ? '#d4e0ec' : cam.x > WORLD.shoreX - 200 ? '#5a84a4' : '#5a6a52'; ctx.fillRect(0, horizon + 80, W, H);
 
     /* ---------------- world space ---------------- */
     ctx.save();
@@ -573,6 +573,8 @@ const Render = (function () {
     if (n.spin) ctx.rotate(n.spin);
     else if (!n.inDen && !n.swimming) ctx.rotate(clamp(Math.atan(G.world.ground.slopeAt(n.x, Math.max(8, n.len * .3))), -1, 1) * (['lie', 'still', 'sit'].includes(n.mode) ? .85 : .6));
     if (n.mode === 'enter') ctx.globalAlpha = clamp(1 - (n.sink || 0), 0, 1);
+    /* in the whiteout the family walks off into the snow: they fade from sight */
+    if (G.world.lostMode && (n.role === 'mum' || n.role === 'twin')) ctx.globalAlpha = clamp(1 - (Math.abs(n.x - G.player.x) - 40) / 110, 0, 1);
     ctx.scale(n.face, 1);
     Sprites.drawBear(ctx, npcPose(G, n));
     ctx.restore();
@@ -672,14 +674,14 @@ const Render = (function () {
       ctx.fillStyle = lg; rr(ctx, bx, by, bw, 24, 12); ctx.fill();
       ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(mk, by + 12, 16, 0, TAU); ctx.fill();
       ctx.save(); ctx.translate(mk - 2, by + 12); ctx.scale(.22, .22); Sprites.drawBear(ctx, { s: 1, form: p.form, age: p.age01 }); ctx.restore();
-      bigText(w.done === 'win' ? 'YOU WIN!' : w.done === 'lose' ? 'ROLL OVER!' : ok ? 'BIG PUSH!  (E / ▲)' : 'PUSH!  (Space)', W / 2, by + 56, ok);
+      bigText(w.done === 'win' ? 'YOU WIN!' : w.done === 'lose' ? 'ROLL OVER!' : ok ? (G.settings.pad ? 'BIG PUSH!  (💥)' : 'BIG PUSH!  (E / ▲)') : (G.settings.pad ? 'PUSH!' : 'PUSH!  (Space)'), W / 2, by + 56, ok);
     }
     if (p.mode === 'sniff' && p.sw) {
       const h = p.sw, [sx, sy] = cam.toScreen(p.x + p.face * p.w * .3, p.y - p.h * 1.5), ok = p.sniffWindow();
       ringMeter(G, sx, sy, h.held ? (h.ring % SNIFF_RING) / SNIFF_RING : 0, ok && h.held, h.flash);
       const need = G.diff().sniffs, by = H - 160;
       for (let k = 0; k < need; k++) { ctx.fillStyle = k < h.good ? '#7fd0ff' : 'rgba(255,255,255,.3)'; ctx.beginPath(); ctx.arc(W / 2 - (need - 1) * 14 + k * 28, by - 22, 9, 0, TAU); ctx.fill(); }
-      bigText(h.held ? (ok ? 'LET GO NOW!' : 'Sniff… sniff…') : 'HOLD E TO SNIFF', W / 2, by + 20, ok && h.held);
+      bigText(h.held ? (ok ? 'LET GO NOW!' : 'Sniff… sniff…') : G.settings.pad ? 'HOLD SNIFF' : 'HOLD E TO SNIFF', W / 2, by + 20, ok && h.held);
       if (h.flash > 0) { ctx.strokeStyle = `rgba(200,235,255,${h.flash})`; ctx.lineWidth = 3; for (let k = 1; k <= 3; k++) { ctx.beginPath(); ctx.arc(W - 60, H * .4, k * 18 + (1 - h.flash) * 30, Math.PI * .6, Math.PI * 1.4); ctx.stroke(); } }
     }
     if (p.mode === 'still' && p.st) {
@@ -727,7 +729,7 @@ const Render = (function () {
     const seen = new Set();
     for (let k = 0; k < 9; k++) { const a = k / 9 * TAU, d = 50 + (k % 3) * 40, x = p.x + Math.cos(a) * d, y = p.y + Math.abs(Math.sin(a)) * d * .8 + 20, m = S.matAt(x, y); if (m === MAT.AIR || seen.has(m)) continue; seen.add(m); tag(x, y, MAT_INFO[m].name); }
     tag(p.x, p.y - p.h - 12, STAGES[STAGE_INDEX[p.stageKey()]].name);
-    for (const n of Wd.pack) if (!n.inDen && Math.abs(n.x - p.x) < 500) tag(n.x, n.y - n.h - 8, { mum: 'Mum (radio collar)', twin: 'twin', young: 'young male', mate: 'another bear', bigmale: 'big male', mother: 'a mother bear' }[n.role] || 'polar bear');
+    for (const n of Wd.pack) if (!n.inDen && Math.abs(n.x - p.x) < (Wd.lostMode && (n.role === 'mum' || n.role === 'twin') ? 120 : 500)) tag(n.x, n.y - n.h - 8, { mum: 'Mum (radio collar)', twin: 'twin', young: 'young male', mate: 'another bear', bigmale: 'big male', mother: 'a mother bear' }[n.role] || 'polar bear');
     for (const q of Wd.cubs) if (!q.inDen && Math.abs(q.x - p.x) < 400) tag(q.x, q.y - q.h - 8, 'cub');
     for (const e of Wd.herd) if (Math.abs(e.x - p.x) < 500) tag(e.x, e.y - 60, 'caribou');
     for (const f of Wd.foxes) if (Math.abs(f.x - p.x) < 300) tag(f.x, f.y - 30, 'Arctic fox');

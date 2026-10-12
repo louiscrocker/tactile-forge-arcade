@@ -239,7 +239,9 @@ class World {
   /* Mum found a meal (what it is stays off screen): a tidy bundle on the ice beside her */
   spawnMeal(x) {
     const S = this.ground;
-    this.meal = { x, y: S.walkTop(x, 6) - 3, taken: false, t: 0 };
+    /* never in a seal's breathing hole: on the ice beside it */
+    for (const h of this.holes) if (Math.abs(h.x - x) < 24) x = h.x + (x >= h.x ? 24 : -24);
+    this.meal = { x, y: S.walkTop(x, 12) - 3, taken: false, t: 0 };
     return this.meal;
   }
 

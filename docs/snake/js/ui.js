@@ -144,18 +144,18 @@ const UI = (function () {
     else if (p.mode === 'birth') { name = 'Mother snake'; prog = p.birth.good / D.pushes; ptxt = `Babies born · ${p.stats.babies}`; }
     else if (p.mode === 'shed') { prog = p.peel; ptxt = 'Crawling out of the old skin…'; }
     else if (p.shed === 'tight') { prog = .2; ptxt = 'Skin feels tight…'; }
-    else if (p.shed === 'blue') { prog = clamp(p.blueT / D.blue, 0, 1); ptxt = p.mode === 'hide' ? 'Blue eyes · resting under cover…' : 'Blue eyes! Hide under cover'; }
+    else if (p.shed === 'blue') { prog = clamp(p.blueT / D.blue, 0, 1); ptxt = p.mode === 'hide' ? 'Blue eyes · resting…' : 'Blue eyes! Hide under cover'; }
     else if (p.shed === 'clear') { prog = clamp(p.rubN / 3, 0, 1); ptxt = 'Rub your nose on a rock or log'; }
-    else if (p.flags.autumnNow && !p.flags.wintered) { prog = p.underground ? .6 + .4 * p.s / Wd.land.pathLen : clamp(1 - Math.abs(p.x - Wd.land.mouth.x) / 2400, 0, .6); ptxt = p.underground ? 'Down, below the frost line…' : 'Follow the trail to the winter den'; }
+    else if (p.flags.autumnNow && !p.flags.wintered) { prog = p.underground ? .6 + .4 * p.s / Wd.land.pathLen : clamp(1 - Math.abs(p.x - Wd.land.mouth.x) / 2400, 0, .6); ptxt = p.underground ? 'Down, below the frost line…' : 'Follow the trail to the den'; }
     else if (p.underground) { prog = 1 - p.s / Wd.land.pathLen; ptxt = 'Up and out of the den!'; }
     else if (p.flags.ready) { name = 'Mother snake'; prog = 1; ptxt = 'Babies ready! Hide under a log'; }
-    else if (p.flags.carrying) { name = 'Mother snake'; prog = p.eggs; ptxt = `Bask to keep the babies warm · ${Math.round(p.eggs * 100)}%`; }
+    else if (p.flags.carrying) { name = 'Mother snake'; prog = p.eggs; ptxt = `Bask: babies warm · ${Math.round(p.eggs * 100)}%`; }
     else if (p.flags.gathering && !p.flags.met) { prog = .5; ptxt = p.sex === 'boy' ? (Wd.race && !Wd.race.done ? 'Follow her scent trail!' : 'Wait for a girl to come out') : 'Say hello to a boy'; }
     else if (p.flags.met) { prog = 1; ptxt = p.flags.genDone ? 'A whole life cycle!' : 'Summer goes by…'; }
     else if (p.instar < 4) {
       const th = [0, ...D.food], i = p.instar;
       prog = clamp((p.cfood - th[i - 1]) / (th[i] - th[i - 1]), 0, 1);
-      ptxt = p.belly > .5 ? (p.warm >= p.warmBand[0] ? `Warm tummy, growing · ${cm}` : `Too cold to grow! Bask · ${cm}`) : `Flick, find snacks, bask · ${cm}`;
+      ptxt = p.belly > .5 ? (p.warm >= p.warmBand[0] ? `Warm tummy, growing · ${cm}` : `Too cold to grow! Bask · ${cm}`) : `Flick, snack, bask · ${cm}`;
     } else { prog = clamp((p.cfood - D.food[2]) / (D.food[2] * (BONUS - 1)), 0, 1); ptxt = `Grown up · ${cm}`; }
     return { name, prog, ptxt };
   }

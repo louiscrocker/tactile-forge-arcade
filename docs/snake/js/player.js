@@ -194,8 +194,11 @@ class Snake {
     if (!this.moving && this.stillT > 2.2 && !swim && !this.coiled) this.coilHere();
     if (swim && !this.flags.swam) { this.flags.swam = true; Bus.emit('swimStart', this); }
     /* push down: into the den's crack (in autumn), or under a cover */
-    if (inp.y > .6 && !this._downHeld) this.tryDown();
+    /* at the den mouth in autumn, holding down is enough (a finger resting on the pad's down button) */
+    const denNow = this.flags.autumnNow && !this.flags.wintered && this.atDenMouth();
+    if (inp.y > .6 && (!this._downHeld || denNow)) this.tryDown();
     this._downHeld = inp.y > .6;
+    if (denNow && this.mode === 'crawl') this.say('denmouth');
     /* places */
     const reg = L.region(this.x);
     if (reg !== this.region) { this.region = reg; Bus.emit('region', this, reg); }

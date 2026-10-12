@@ -12,6 +12,8 @@ const UI = (function () {
   let wheelEls = [], toastTimer = 0, toastQueue = [], graphClock = 0;
 
   const simple = () => G.settings.reading === 'simple';
+  /* with the touch buttons on, hints name the buttons, not the keyboard (a tablet has no Space bar) */
+  const padWords = (t) => !(G && G.settings.pad) || typeof t !== 'string' ? t : t.replace(/\b(press|Press|tap|Tap) Space\b/g, '$1 the big button').replace(/\b(hold|Hold) E\b/g, '$1 SNIFF').replace(/\bpress E\b/g, 'press the small button').replace(/: E!/g, ': small button!');
   const T = (key) => { const h = HINTS[key]; if (!h) return key; return Array.isArray(h) ? h[simple() ? 1 : 0] : h; };
 
   function init(game, callbacks) {
@@ -163,6 +165,8 @@ const UI = (function () {
   const MOON_EMOJI = ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'];
   function update(dt = 1 / 60) {
     const p = G.players[0], Wd = G.world, d = describe(p);
+    /* during a timing game (play-fight, sniff, keep still, creep, slide) a phone hides the fact card and toast (style.css) */
+    document.body.classList.toggle('timing', ['play', 'sniff', 'still', 'stalk', 'slide'].includes(p.mode));
     const sky = Wd.weather.state === 'storm' ? '⛈️' : Wd.weather.snow > .4 ? '🌨️' : Wd.weather.rain > .4 ? '🌧️' : Wd.weather.cloud > .5 ? '☁️' : (G.night > .5 ? '🌙' : '☀️');
     const size = `${p.kg < 2 ? p.kg.toFixed(1) : Math.round(p.kg)} kg`;
     const warm = `${Math.round(p.warmth * 100)}%`;
@@ -219,7 +223,7 @@ const UI = (function () {
       if (G.settings.readHelp !== 'ask') readHintTimer = setTimeout(() => { if (hintText === rt) Voice.say(rt, { interrupt: false }); }, LEVEL_INFO[Reading.level()].help * 1000);
       return;
     }
-    const txt = T(keyOrText);
+    const txt = padWords(T(keyOrText));
     if (txt === hintKey) return;
     hintKey = txt; hintText = txt;
     const h = $('hint'); $('hintText').textContent = txt;
@@ -241,6 +245,9 @@ const UI = (function () {
     $('factTitle').textContent = f.title; $('factBody').textContent = simple() ? f.simple : f.body;
     const more = $('factMore'); more.hidden = !f.more; if (f.more) more.href = f.more;
     const el = $('fact'); el.hidden = false; el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
+    /* a phone held upright: the card sits just under the HUD (and a mission), in the sky above the bear */
+    el.style.top = innerWidth <= 560 ? Math.round(belowTop([$('hud'), $('missionCard')]) + 8) + 'px' : '';
+    if (!$('stickerToast').hidden) placeToast();
     clearTimeout(nextFact._t); nextFact._t = setTimeout(closeFact, 30000);
     if (!Reading.on()) setTimeout(() => Voice.say(`${f.title}. ${simple() ? f.simple : f.body}`), 900);
   }
@@ -248,13 +255,18 @@ const UI = (function () {
   function resetFacts() { clearTimeout(factGap); clearTimeout(nextFact._t); factQueue = []; factsSeen = new Set(); factOpen = false; $('fact').hidden = true; }
 
   /* ---------- stickers ---------- */
+  const belowTop = (els) => els.filter(el => el && !el.hidden).reduce((y, el) => Math.max(y, el.getBoundingClientRect().bottom), 0);
+  /* the toast goes under the HUD and a mission (and, on a phone, under an open fact card) */
+  function placeToast() {
+    const t = $('stickerToast'), below = belowTop([$('hud'), $('missionCard'), innerWidth <= 560 ? $('fact') : null]);
+    if (innerWidth <= 900) t.style.top = Math.round(below + 10) + 'px'; else t.style.top = '';
+  }
   function showSticker(st) {
     const t = $('stickerToast'), c = $('stickerToastCanvas'), ctx = c.getContext('2d');
     ctx.clearRect(0, 0, c.width, c.height); ctx.drawImage(Stickers.image(st, 80, false), 0, 0, 160, 160);
     $('stickerToastName').textContent = simple() ? st.simple : st.name;
     t.hidden = false; t.style.animation = 'none'; void t.offsetWidth; t.style.animation = '';
-    const below = [$('hud'), $('missionCard')].filter(el => el && !el.hidden).reduce((y, el) => Math.max(y, el.getBoundingClientRect().bottom), 0);
-    if (innerWidth <= 900) t.style.top = Math.round(below + 10) + 'px'; else t.style.top = '';
+    placeToast();
     toastTimer = 4.5; AudioFX.sticker && AudioFX.sticker();
     Voice.say(`New sticker! ${simple() ? st.simple : st.name}`);
   }

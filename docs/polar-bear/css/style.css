@@ -648,3 +648,13 @@ body.timing .hint { bottom: 250px; }
 /* a sticker page in the journal is a journal row, not a sticker-book tile */
 .jentry.sticker { flex-direction: row; align-items: flex-start; text-align: left; padding: 12px; border-radius: 16px; font-size: inherit; font-weight: inherit; }
 .jentry.sticker:hover { transform: none; }
+
+/* phones held upright: the fact card sits under the HUD, in the sky, never over the bear or the timing rings
+   (ui.js puts it just under the HUD and a mission, and drops a sticker toast below it) */
+@media (max-width: 560px) {
+  .fact, body.pad-on .fact { top: 170px; bottom: auto; }
+  body.timing .fact, body.timing .toast { opacity: 0; pointer-events: none; transition: opacity .3s; }
+}
+
+/* a cinematic moment: the touch buttons step aside so its title (drawn in the bottom bar) can be read */
+body.cine .pad { opacity: 0; pointer-events: none; transition: opacity .3s; }

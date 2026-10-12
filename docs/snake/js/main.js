@@ -330,14 +330,17 @@
   }
   function camera(rawDt) {
     const p = G.player, cine = Cinematic.camera(), cam = G.cam, uz = G.userZoom;
-    if (cine) cam.follow(cine.x, cine.y, cine.zoom * uz);
+    const upright = H > W * 1.15;
+    if (cine) cam.follow(cine.x, cine.y + (upright ? H * .1 / (cine.zoom * uz) : 0), cine.zoom * uz);
     else if (p.stage === 'sac') cam.follow(p.x, p.y - H * .14 / (4 * uz), 4 * uz);
     else if (p.mode === 'winter') { const C = G.world.land.chamber; cam.follow(C.x + 60, C.y - 140, 1.5 * uz); }
     else if (p.mode === 'birth') cam.follow(p.x, p.y - 20, 2.8 * uz);
     else if (p.mode === 'measured') cam.follow(p.x, p.y - 10, 2.6 * uz);
     else {
       const z = clamp(360 / (p.len + 20), 1.6, 4.5) * (p.underground ? 1.1 : 1);
-      cam.follow(p.x + p.face * p.len * .3, p.y - (p.underground ? 0 : H * .24 / (z * uz)), z * uz);
+      /* a phone held upright: the snake sits in the upper middle, clear of the fact card and the touch pad */
+      const lift = upright ? -.1 : p.underground ? 0 : .24;
+      cam.follow(p.x + p.face * p.len * .3, p.y - H * lift / (z * uz), z * uz);
     }
     cam.update(rawDt, G.world.bounds);
   }

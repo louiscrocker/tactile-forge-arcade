@@ -29,6 +29,8 @@ const Story = (function () {
   const hint = (k) => ui.hint && ui.hint(k);
   const fact = (k, sec = 0) => { if (!ui.fact) return; if (sec) later(sec, () => ui.fact(k)); else ui.fact(k); };
   const cine = (o) => ui.cine && ui.cine(o);
+  /* the night is skipped to morning: a raccoon still poking about heads home */
+  const dawn = () => { const r = G.world.raccoon; if (r && r.state !== 'leave') { r.state = 'leave'; r.t = 0; } };
   const sound = (n, ...a) => { if (typeof AudioFX !== 'undefined' && AudioFX[n]) AudioFX[n](...a); };
 
   function bind(game, hooks) { G = game; if (hooks) ui = hooks; }
@@ -40,7 +42,7 @@ const Story = (function () {
     if (p.flags.autumnNow) return;
     T.autumn = null;
     p.flags.autumnNow = true; p.flags.wintered = false; p.flags.springOut = false;
-    Wd.setSeason('autumn'); G.day += 25;
+    Wd.setSeason('autumn'); G.day += 25; G.tod = .38;   /* a crisp autumn morning: the trek to the den is by day */
     Wd.startAutumn(p);
     hint('autumn'); fact('trail'); fact('den', 25);
     sound('fanfare');
@@ -59,6 +61,8 @@ const Story = (function () {
     if (p.flags.genDone || p.flags.litterShown) return;
     p.flags.litterShown = true;
     Wd.setSeason('summer'); G.day += 100; G.tod = .45;
+    /* months later: the spring crowd, the girl he met and the other boys have long gone */
+    Wd.crowdLeave(); for (const n of Wd.npcs) if ((n.role === 'girl' || n.role === 'rival') && n.mode !== 'leave') { n.mode = 'leave'; n.goal = n.x + 900; n.speed = 30; n.fade = .3; }
     let log = null, bd = 1e9; for (const c of Wd.covers) if ((c.kind === 'log' || c.kind === 'board') && !c.lifted) { const d = Math.abs(c.x - p.x); if (d < bd) { bd = d; log = c; } }
     const mx = log ? log.x + log.w / 2 + 30 : p.x + 80;
     const mum = Wd.addSnake({ x: mx, len: snakeUnits(60), form: Math.random() < .85 ? G.form : pick(FORM_KEYS), sex: 'girl', mode: 'coil', role: 'mother', face: -1 });
@@ -96,11 +100,11 @@ const Story = (function () {
       if (p.flags.autumnNow && !p.flags.wintered && G.world.trail && Math.abs(p.x - G.world.land.mouth.x) > 80 && first('trailHint')) hint('trail');
     });
     Bus.on('ateSnack', (p) => { if (first('snack1')) { hint('snack'); fact('snack'); } else if (p.stats.snacks === 3) { fact('digest'); hint('belly'); } });
-    Bus.on('cold', (p) => { if (p.mode === 'den' || p.mode === 'winter') return; hint('cold'); fact('cold'); });
+    Bus.on('cold', (p) => { if (p.mode === 'den' || p.mode === 'winter') return; hint(p.flags.autumnNow && !p.flags.wintered ? 'autumn' : 'cold'); fact('cold'); });
     Bus.on('hot', () => { hint('hot'); fact('toohot'); });
     Bus.on('basking', () => { hint('bask'); fact('bask'); });
     Bus.on('chilled', () => { hint('chilled'); });
-    Bus.on('chillDone', () => { if (nightAmount(G.tod) > .3) { G.tod = .3; G.day++; hint('morning'); } });
+    Bus.on('chillDone', () => { if (nightAmount(G.tod) > .3) { G.tod = .3; G.day++; dawn(); hint('morning'); } });
     Bus.on('hid', (p, c) => { if (first('hid1')) { hint('hidden'); fact('cover'); } else if (p.shed !== 'blue') hint('hidden'); });
     Bus.on('dash', (p) => { if (first('dash1')) fact('slither'); });
     Bus.on('swimStart', () => { hint('pond'); fact('swim'); });
@@ -135,6 +139,8 @@ const Story = (function () {
     Bus.on('belowFrost', () => fact('frost'));
     Bus.on('winterStart', (p) => {
       const Wd = G.world; Wd.setSeason('winter'); G.day += 40; G.tod = .5;
+      /* any older snake still on its way is in the den by now (none left slithering about in spring) */
+      for (const n of Wd.npcs) if (n.role === 'migrant' && !n.gone) { n.gone = true; Wd.denCrowd++; }
       hint('winter'); fact('brumation'); fact('narcisse', 10);
       cine({ follow: P, zoom: 2.6, duration: 4, slow: .6, title: 'Winter in the den' });
     });
@@ -178,6 +184,8 @@ const Story = (function () {
     if (p.flags.autumnNow && !p.flags.wintered && !p.underground) Wd.startAutumn(p);
     if (p.stage === 'snake' && !p.flags.autumnNow && !p.underground && !p.flags.springOut && p.instar >= 2 && p.stats.winters === 0) T.autumn = G.time + 20;
     if (p.stage === 'snake' && !p.flags.autumnNow && !p.underground && p.instar >= 4 && p.stats.winters === 1 && !p.flags.gathering && !p.flags.met) T.autumn = G.time + 20;
+    /* saved in spring after a winter: summer still comes (it was a timer, and timers are not saved) */
+    if (p.stage === 'snake' && p.flags.springOut && !p.underground && Wd.season === 'spring' && !(p.instar >= 4 && p.stats.winters >= 2)) T.summer = G.time + 15;
     if (p.flags.springOut && p.instar >= 4 && p.stats.winters >= 2 && !p.flags.met) startGathering();
     if (p.flags.met && p.sex === 'boy' && !p.flags.genDone) later(3, litterLater);
     if (p.flags.birthDone && !p.flags.genDone) later(2, generationDone);
@@ -191,7 +199,7 @@ const Story = (function () {
     if (!p || p.stage !== 'snake') return;
     const night = nightAmount(G.tod), day = night < .3, reg = Wd.land.region(p.x);
     /* the turns of the year */
-    if (T.autumn !== null && G.time > T.autumn && p.mode === 'crawl' && p.busy <= 0 && !p.shed) startAutumn();
+    if (T.autumn !== null && G.time > T.autumn && p.mode === 'crawl' && p.busy <= 0 && !p.shed && !Wd.raccoon && !Wd.hawk) startAutumn();   /* not in the middle of a visit */
     if (T.summer !== null && G.time > T.summer && Wd.season === 'spring') { T.summer = null; Wd.setSeason('summer'); G.day += 30; hint('meadow'); }
     /* the boy's race */
     if (T.girl !== null && G.time > T.girl && (!Wd.race || Wd.race.done) && p.mode === 'crawl' && !p.flags.met) { T.girl = null; Wd.sendGirl(p); }

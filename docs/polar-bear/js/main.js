@@ -411,7 +411,7 @@
     /* summer on the shore → autumn (the northern lights) → freeze-up */
     if (Wd.phase === 'shore' && p.age === 3 && !p.flags.autumn && Wd.buggy && Wd.buggy.met && p.stats.pounces >= 1 && T.autumn === undefined) T.autumn = t + 8;
     if (due('autumn') && Wd.phase === 'shore') { p.flags.autumn = true; Wd.setSeason('autumn'); Wd.setWeather('clear', 150); G.day += 70; G.tod = .86; sleepCine('Autumn: the nights come back', 3); T.freeze = t + 22; }
-    if (T.freeze !== undefined && t > T.freeze && p.mode === 'walk' && Wd.phase === 'shore') { delete T.freeze; Wd.freezeUp(); p.flags.frozen = true; G.day += 50; G.tod = .4; }
+    if (T.freeze !== undefined && t > T.freeze && p.mode === 'walk' && Wd.phase === 'shore') { delete T.freeze; Wd.freezeUp(); p.flags.frozen = true; p.frozenT = G.time; G.day += 50; G.tod = .4; }
     /* the yearling's spring: Mum still finds meals to share */
     if (Wd.phase === 'ice2' && p.age === 4 && T.meal !== undefined && t > T.meal && p.mode === 'walk' && !Wd.meal && mum && p.food < D.grow[3]) {
       T.meal = t + 34; mum.still = false; mum.mode = 'lie'; Wd.spawnMeal(mum.x + 44); UI.hint('mealtime');
@@ -434,7 +434,7 @@
       Wd.winter(true); Wd.setSeason('spring');
       const d = Wd.den, mo = new BearNPC(Wd, { role: 'mother', sex: 'girl', form: 'cream', kg: 180, x: d.x + 70 }); mo.mode = 'lie'; mo.roam = 0; mo.collar = true; Wd.pack.push(mo);
       Wd.cubs = [0, 1].map(k => { const q = new BearNPC(Wd, { role: 'owncub', sex: k ? 'girl' : 'boy', form: k ? 'snow' : G.form, kg: 11, x: d.x + 120 + k * 30 }); q.home = q.x; q.roam = 60; return q; });
-      Cinematic.play({ follow: () => ({ x: G.world.den.x + 110, y: G.world.ground.walkTop(G.world.den.x + 110, 10) - 30 }), zoom: 2.2, duration: 5, slow: .6, title: 'Next spring, on the den hills: new cubs!' });
+      Cinematic.play({ follow: () => ({ x: G.world.den.x + 110, y: G.world.ground.walkTop(G.world.den.x + 110, 10) - 30 }), zoom: 2.2, duration: 9, slow: .6, title: 'Next spring, on the den hills: new cubs!' });   /* long enough that the cubs are still on screen when the life-cycle choice comes up */
       later(5400, () => P().milestone('cubs', generationDone));
     }
     /* the girl's ending: back to the den hills in autumn to dig a den */
@@ -450,7 +450,7 @@
     for (const q of Wd.cubs) if (q.wandered && !q.inDen) { q.mode = 'sit'; q.roam = 0; }
     if (due('breakout') && Wd.newDen) {
       p.flags.cubsOut = true; Wd.setSeason('spring'); Wd.makeOwnCubs(false); G.day += 70; G.tod = .42;
-      if (p.mode === 'burrow') p.surface(); placeP(Wd.newDen.x - Wd.newDen.dir * 30); p.mode = 'walk'; p.face = -Wd.newDen.dir;
+      if (p.mode === 'burrow') p.surface(); placeP(Wd.newDen.x - Wd.newDen.dir * 30); p.mode = 'walk'; p.face = -Wd.newDen.dir; p._downHeld = true;
       Bus.emit('cubsOut', p);
     }
     /* breath in the cold, snow kicked up */

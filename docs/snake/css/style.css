@@ -663,3 +663,6 @@ body.timing .hint { bottom: 250px; }
 .ro.warn.hot { background: rgba(255,214,160,.95); }
 .ro.warn.hot b, .ro.warn.hot .ro-k { color: #c05010; }
 .scope-pick button { padding-left: 6px; padding-right: 6px; }
+
+/* ---------- garter snake: the start button stays in sight on a short screen (laptops, phones) ---------- */
+.title-card #btnStart { position: sticky; bottom: 0; z-index: 2; }

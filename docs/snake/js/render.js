@@ -457,12 +457,14 @@ const Render = (function () {
       bottomText(ok ? 'PUSH!  (Space)' : 'Wait for the glow…', ok);
     }
     const race = Wd.race;
+    /* which one is she? a pink heart bobs over the girl while the boys follow her */
+    if (race && !race.done && p.sex === 'boy' && !p.flags.met) { const g = race.girl, [hx, hy] = cam.toScreen(g.x, g.y - g.thick * 2); ctx.font = `900 ${Math.round(30 + 4 * Math.sin(time * 4))}px ${UI_FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(80,0,40,.55)'; ctx.fillStyle = '#ff7aa8'; ctx.strokeText('♥', hx, hy - 6 - 4 * Math.sin(time * 3)); ctx.fillText('♥', hx, hy - 6 - 4 * Math.sin(time * 3)); }
     if (race && !race.done && p.sex === 'boy' && p.stage === 'snake' && !p.flags.met) bottomText(p.scentT > 0 ? 'On her trail! Keep going!' : 'Flick your tongue (Space) to find her trail!', p.scentT > 0);
     /* arrows to where you are going */
     if (p.stage === 'snake' && (p.mode === 'crawl' || p.mode === 'hide')) {
       const m = L.mouth;
       if (Wd.hawk && Wd.hawk.state === 'circle' && p.mode === 'crawl') { const c = nearestCover(Wd, p.x); if (c) pointTo(G, c.x, c.y - 10, '#a8e0ff', time); }
-      else if (p.flags.autumnNow && !p.flags.wintered && Math.abs(p.x - m.x) > 60) pointTo(G, m.x, m.y - 10, '#d8a0f0', time);
+      else if (p.flags.autumnNow && !p.flags.wintered && p.mode === 'crawl') { if (Math.abs(p.x - m.x) > 60) pointTo(G, m.x, m.y - 10, '#d8a0f0', time); else pointTo(G, p.x, p.y + 120, '#d8a0f0', time); }
       else if (race && !race.done && p.sex === 'boy') pointTo(G, race.girl.x, race.girl.y - 6, '#ff9ad0', time);
       else if (p.sex === 'girl' && p.flags.gathering && !p.flags.met) { const b = Wd.boys().sort((a, c) => Math.abs(a.x - p.x) - Math.abs(c.x - p.x))[0]; if (b && Math.abs(b.x - p.x) > 50) pointTo(G, b.x, b.y - 6, '#ff9ad0', time); }
       else if (p.flags.ready && p.mode === 'crawl') { const c = nearestCover(Wd, p.x, ['log', 'board', 'leaves']); if (c) pointTo(G, c.x, c.y - 10, '#ffd0e8', time); }
@@ -476,6 +478,7 @@ const Render = (function () {
     if (Wd.raccoon) targets.push([Wd.raccoon.x, Wd.raccoon.y - 20, '#ff9a6a']);
     if (Wd.heron && Wd.heron.state !== 'leave') targets.push([Wd.heron.x, Wd.heron.y - 50, '#ff9a6a']);
     if (Wd.sci) targets.push([Wd.sci.x, L.walkY(Wd.sci.x) - 40, '#ffe27a']);
+    if (Wd.hawk && Wd.hawk.state !== 'up') targets.push([Wd.hawk.x, Wd.hawk.y, '#ff9a6a']);
     for (const [x, y, col] of targets) {
       const [sx, sy] = cam.toScreen(x, y);
       if (sx > 40 && sx < W - 40 && sy > 110 && sy < H - 60) continue;

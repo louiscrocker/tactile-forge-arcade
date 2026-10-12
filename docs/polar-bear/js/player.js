@@ -181,7 +181,7 @@ class Bear {
     if (this.full && this.age === 2 && !this.flags.trekGate && walking) { this.flags.trekGate = true; this.milestone('trek', () => this.growUp()); }
     /* the ice has broken up: back on land, summer begins */
     if (this.age === 3 && W.phase === 'breakup' && !this.flags.shoreGate && walking && !this.swimming && this.x < WORLD.shoreX - 30) { this.flags.shoreGate = true; this.milestone('shore', () => { this.flags.summer = true; Bus.emit('ashore', this); }); }
-    if (this.full && this.age === 3 && this.flags.frozen && !this.flags.yearGate && walking) { this.flags.yearGate = true; this.milestone('yearling', () => this.growUp()); }
+    if (this.full && this.age === 3 && this.flags.frozen && !(this.G.time < (this.frozenT || 0) + 6) && !this.flags.yearGate && walking) { this.flags.yearGate = true; this.milestone('yearling', () => this.growUp()); }
     if (this.age === 4 && !this.flags.alone && this.flags.soloWait && this.flags.soloStalk && this.stats.plays >= (this.flags.playsAtYear || 0) + 1 && this.food >= th[2] + (th[3] - th[2]) * .5 && !this.flags.leaveGate && walking && !this.swimming) { this.flags.leaveGate = true; this.milestone('leave', () => this.goAlone()); }
   }
   /* a time-lapse: weeks or years go by, and you wake up bigger */
@@ -243,6 +243,8 @@ class Bear {
     const atMouth = this.flags.denMade && W.newDen && Math.abs(this.x - W.newDen.x) < Math.max(26, this.w * .5);
     const hole = atMouth || S.topAt(this.x) - S.walkTop(this.x, this.span()) > this.h * .5;
     if (!(this.age >= 5 && this.flags.denTime)) return;
+    /* the cubs have just come out: Mum stays out with them until their first sniff of the wind */
+    if (this.flags.cubsOut && !this.flags.cubsSniffed) return;
     const softAt = (x) => { for (let y = foot - 4; y < foot + 16; y += 3) { const m = S.matAt(x, y); if (m !== MAT.AIR) return m === MAT.SOIL || m === MAT.SNOW; } return false; };
     let dx = null;
     for (const o of [0, -4, 4, -8, 8, -this.w * .3, this.w * .3]) if (softAt(this.x + o)) { dx = o; break; }
@@ -484,6 +486,10 @@ class Bear {
     if (W.meal && !W.meal.taken && Math.abs(W.meal.x - this.x) < R + 8 && !water) return 'eat';
     const mum = W.mum(); if (mum && mum.nurseOn && this.age <= 4 && near(mum, 6)) return 'drink';
     if (!water) {
+      /* once this stage's hunting is done, the twin right beside you wins over a hole or a far-off resting seal
+         (a seal is always resting somewhere near, so the yearling's play with the twin was otherwise never offered) */
+      const huntsDone = W.phase === 'ice2' ? this.flags.soloWait && this.flags.soloStalk : W.phase === 'ice' ? this.stats.waits >= 1 && this.stats.stalks >= this.D.stalks : false;
+      if (huntsDone && W.pack.some(n => n.role === 'twin' && !['play', 'tossed', 'leave'].includes(n.mode) && !n.swimming && near(n))) return 'play';
       const hole = W.holeNear(this.x, R + 12); if (hole && hole.up <= 0 && this.huntOK()) return 'wait';
       const b = W.bask; if (b && b.state === 'bask' && Math.abs(b.x - this.x) < 380 && Math.abs(b.x - this.x) > this.w * .5 + 30 && this.huntOK()) return 'creep';
     }
