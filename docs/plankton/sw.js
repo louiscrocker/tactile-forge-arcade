@@ -1,7 +1,7 @@
 /* Plankton: The Copepod's Year — offline cache.  Everything the game needs
    is a static file, so we cache the lot on install and serve from the
    cache first.  Bump VERSION when files change. */
-const VERSION = 'plankton-v3';
+const VERSION = 'plankton-v4';
 const FILES = [
   './', './index.html', './hunt.html', './manifest.webmanifest', './css/style.css',
   './js/core.js', './js/facts.js', './js/readlex.js', './js/seabed.js', './js/world.js', './js/sprites.js', './js/paint.js', './js/gfx.js', './js/particles.js',

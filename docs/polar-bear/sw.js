@@ -1,7 +1,7 @@
 /* Polar Bear: Children of the Ice — offline cache.  Everything the game needs
    is a static file, so we cache the lot on install and serve from the
    cache first.  Bump VERSION when files change. */
-const VERSION = 'polarbear-v3';
+const VERSION = 'polarbear-v4';
 const FILES = [
   './', './index.html', './hunt.html', './manifest.webmanifest', './css/style.css',
   './js/core.js', './js/facts.js', './js/readlex.js', './js/arctic.js', './js/world.js', './js/sprites.js', './js/paint.js', './js/particles.js',

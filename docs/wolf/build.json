@@ -1,7 +1,7 @@
 {
   "slug": "wolf",
-  "commit": "7b31bd6",
-  "builtAt": "2026-10-15T22:40:21.745Z",
+  "commit": "1865f4b",
+  "builtAt": "2026-10-15T23:42:14.755Z",
   "files": {
     "css/style.css": "1d0cd47d1839d2ca019ca00c55633179331dbaa7ca120745b68df4d73c3de057",
     "fonts/LICENSE-nunito.txt": "580df76c95a1ec5ab878ceb25bb3d85c6a076804e9c970c8c6972aea775fdf65",
@@ -18,7 +18,7 @@
     "js/core.js": "256f0094900e3f6cb7cf1453e94da68c39115371091ccc6b4b5b235166b73ed3",
     "js/facts.js": "9c03809261b3297dde2281cad9e51dc7522e72ea4a40d5ab490483f01fc8c1f3",
     "js/gamepad.js": "c1e1c59f057ac85f3f0c3d139c63666a618a741b69f83ba935fd8cfd49cac1a1",
-    "js/gfx.js": "b09e74cbabe6db5e684bda4b11c5ef5f8315a9451f09e6114faef58c3a7e9348",
+    "js/gfx.js": "9d5f3c5fcb08f9b3b628d0d044d4bd04358597ce5a861ef781c7bb0862daea8e",
     "js/grownups.js": "45bfe5ed0ac3a453b47708dd7f19f2da1c9860742472a6836a3cebd1b445377f",
     "js/journal.js": "6bff80ca41a1ea84fd215c2fd6e69d77f88d73345f71cd32d7f522755e9fa21e",
     "js/main.js": "442d01a359a17a9a6f5b51591f08d7a319991b1fed3fb8bf825ba52cf27365cc",
@@ -37,6 +37,6 @@
     "js/voice.js": "5d02130701f0b95d54c81a7c3e6ef6dbf1dfab1e556aaf29df92ae9b7bff2a84",
     "js/world.js": "2f3c184897acde5acd49e0245a135194cc7ce753aa6a5eedb5a871ca53f4da1f",
     "manifest.webmanifest": "d40c4328a768a9d67e9b6f305ad5a992315317ddcdf02b72c2af48b4a1683a12",
-    "sw.js": "974e4d547bb0aa446763cc5cd09903d0cda214acdcd90687d7bf3174f7b09a07"
+    "sw.js": "b030205911e93290299cfa12a1af5998d242c3706acd4422a685a0b765ea2563"
   }
 }

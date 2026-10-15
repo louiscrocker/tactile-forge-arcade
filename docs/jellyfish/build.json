@@ -1,7 +1,7 @@
 {
   "slug": "jellyfish",
-  "commit": "342af39",
-  "builtAt": "2026-10-15T22:22:52.757Z",
+  "commit": "caffa6a",
+  "builtAt": "2026-10-15T23:42:20.062Z",
   "files": {
     "css/style.css": "05b3ebf82711d2a489c0c8e44ccbf54ef25ecf40c35e8fcfbccce5ba12b49488",
     "fonts/LICENSE-nunito.txt": "580df76c95a1ec5ab878ceb25bb3d85c6a076804e9c970c8c6972aea775fdf65",
@@ -18,7 +18,7 @@
     "js/core.js": "256f0094900e3f6cb7cf1453e94da68c39115371091ccc6b4b5b235166b73ed3",
     "js/facts.js": "5a8a8bec68ef9dd48f4106669868491e3ba1c5d49371aa578d02d94801cf57fe",
     "js/gamepad.js": "c1e1c59f057ac85f3f0c3d139c63666a618a741b69f83ba935fd8cfd49cac1a1",
-    "js/gfx.js": "ee6707925c33436f13bca3657e3f4fddf020a34df763bf1fcd978d6285ee82ba",
+    "js/gfx.js": "d30b3c3ee8d0289f6cfec21fffda3d3f29a6ebf255451693c2397579e9ba1198",
     "js/grownups.js": "45bfe5ed0ac3a453b47708dd7f19f2da1c9860742472a6836a3cebd1b445377f",
     "js/journal.js": "1488d46ef3dd283eae12597428a8183eaac30dccb793a703d3ed9fc61c95568d",
     "js/main.js": "82bceacb1eb40aac5bcbe2116b3397a87d72c0cd2974b17343bd2d774e243b2c",
@@ -38,6 +38,6 @@
     "js/voice.js": "5d02130701f0b95d54c81a7c3e6ef6dbf1dfab1e556aaf29df92ae9b7bff2a84",
     "js/world.js": "7eb2fa84ba0ae3069b257f9abc14e708cfad970dfe1d0c5096f5c5c93a5d3051",
     "manifest.webmanifest": "3141ce9d6dca4df17af40dae51176ee8cef52fc34ca09494fb8b47e276d9c15c",
-    "sw.js": "e978f7023afae8b8c5b434144e2cc7ab0981a016f950903d5b7853e355d17f17"
+    "sw.js": "b79b8c86b413d6c32c5f15a7ecb113e416bbe8b919a399045e672f6dc8425457"
   }
 }

@@ -413,7 +413,7 @@ const GFX = (function () {
   /* on by default; ?gfx=classic keeps the Canvas 2D look, ?gfx=gl forces this one, O flips it (remembered) */
   function gfxParam() { try { return new URLSearchParams(location.search).get('gfx') || ''; } catch (e) { return ''; } }
   function wanted() { const p = gfxParam(); return p !== 'classic' && p !== '2d'; }
-  function startOn() { if (gfxParam() === 'gl') return true; try { return localStorage.getItem('hercules.gfx') !== 'off'; } catch (e) { return true; } }
+  function startOn() { if (gfxParam() === 'gl') return true; try { const v = localStorage.getItem('hercules.gfx'); return v !== 'off' && v !== 'slow'; } catch (e) { return true; } }
   function init(scene) {
     if (!wanted()) return false;
     cv = document.createElement('canvas'); cv.id = 'sceneGL';
@@ -450,7 +450,7 @@ const GFX = (function () {
     T.b2a = target(pw / 8, ph / 8); T.b2b = target(pw / 8, ph / 8);
   }
   function active() { return ready && on; }
-  function toggle() { if (!ready) return false; on = !on; cv.style.display = on ? 'block' : 'none'; try { localStorage.setItem('hercules.gfx', on ? 'on' : 'off'); } catch (e) {} return on; }
+  function toggle() { if (!ready) return false; on = !on; cv.style.display = on ? 'block' : 'none'; speed.t0 = 0; try { localStorage.setItem('hercules.gfx', on ? 'on' : 'off'); } catch (e) {} return on; }
   function worldCtx() { return wctx; }
   /* the emissive layer (half resolution, CSS px / 2): whatever glows in the dark; cleared each frame */
   function glowCtx() { glowUsed = true; return gctx; }
@@ -458,7 +458,26 @@ const GFX = (function () {
   function hexLin(c) { return hexToRgb(c).map(v => Math.pow(v / 255, 2.2)); }
 
   /* L: { night, dark, warm, floorY, top, bot, sun, moon, under (0..1), player [x,y], poolR, rain, humid, cloud, tops(fn x→screen y of the surface) } */
+  /* slow device: if the painted look cannot keep up (two 3 s windows under 24 fps after an 8 s
+     warm-up while the art is painted), fall back to the classic look and remember it as 'slow'.
+     ?gfx=gl, or choosing the painted look with O (stored 'on'), keeps it on. */
+  const speed = { t0: 0, last: 0, n: 0, sum: 0, bad: 0 };
+  function watchSpeed() {
+    const now = performance.now();
+    if (!speed.t0) { Object.assign(speed, { t0: now, last: now, n: 0, sum: 0, bad: 0 }); return; }
+    const d = now - speed.last; speed.last = now;
+    if (now - speed.t0 < 8000 || d > 250 || document.hidden) return;
+    speed.n++; speed.sum += d;
+    if (speed.sum < 3000) return;
+    const fps = speed.n * 1000 / speed.sum; speed.n = 0; speed.sum = 0;
+    speed.bad = fps < 24 ? speed.bad + 1 : 0;
+    if (speed.bad < 2 || gfxParam() === 'gl') return;
+    try { if (localStorage.getItem('hercules.gfx') === 'on') return; localStorage.setItem('hercules.gfx', 'slow'); } catch (e) {}
+    on = false; cv.style.display = 'none';
+    console.info('gfx: ' + fps.toFixed(0) + ' fps, switched to the classic look (press O for the painted one)');
+  }
   function render(G, L) {
+    watchSpeed();
     const t0 = performance.now();
     const cam = G.cam, time = G.time, night = L.night, dark = L.dark, cloud = L.cloud;
     const sunT = L.sun.t || 0, elev = Math.sin(Math.PI * sunT);

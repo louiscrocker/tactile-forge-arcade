@@ -1,7 +1,7 @@
 {
   "slug": "red-crab",
-  "commit": "a9bf2ec",
-  "builtAt": "2026-10-15T22:40:20.274Z",
+  "commit": "df50e73",
+  "builtAt": "2026-10-15T23:42:12.314Z",
   "files": {
     "css/style.css": "86abf9e6e49b1b63f4a75f597656a4179b162417fd9c57655a8e5435e45ed53c",
     "fonts/LICENSE-nunito.txt": "580df76c95a1ec5ab878ceb25bb3d85c6a076804e9c970c8c6972aea775fdf65",
@@ -18,7 +18,7 @@
     "js/core.js": "256f0094900e3f6cb7cf1453e94da68c39115371091ccc6b4b5b235166b73ed3",
     "js/facts.js": "9b068a762f14a6e3b970ad3c9d94fcd843631e21ee1ce33c0da4749a8bc789d0",
     "js/gamepad.js": "c1e1c59f057ac85f3f0c3d139c63666a618a741b69f83ba935fd8cfd49cac1a1",
-    "js/gfx.js": "775fcd2140e820ef8daea05f3924d62de37950b124e5a57bac831692aa5fc4f0",
+    "js/gfx.js": "30bce3c71b9ec5b0d49aced7b2a9fd79bc1c04795ec37da05f5d5d59dcace162",
     "js/grownups.js": "45bfe5ed0ac3a453b47708dd7f19f2da1c9860742472a6836a3cebd1b445377f",
     "js/island.js": "d1b7984b3f5ca51fd558c43020fc68f4a1eb9c0f584a15d2bbc3abf7cbe1e39d",
     "js/journal.js": "fbfb73b2bc3aa7fd78efe5f8fddad1f66585f39fd90cffc92c84a47d9ceffe8d",
@@ -37,6 +37,6 @@
     "js/voice.js": "5d02130701f0b95d54c81a7c3e6ef6dbf1dfab1e556aaf29df92ae9b7bff2a84",
     "js/world.js": "e6bc3134cda611d201266f0e97dfb7c7ae7df1f90d3f7b91b32ea7677aa5753d",
     "manifest.webmanifest": "476cdf8c7df1c9eb75a659884690a63ed63f453698d220adc1c0d12e1ab78485",
-    "sw.js": "f01ebe782acd168a804d45ce7d24bc9c939651b92e2dbc8a8dff860d3f238b58"
+    "sw.js": "0b6072adf39dd2382ac9afdb897840ef9f8b49b8bfaf991d86112930753df07a"
   }
 }
