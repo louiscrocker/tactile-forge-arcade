@@ -553,7 +553,13 @@
     } else if (!G.started) { G.time += rawDt; G.world.update(rawDt * .3, G.tod, p); }
     G.particles.update(dt, (x) => G.world.ground.walkTop(x, 4));
     camera(rawDt);
-    Render.frame(G, dt);
+    /* behind the title, with the painted look: the world from the title camera, its animals beside the card (the beach under the palms, Mum by the sea) */
+    if (!G.started && typeof GFX !== 'undefined' && GFX.active()) {
+      const c0 = { x: G.cam.x, y: G.cam.y, zoom: G.cam.zoom }, tod0 = G.tod, n0 = G.night;
+      Object.assign(G.cam, { x: 58 - .3 * W / 1.5, y: -150, zoom: 1.5 }); G.tod = 0.2;
+      Render.frame(G, dt);
+      Object.assign(G.cam, c0); G.tod = tod0; G.night = n0;
+    } else Render.frame(G, dt);
     frames++;
     if (params.has('debug')) document.title = `t=${G.time.toFixed(1)} ${p.stage}/${p.mode} i${p.instar} z${p.zinstar} food=${p.food.toFixed(0)}/${p.cfood.toFixed(0)} w=${p.water.toFixed(2)} p=${p.x.toFixed(0)},${p.y.toFixed(0)} fps=${Render.getFps().toFixed(0)}${typeof GFX !== 'undefined' && GFX.active() ? ` gl=${GFX.stats().ms.toFixed(1)}ms` : ''}`;
     if (G.started) UI.update(rawDt);
@@ -573,6 +579,8 @@
     if (title.classList.contains('out')) return;
     tt += dt;
     if (tc.width !== W * DPR || tc.height !== H * DPR) { tc.width = W * DPR; tc.height = H * DPR; }
+    /* with the painted look the title shows the painted world (rendered this frame from the title camera) */
+    if (typeof GFX !== 'undefined' && GFX.active()) { tctx.setTransform(1, 0, 0, 1, 0, 0); tctx.drawImage(GFX.canvas(), 0, 0, tc.width, tc.height); return; }
     tctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     const g = tctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#1a1c4a'); g.addColorStop(.45, '#ff9a6a'); g.addColorStop(.62, '#ffd8a0'); g.addColorStop(.63, '#4a90c0'); g.addColorStop(1, '#1a4a7a');
     tctx.fillStyle = g; tctx.fillRect(0, 0, W, H);

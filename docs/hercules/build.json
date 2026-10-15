@@ -1,7 +1,7 @@
 {
   "slug": "hercules",
-  "commit": "35cb7e9",
-  "builtAt": "2026-10-15T21:46:13.016Z",
+  "commit": "55e629a",
+  "builtAt": "2026-10-15T22:40:19.568Z",
   "files": {
     "css/style.css": "23af65cfb84e52349602d18908a194f1a5939e2d1201738636edfa500f3f8682",
     "fonts/LICENSE-nunito.txt": "580df76c95a1ec5ab878ceb25bb3d85c6a076804e9c970c8c6972aea775fdf65",
@@ -22,7 +22,7 @@
     "js/gfx.js": "6fe59ab5034ee6acda3e34f09bf571255a5af0a272cae72317aee4dbea512d91",
     "js/grownups.js": "45bfe5ed0ac3a453b47708dd7f19f2da1c9860742472a6836a3cebd1b445377f",
     "js/journal.js": "ca934662118acb26ba3bcaf0e348d6054589680a3bd13dc96ec3e0734e49a292",
-    "js/main.js": "68133f325f054c176dad75d962a4b4d6f422eb723be4922d4872782aa935ed65",
+    "js/main.js": "ffe4330e24b8e9b8d52da898ee1625d37c89fbd0dbdd73560c1afceaf1af58b6",
     "js/microscope.js": "b4c7fd02af39d9251b7b7ccf70282c272d6e8ca8e13bf7d023f3b7d826c507ae",
     "js/paint.js": "914abffe2637d0ae62a7e302077527d5286f9936b0d1dde36a7b5ae9107c85b4",
     "js/particles.js": "11b72a9f2c75f730a432423f136767750d634a0ea72dc34ba27533f4312c94af",
@@ -37,6 +37,6 @@
     "js/voice.js": "5d02130701f0b95d54c81a7c3e6ef6dbf1dfab1e556aaf29df92ae9b7bff2a84",
     "js/wood.js": "3ec6a8ef1700868e7023cf2575f5005d42660088f35617e4f994a7deca86a1f5",
     "manifest.webmanifest": "1f207a6ae1546f87799265ae2e971eb505411f6fff0e945178c8b8185669545a",
-    "sw.js": "1fc48b2bc0966c84a77d1ca4befd87c4c8eb68fbc70790eab03d3e9d74a79b55"
+    "sw.js": "ade9eb1f3e60a7922594c738c0ea96810cdd90a72ec06342d72a62b953bb9ead"
   }
 }

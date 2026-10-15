@@ -631,7 +631,7 @@
     for (const c of walkers) {
       c.x += .012 * dt; c.ph += dt * 6; if (c.x > 1.2) c.x -= 1.4;
       const x = c.x * W, s = c.s * Math.min(1.5, W / 900), y = ice(x) - 33 * s;
-      tctx.save(); tctx.translate(x, y); Sprites.drawBear(tctx, { s, form: c.form, age: c.age, walk: c.ph, moving: true, seed: 3, sex: c.age > .9 ? 'girl' : 'boy', collar: false }); tctx.restore();
+      tctx.save(); tctx.translate(x, y); (typeof GFX !== 'undefined' && GFX.active() && typeof Painted !== 'undefined' ? Painted : Sprites).drawBear(tctx, { s, form: c.form, age: c.age, walk: c.ph, moving: true, seed: 3, sex: c.age > .9 ? 'girl' : 'boy', collar: false }); tctx.restore();
     }
     /* light snow */
     tctx.fillStyle = 'rgba(255,255,255,.8)';

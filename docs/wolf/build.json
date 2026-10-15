@@ -1,7 +1,7 @@
 {
   "slug": "wolf",
-  "commit": "4136e51",
-  "builtAt": "2026-10-15T21:46:15.086Z",
+  "commit": "7b31bd6",
+  "builtAt": "2026-10-15T22:40:21.745Z",
   "files": {
     "css/style.css": "1d0cd47d1839d2ca019ca00c55633179331dbaa7ca120745b68df4d73c3de057",
     "fonts/LICENSE-nunito.txt": "580df76c95a1ec5ab878ceb25bb3d85c6a076804e9c970c8c6972aea775fdf65",
@@ -21,7 +21,7 @@
     "js/gfx.js": "b09e74cbabe6db5e684bda4b11c5ef5f8315a9451f09e6114faef58c3a7e9348",
     "js/grownups.js": "45bfe5ed0ac3a453b47708dd7f19f2da1c9860742472a6836a3cebd1b445377f",
     "js/journal.js": "6bff80ca41a1ea84fd215c2fd6e69d77f88d73345f71cd32d7f522755e9fa21e",
-    "js/main.js": "78da9e2158adcfb683d204d7a687814b47f53a6d50f170bf78669cfe0b51bcbe",
+    "js/main.js": "442d01a359a17a9a6f5b51591f08d7a319991b1fed3fb8bf825ba52cf27365cc",
     "js/microscope.js": "12ef5064a93c697d1a4aba4baca02441f06b0e9b64e17a5223180f0f0d01962d",
     "js/paint.js": "667ec4e165b60aab36f964f9a03b4946759c5b03ce755f417219b1a3328d6d8d",
     "js/particles.js": "8d0afb577f913996e9b83dd647fdf6e5339a8f1c6c8520d27ad3d9d52b4794a6",
@@ -37,6 +37,6 @@
     "js/voice.js": "5d02130701f0b95d54c81a7c3e6ef6dbf1dfab1e556aaf29df92ae9b7bff2a84",
     "js/world.js": "2f3c184897acde5acd49e0245a135194cc7ce753aa6a5eedb5a871ca53f4da1f",
     "manifest.webmanifest": "d40c4328a768a9d67e9b6f305ad5a992315317ddcdf02b72c2af48b4a1683a12",
-    "sw.js": "a7c61796c0cd766ec3fbae6a5b87bda44f77d2d871b0ffe8e9c545c65ef71a40"
+    "sw.js": "974e4d547bb0aa446763cc5cd09903d0cda214acdcd90687d7bf3174f7b09a07"
   }
 }

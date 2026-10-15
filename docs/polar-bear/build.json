@@ -1,7 +1,7 @@
 {
   "slug": "polar-bear",
-  "commit": "6df382a",
-  "builtAt": "2026-10-15T21:46:15.781Z",
+  "commit": "4605d8c",
+  "builtAt": "2026-10-15T22:40:22.460Z",
   "files": {
     "css/style.css": "f6d1c7c0881aee7f515914a16d65e36677560577acfdefce01471da4d720d45c",
     "fonts/LICENSE-nunito.txt": "580df76c95a1ec5ab878ceb25bb3d85c6a076804e9c970c8c6972aea775fdf65",
@@ -22,7 +22,7 @@
     "js/gfx.js": "78b28a89a1bd4bfba2d7afca986ab97ede1a0450294bf00794ae82c0e04f1626",
     "js/grownups.js": "45bfe5ed0ac3a453b47708dd7f19f2da1c9860742472a6836a3cebd1b445377f",
     "js/journal.js": "e11570dcf9d2567fe7810f31c0a53d001fa0aeca84c59d6edd9524060aacfe3e",
-    "js/main.js": "f97866cef5b89256c404d315cfa6baa6f3989416f941b06dcfb360de6cdf0b18",
+    "js/main.js": "4586c164633fe6dfce32ceaa2614b7e6bd737f2e6cacc074653644a6232eb8e6",
     "js/microscope.js": "df94c94b62ffa7c871041cafbfe1215d1657ffb90c9ad1cf5e32070deae1374e",
     "js/paint.js": "3d46fa55f60378a9e589b1cfc092d8ce21375dde9ea8b44af715e16bdcd87f5a",
     "js/particles.js": "8d0afb577f913996e9b83dd647fdf6e5339a8f1c6c8520d27ad3d9d52b4794a6",
@@ -37,6 +37,6 @@
     "js/voice.js": "5d02130701f0b95d54c81a7c3e6ef6dbf1dfab1e556aaf29df92ae9b7bff2a84",
     "js/world.js": "f56c74fdf950ca1c2cb7c98c1111b1c7704322138114e63fb03f63448fc8d400",
     "manifest.webmanifest": "ec0dc468bc00492f5052dd7bdbbaa403e532f2192cb6aba6ef2c7a3417d5fba9",
-    "sw.js": "3345e220b136ff8dcd2ef0e9eb48687f2fc1598160b97b0a1ab63a4c1c144269"
+    "sw.js": "10fb69d0367aabe5e88220bb3e5c908311ec444872c8b7c88f798ba5d60c2107"
   }
 }

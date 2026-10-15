@@ -1,7 +1,7 @@
 {
   "slug": "lobster",
-  "commit": "99c0716",
-  "builtAt": "2026-10-15T21:46:14.395Z",
+  "commit": "f30b10c",
+  "builtAt": "2026-10-15T22:40:21.003Z",
   "files": {
     "css/style.css": "a54736434b89ae15f5693caf8c3b27e97ba540c0308d232ab48f6f56ac84aeab",
     "fonts/LICENSE-nunito.txt": "580df76c95a1ec5ab878ceb25bb3d85c6a076804e9c970c8c6972aea775fdf65",
@@ -21,7 +21,7 @@
     "js/gfx.js": "ef3a746231cedb888f5f1d8e5290bf9f9bd48ceca9dd46b7b9f71798353d77ca",
     "js/grownups.js": "45bfe5ed0ac3a453b47708dd7f19f2da1c9860742472a6836a3cebd1b445377f",
     "js/journal.js": "32911b57ac9ca6dbddfde6e905d04c51a736bf36060c51957932fc41199c822d",
-    "js/main.js": "9b533a6243bb59ed1a8067eb2325d12ff59eba3f4ce7d187a0fb34dadabcaef5",
+    "js/main.js": "e00a1f94471d6949965430e9ee9994489ff09801efb13db2348051f58bc2381c",
     "js/microscope.js": "1afeac7d70e325271c4a3391bee3327ea8d58689417faf8d3a877e29ec613c9e",
     "js/paint.js": "6e4b9b73fb5e843ba20d200cc3c7c22a915a55d362c1221620b1a7e6caa47647",
     "js/particles.js": "5c43fc0136ae290abc51cb4b155d5a82511c7c90f5c9f5faee78ce5edb8441aa",
@@ -37,6 +37,6 @@
     "js/voice.js": "5d02130701f0b95d54c81a7c3e6ef6dbf1dfab1e556aaf29df92ae9b7bff2a84",
     "js/world.js": "e8c66591dc0bd711371530b6ce4452e2746e9e2d5174f60d63990ebe369855b1",
     "manifest.webmanifest": "6c758e92684d474ffe167da56c2ad618c46d343e848638e2791cf1e904bc73ed",
-    "sw.js": "26eb0bf6a9bb4beb1a34e9336feccd22f3fde1f8b472ecbbafc8c3b0cd94dada"
+    "sw.js": "7fa0923bd5442dafe1ac7e17a6a274d4ff34c17740056649074dcc00830d5b51"
   }
 }

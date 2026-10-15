@@ -1,7 +1,7 @@
 /* Lobster: Shell by Shell — offline cache.  Everything the game needs
    is a static file, so we cache the lot on install and serve from the
    cache first.  Bump VERSION when files change. */
-const VERSION = 'lobster-v2';
+const VERSION = 'lobster-v3';
 const FILES = [
   './', './index.html', './hunt.html', './manifest.webmanifest', './css/style.css',
   './js/core.js', './js/facts.js', './js/readlex.js', './js/seabed.js', './js/world.js', './js/sprites.js', './js/paint.js', './js/gfx.js', './js/particles.js',

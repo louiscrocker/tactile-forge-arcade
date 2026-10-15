@@ -449,7 +449,7 @@
     for (const f of flies) { const b = Math.max(0, Math.sin(tt * 1.6 + f.ph)); if (b < .2) continue; tctx.fillStyle = `rgba(200,255,140,${b * .8})`; tctx.beginPath(); tctx.arc(f.x * W + Math.sin(tt * .4 + f.ph) * 20, f.y * H + Math.cos(tt * .3 + f.ph) * 14, 2.4, 0, TAU); tctx.fill(); }
     /* the beetle */
     const bx = ((tt * 26) % (W + 600)) - 300, by = H * .9;
-    tctx.save(); tctx.translate(bx, by); Sprites.drawBeetle(tctx, { s: Math.min(1.2, W / 1200), form: settings.form, wet: .3 + .3 * Math.sin(tt * .2), walk: tt * 7, moving: true, lengthMM: 165, seed: 3 }); tctx.restore();
+    tctx.save(); tctx.translate(bx, by); (typeof GFX !== 'undefined' && GFX.active() && typeof Painted !== 'undefined' ? Painted : Sprites).drawBeetle(tctx, { s: Math.min(1.2, W / 1200), form: settings.form, wet: .3 + .3 * Math.sin(tt * .2), walk: tt * 7, moving: true, lengthMM: 165, seed: 3 }); tctx.restore();
   }
 
   /* ---------- save on leave, install offline ---------- */
