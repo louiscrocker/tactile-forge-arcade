@@ -1,0 +1,16 @@
+{
+  "name": "Jellyfish: Pulse by Pulse",
+  "short_name": "Jellyfish",
+  "description": "Be a moon jellyfish in a harbour bay: swim free as a tiny planula, settle under a rock ledge as a polyp, bud clones, pop free from a stack of discs as an ephyra, pulse through the plankton, join the summer bloom and start the next generation.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0e4a80",
+  "theme_color": "#0e4a80",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

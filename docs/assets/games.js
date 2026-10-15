@@ -150,6 +150,22 @@ export const GAMES = [
     meta: 'Keyboard, touch or gamepad',
   },
   {
+    slug: 'plankton', shelf: 'nature', name: "Plankton: The Copepod's Year", badge: 'AGES 4–8',
+    accent: '#e0603a', glow: 'rgba(224,96,58,0.5)',
+    tagline: 'Hatch with one red eye, swim up at night to eat, and hide in the dark by day.',
+    description: "Live a year as a real copepod, the tiny animal that feeds the Gulf of Maine: hatch into a nauplius with one red eye, moult eleven times, swim up at night to eat diatoms in the spring bloom and down to the dark by day to hide, jump away from the herring and a right whale, fill your oil sac and sleep through the winter in the deep. Play as a boy or a girl copepod; nothing ever gets hurt. Everything is read aloud, and Read to Play turns levelled reading into how you play.",
+    features: ['Real life cycle', 'Read to Play', 'Plays offline'],
+    meta: 'Keyboard, touch or gamepad',
+  },
+  {
+    slug: 'jellyfish', shelf: 'nature', name: 'Jellyfish: Pulse by Pulse', badge: 'AGES 4–8',
+    accent: '#d77bd0', glow: 'rgba(215,123,208,0.5)',
+    tagline: 'Stick on under a rock, pop free as a baby jelly, and pulse your way to the bloom.',
+    description: "Live a moon jelly's real life in a harbour bay: swim free from your mum's arm as a tiny planula, stick on under a rock ledge and grow into a polyp that buds copies of itself, turn into a stack of discs in winter and pop free as a star-shaped baby jelly, then pulse through the plankton while turtles and sunfish always miss, grow four rings and ride the current to the summer bloom. Play as a boy or a girl jelly; nothing ever gets hurt. Everything is read aloud, and Read to Play turns levelled reading into how you play.",
+    features: ['Real life cycle', 'Read to Play', 'Plays offline'],
+    meta: 'Keyboard, touch or gamepad',
+  },
+  {
     slug: 'storm-lab', shelf: 'nature', name: 'Storm Lab', badge: 'AGES 8–13',
     accent: '#8fb8ff', glow: 'rgba(143,184,255,0.5)',
     tagline: 'Build a tornado, watch it work, and read the damage like a scientist.',

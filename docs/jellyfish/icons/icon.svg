@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5ab8e0"/>
+      <stop offset=".55" stop-color="#1a6aa8"/>
+      <stop offset="1" stop-color="#0a2e58"/>
+    </linearGradient>
+    <radialGradient id="bell" cx=".5" cy=".75" r=".7">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".25"/>
+      <stop offset=".7" stop-color="#e4eef8" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#a9c4e4" stop-opacity=".85"/>
+    </radialGradient>
+    <radialGradient id="glow" cx=".5" cy=".45" r=".5">
+      <stop offset="0" stop-color="#ffd8ec" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#ffd8ec" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="110" fill="url(#sea)"/>
+  <g opacity=".35" fill="#c8f0ff">
+    <path d="M60 0 L120 0 L210 512 L160 512Z"/><path d="M300 0 L340 0 L430 512 L390 512Z"/>
+  </g>
+  <circle cx="256" cy="230" r="200" fill="url(#glow)"/>
+  <g fill="none" stroke-linecap="round">
+    <g stroke="#f2e6f0" stroke-opacity=".6" stroke-width="3">
+      <path d="M118 236 q-6 60 6 110"/><path d="M146 246 q-8 60 2 120"/><path d="M176 252 q-4 70 6 120"/><path d="M336 252 q4 70 -6 120"/><path d="M366 246 q8 60 -2 120"/><path d="M394 236 q6 60 -6 110"/>
+    </g>
+    <g stroke="#f6d2e2" stroke-opacity=".85" stroke-width="16">
+      <path d="M220 250 q-20 60 6 110 q20 40 -10 90"/><path d="M256 252 q16 60 -6 110 q-16 40 10 90"/><path d="M292 250 q20 60 -6 110 q-20 40 10 90"/>
+    </g>
+  </g>
+  <path d="M96 236 C94 150 170 96 256 96 C342 96 418 150 416 236 C330 268 182 268 96 236Z" fill="url(#bell)" stroke="#ffffff" stroke-opacity=".8" stroke-width="5"/>
+  <g fill="none" stroke="#f58fbe" stroke-width="14" stroke-linecap="round">
+    <path d="M226 150 a26 18 0 1 0 -4 34"/><path d="M286 150 a26 18 0 1 1 4 34"/><path d="M222 196 a26 16 0 1 0 2 -2"/><path d="M290 196 a26 16 0 1 1 -2 -2"/>
+  </g>
+  <path d="M150 140 C180 116 220 108 250 108" fill="none" stroke="#ffffff" stroke-opacity=".7" stroke-width="10" stroke-linecap="round"/>
+</svg>

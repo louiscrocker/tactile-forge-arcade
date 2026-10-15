@@ -31,9 +31,13 @@ const Render = (function () {
   const stars = [], flakes = [], drops = [];
   let hillNoise = null, decor = null, builtFor = null;
   const coilCache = new Map();
+  /* the painted art (paint.js) goes with the WebGL look (gfx.js, ?gfx=gl); the classic sprites everywhere else */
+  let Art = Sprites;
+  const glOn = () => typeof GFX !== 'undefined' && GFX.active();
 
   function init(c) {
     canvas = c; ctx = c.getContext('2d');
+    if (typeof GFX !== 'undefined') GFX.init(c);
     for (let i = 0; i < 220; i++) stars.push([Math.random(), Math.random() * .8, Math.random(), Math.random() * TAU]);
     for (let i = 0; i < 160; i++) flakes.push({ x: Math.random(), y: Math.random(), z: .3 + Math.random() * .7, ph: Math.random() * TAU });
     for (let i = 0; i < 140; i++) drops.push({ x: Math.random(), y: Math.random(), z: .4 + Math.random() * .6 });
@@ -43,6 +47,7 @@ const Render = (function () {
     W = w; H = h; DPR = quality === 'low' ? 1 : dpr;
     canvas.width = Math.round(w * DPR); canvas.height = Math.round(h * DPR);
     canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+    if (typeof GFX !== 'undefined') GFX.resize(w, h, DPR, canvas.width, canvas.height);
   }
   function setQuality(q) { if (q !== quality) { quality = q; resize(W, H, Math.min(2, devicePixelRatio || 1)); } }
   function getFps() { return fps; }
@@ -67,7 +72,14 @@ const Render = (function () {
     G.night = night;
     if (builtFor !== Wd) buildDecor(Wd);
     if (dt > 0 && dt < .05) { fpsAcc += dt; fpsN++; if (fpsAcc >= 1) { fps = fpsN / fpsAcc; fpsAcc = 0; fpsN = 0; if (G.settings.quality === 'auto') { if (fps < 40) { if (++lowFor >= 3) setQuality('low'); } else lowFor = 0; } } }
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    /* the WebGL look (?gfx=gl): the world is drawn as usual, but into a transparent layer; GFX paints the
+       sky, the far country and the light, and only the overlays stay on this canvas */
+    const gx = glOn(), mainCtx = ctx;
+    Art = gx && typeof Painted !== 'undefined' ? Painted : Sprites;
+    if (gx && Art === Painted) Painted.beginFrame();
+    if (gx) { ctx = GFX.worldCtx(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); }
+    const S0 = gx ? GFX.worldScale() : DPR;
+    ctx.setTransform(S0, 0, 0, S0, 0, 0);
     ctx.imageSmoothingEnabled = true;
     const view = cam.viewRect(80);
     const horizon = cam.toScreen(0, -30)[1];
@@ -76,6 +88,7 @@ const Render = (function () {
     let [top, bot] = skyColours(tod);
     if (season === 'winter') { top = mixHex(top, '#8a9ab0', .25); bot = mixHex(bot, '#dde4ec', .3); }
     if (wx.cloud > .01) { top = mixHex(top, '#4a5460', wx.cloud * .55); bot = mixHex(bot, '#9aa4ac', wx.cloud * .5); }
+    if (!gx) {
     const sky = ctx.createLinearGradient(0, 0, 0, Math.max(60, horizon + 40));
     sky.addColorStop(0, top); sky.addColorStop(1, bot);
     ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
@@ -86,41 +99,61 @@ const Render = (function () {
     drawSunMoon(G, tod, night, horizon, wx.cloud);
     drawClouds(G, horizon, time, night);
     drawFarHills(G, night, season);
+    }
 
     /* ---------------- world space ---------------- */
     ctx.save(); cam.apply(ctx);
     const snow = wx.snowCover;
-    for (const T of Wd.trees) if (T.x > view.l - 200 && T.x < view.r + 200) Sprites.drawTree(ctx, T, L.surfaceAt(T.x) + 4, season, time, snow);
+    for (const T of Wd.trees) if (T.x > view.l - 200 && T.x < view.r + 200) Art.drawTree(ctx, T, L.surfaceAt(T.x) + 4, season, time, snow);
     drawGround(G, Wd, L, view, night, season, snow, time);
+    if (Art !== Sprites) drawPondBackdrop(L, view, season);
     drawHawkShadow(G, Wd, L, night);
     drawBackGrass(G, Wd, L, view, season, time, snow);
-    for (const c of Wd.covers) { if (c.x + c.w < view.l || c.x - c.w > view.r || c.lifted) continue; Sprites.drawCover(ctx, c, Wd, season, snow); }
+    for (const c of Wd.covers) { if (c.x + c.w < view.l || c.x - c.w > view.r || c.lifted) continue; Art.drawCover(ctx, c, Wd, season, snow); }
     const under = (p.mode === 'hide' || p.mode === 'birth') && !!p.cover;
     if (under) drawPlayer(G, p, time);
-    for (const c of Wd.covers) { if (!(under && p.cover === c)) continue; Sprites.drawCover(ctx, c, Wd, season, snow); }
+    for (const c of Wd.covers) { if (!(under && p.cover === c)) continue; Art.drawCover(ctx, c, Wd, season, snow); }
     drawTrails(G, Wd, p, time);
-    for (const s of Wd.snacks) { if (!s.seen || s.x < view.l || s.x > view.r) continue; ctx.globalAlpha = clamp(s.t * 2, 0, 1); Sprites.drawSnack(ctx, s, time); }
+    for (const s of Wd.snacks) { if (!s.seen || s.x < view.l || s.x > view.r) continue; ctx.globalAlpha = clamp(s.t * 2, 0, 1); Art.drawSnack(ctx, s, time); }
     ctx.globalAlpha = 1;
-    for (const e of Wd.exuviae) { if (e.x < view.l - 100 || e.x > view.r + 100) continue; Sprites.drawExuvia(ctx, e, time); }
-    for (const w of Wd.worms) Sprites.drawWorm(ctx, w);
-    for (const c of Wd.critters) { if (c.x < view.l || c.x > view.r) continue; if (c.kind === 'frog' && c.state !== 'under') Sprites.drawFrog(ctx, c); else if (c.kind === 'hopper' && season !== 'winter') Sprites.drawHopper(ctx, c); }
+    for (const e of Wd.exuviae) { if (e.x < view.l - 100 || e.x > view.r + 100) continue; Art.drawExuvia(ctx, e, time); }
+    for (const w of Wd.worms) Art.drawWorm(ctx, w);
+    for (const c of Wd.critters) { if (c.x < view.l || c.x > view.r) continue; if (c.kind === 'frog' && c.state !== 'under') Art.drawFrog(ctx, c); else if (c.kind === 'hopper' && season !== 'winter') Art.drawHopper(ctx, c); }
     drawDenCrowd(G, Wd, L, season);
     if (Wd.mum) drawNPC(G, Wd.mum, time);
     for (const n of Wd.npcs) drawNPC(G, n, time);
-    if (Wd.raccoon) Sprites.drawRaccoon(ctx, Wd.raccoon);
-    if (Wd.sci) Sprites.drawScientist(ctx, Object.assign({ y: L.walkY(Wd.sci.x) }, Wd.sci), time);
+    if (Wd.raccoon) Art.drawRaccoon(ctx, Wd.raccoon);
+    if (Wd.sci) Art.drawScientist(ctx, Object.assign({ y: L.walkY(Wd.sci.x) }, Wd.sci), time);
     if (!under) drawPlayer(G, p, time);
-    if (Wd.heron) Sprites.drawHeron(ctx, Wd.heron, time);
+    if (Wd.heron) Art.drawHeron(ctx, Wd.heron, time);
     G.particles.draw(ctx, cam);
     drawPond(G, Wd, L, view, season, time, night);
     drawFrontGrass(G, Wd, L, view, season, time, snow);
-    if (season === 'summer' || season === 'spring') for (const c of Wd.critters) { if (c.x < view.l || c.x > view.r || night > .6) continue; if (c.kind === 'butterfly') Sprites.drawButterfly(ctx, c, time); else if (c.kind === 'dragonfly' && season === 'summer') Sprites.drawDragonfly(ctx, c, time); }
-    if (season === 'autumn') drawFallingLeaves(G, view, time);
-    if (Wd.hawk) Sprites.drawHawk(ctx, Wd.hawk, time);
+    if (season === 'summer' || season === 'spring') for (const c of Wd.critters) { if (c.x < view.l || c.x > view.r || night > .6) continue; if (c.kind === 'butterfly') Art.drawButterfly(ctx, c, time); else if (c.kind === 'dragonfly' && season === 'summer') Art.drawDragonfly(ctx, c, time); }
+    if (season === 'autumn' && Art === Sprites) drawFallingLeaves(G, view, time);   /* the WebGL look has its own leaves */
+    if (Wd.hawk) Art.drawHawk(ctx, Wd.hawk, time);
     ctx.restore();
 
     /* ---------------- light ---------------- */
     const dark = Math.max(night * .72, wx.cloud * .22 + wx.rain * .1);
+    if (gx) {
+      const glow = (Math.max(0, 1 - Math.abs(tod - .8) / .07) + Math.max(0, 1 - Math.abs(tod - .25) / .06)) * (1 - wx.cloud);
+      if (p.underground) drawDenDark(G, p);
+      const hz = clamp(horizon, H * .15, H * 1.1);
+      const pondMist = (Math.max(0, 1 - Math.abs(tod - .27) / .09) + .35 * Math.max(0, 1 - Math.abs(tod - .84) / .06) + (season === 'autumn' ? .25 : 0) + wx.rain * .3) * (1 - wx.gust * .3);
+      const glCloud = Math.max(wx.cloud, season === 'winter' ? .7 : 0);
+      GFX.render(G, { night, dark, warm: glow * (1 - glCloud), horizon: hz, top, bot, sun: sunPos(tod, hz, glCloud), moon: moonPos(tod, hz, night, glCloud), underground: p.underground, pondMist });
+      ctx = mainCtx;
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      /* the game's own fireflies glow over the lit scene */
+      if (season === 'summer' && night > .3) { ctx.save(); cam.apply(ctx); drawFireflies(G, Wd, view, night, time, 1.25); ctx.restore(); }
+      drawWeather(G, wx, time, dt, true);
+      drawFeel(G, p);
+      if (!clean) drawOverlays(G, night, time);
+      Cinematic.draw(ctx, W, H);
+      return;
+    }
     if (dark > .01) {
       ctx.globalCompositeOperation = 'multiply';
       ctx.fillStyle = `rgb(${lerp(255, 60, dark) | 0},${lerp(255, 80, dark) | 0},${lerp(255, 140, dark) | 0})`;
@@ -130,14 +163,23 @@ const Render = (function () {
     const glow = (Math.max(0, 1 - Math.abs(tod - .8) / .07) + Math.max(0, 1 - Math.abs(tod - .25) / .06)) * (1 - wx.cloud);
     if (glow > .01) { ctx.globalCompositeOperation = 'soft-light'; ctx.fillStyle = `rgba(255,140,70,${glow * .4})`; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = 'source-over'; }
     if (season === 'summer' && night > .3) { ctx.save(); cam.apply(ctx); drawFireflies(G, Wd, view, night, time); ctx.restore(); }
-    if (p.underground) {
-      const [sx, sy] = cam.toScreen(p.x, p.y), rad = Math.max(W, H) * .5;
-      const lg = ctx.createRadialGradient(sx, sy, rad * .2, sx, sy, rad);
-      lg.addColorStop(0, 'rgba(6,4,2,0)'); lg.addColorStop(1, 'rgba(6,4,2,.55)');
-      ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H);
-    }
+    if (p.underground) drawDenDark(G, p);
     drawWeather(G, wx, time, dt);
-    /* how the snake feels: cloudy blue eyes before a shed, cold, too hot */
+    drawFeel(G, p);
+    const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .45, W / 2, H / 2, Math.max(W, H) * .8);
+    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, `rgba(10,14,8,${.3 + night * .2})`);
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+    if (!clean) drawOverlays(G, night, time);
+    Cinematic.draw(ctx, W, H);
+  }
+  function drawDenDark(G, p) {
+    const [sx, sy] = G.cam.toScreen(p.x, p.y), rad = Math.max(W, H) * .5;
+    const lg = ctx.createRadialGradient(sx, sy, rad * .2, sx, sy, rad);
+    lg.addColorStop(0, 'rgba(6,4,2,0)'); lg.addColorStop(1, 'rgba(6,4,2,.55)');
+    ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H);
+  }
+  /* how the snake feels: cloudy blue eyes before a shed, cold, too hot */
+  function drawFeel(G, p) {
     if (p.stage === 'snake') {
       const blue = p.blue;
       if (blue > .01) { const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .2, W / 2, H / 2, Math.max(W, H) * .7); g.addColorStop(0, `rgba(200,220,240,${blue * .12})`); g.addColorStop(1, `rgba(190,215,240,${blue * .6})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
@@ -146,11 +188,18 @@ const Render = (function () {
       if (cold > .02) { const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .35, W / 2, H / 2, Math.max(W, H) * .75); g.addColorStop(0, 'rgba(180,220,255,0)'); g.addColorStop(1, `rgba(170,210,255,${cold * .55})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
       if (hot > .02) { const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .35, W / 2, H / 2, Math.max(W, H) * .75); g.addColorStop(0, 'rgba(255,180,80,0)'); g.addColorStop(1, `rgba(255,150,60,${hot * .45})`); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
     }
-    const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .45, W / 2, H / 2, Math.max(W, H) * .8);
-    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, `rgba(10,14,8,${.3 + night * .2})`);
-    ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
-    if (!clean) drawOverlays(G, night, time);
-    Cinematic.draw(ctx, W, H);
+  }
+  /* where the sun and the moon are on the screen (the same arcs drawSunMoon uses), for the WebGL look */
+  function sunPos(tod, horizon, cloud) {
+    const skyTop = Math.max(80, horizon * .85);
+    if (!(tod > .22 && tod < .82)) return { x: W * .5, y: horizon + 200, t: 0, vis: 0 };
+    const t = invLerp(.22, .82, tod);
+    return { x: W * (.1 + .8 * t), y: horizon - Math.sin(Math.PI * t) * skyTop + 10, t, vis: 1 - cloud * .7 };
+  }
+  function moonPos(tod, horizon, night, cloud) {
+    const skyTop = Math.max(80, horizon * .85);
+    const t = tod > .5 ? invLerp(.78, 1.28, tod) : invLerp(-.22, .28, tod);
+    return { x: W * (.15 + .7 * t), y: horizon - Math.sin(Math.PI * clamp(t, 0, 1)) * skyTop * .9 - 10, vis: night > .05 ? night * (1 - cloud * .8) : 0 };
   }
 
   function drawSunMoon(G, tod, night, horizon, cloud) {
@@ -219,12 +268,16 @@ const Render = (function () {
     const g = ctx.createLinearGradient(0, -180, 0, 380); g.addColorStop(0, '#7a6448'); g.addColorStop(.35, '#6a5238'); g.addColorStop(.7, '#4e3c2a'); g.addColorStop(1, '#2e2418');
     ctx.fillStyle = g; ctx.fill();
     ctx.save(); groundPath(); ctx.clip();
+    const painted = Art !== Sprites, soilPat = painted && Art.soilPattern(ctx);
+    if (soilPat) { ctx.fillStyle = soilPat; ctx.fillRect(x0, -400, x1 - x0, bottom + 400); }
     /* the rocky hill: limestone in layers, under a thin skin of soil */
     if (view.l < WORLD.hillR + 100) {
       const lg = ctx.createLinearGradient(0, -180, 0, 300); lg.addColorStop(0, '#c8bc9c'); lg.addColorStop(.5, '#a89c80'); lg.addColorStop(1, '#6a6050');
       ctx.fillStyle = lg; ctx.beginPath();
       const hx0 = Math.max(x0, WORLD.hillL - 120), hx1 = Math.min(x1, WORLD.hillR + 120);
       ctx.moveTo(hx0, bottom); for (let x = hx0; x <= hx1; x += 6) { const k = smoothstep(WORLD.hillL - 120, WORLD.hillL + 140, x) * (1 - smoothstep(WORLD.hillR - 140, WORLD.hillR + 120, x)); ctx.lineTo(x, L.surfaceAt(x) + 12 + (1 - k) * 260); } ctx.lineTo(hx1, bottom); ctx.closePath(); ctx.fill();
+      const rockPat = painted && Art.rockPattern(ctx);
+      if (rockPat) { ctx.save(); ctx.clip(); ctx.fillStyle = rockPat; ctx.fillRect(hx0, -400, hx1 - hx0, bottom + 400); ctx.restore(); }
       ctx.strokeStyle = 'rgba(90,80,62,.35)'; ctx.lineWidth = 1.4;
       for (let k = 0; k < 14; k++) { const yy = -150 + k * 26; ctx.beginPath(); for (let x = hx0; x <= hx1; x += 12) { const y = yy + Math.sin(x * .01 + k) * 4; x === hx0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); } ctx.stroke(); }
     }
@@ -274,6 +327,7 @@ const Render = (function () {
     if (season === 'winter' && snow > .6) return;
     const col = season === 'autumn' ? ['#b8a050', '#a08a40', '#c8b060'] : season === 'spring' ? ['#8ad060', '#6ab848', '#a0d870'] : ['#5aa03a', '#4a8a30', '#6ab048'];
     const gust = Wd.weather.gust;
+    if (Art !== Sprites) { drawBackGrassPainted(G, Wd, L, view, season, time, gust); return; }
     ctx.lineCap = 'round'; ctx.lineWidth = 1.6;
     for (let x = Math.floor(view.l / 5) * 5; x < view.r; x += 5) {
       if (L.inPond(x)) continue;
@@ -292,8 +346,32 @@ const Render = (function () {
     /* cattails at the pond's edges (behind) */
     for (const r of Wd.reeds) { if (r.x < view.l || r.x > view.r) continue; const y = Math.min(L.surfaceAt(r.x), WORLD.waterY + 10), sx = Math.sin(time + r.ph) * 3; ctx.strokeStyle = season === 'winter' ? '#a89a7a' : season === 'autumn' ? '#a8a060' : '#5a8a3a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(r.x, y + 6); ctx.quadraticCurveTo(r.x, y - r.h * .5, r.x + sx, y - r.h); ctx.stroke(); if (r.h > 70) { ctx.fillStyle = '#6a4a2a'; ctx.beginPath(); ctx.ellipse(r.x + sx * .9, y - r.h + 10, 2.6, 8, 0, 0, TAU); ctx.fill(); } }
   }
+  /* the painted meadow (with the WebGL look): grass tufts, wildflowers by species, cattails */
+  function drawBackGrassPainted(G, Wd, L, view, season, time, gust) {
+    for (let x = Math.floor(view.l / 7) * 7; x < view.r; x += 7) {
+      if (L.inPond(x)) continue;
+      const rock = L.onHill(x) && Math.abs(x - WORLD.hillC) < 420; if (rock && (x % 28)) continue;
+      const n = hillNoise[2](x * .13), v = ((x / 7) | 0) * 7919 % 6;
+      const s = (.55 + n * .6) * (season === 'spring' ? .8 : 1);
+      if (!Art.drawGrass(ctx, x, L.surfaceAt(x) + 1.5, s, season, Math.sin(time * 1.4 + x * .05) * (.5 + gust), v)) { ctx.strokeStyle = '#5aa03a'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(x, L.surfaceAt(x)); ctx.lineTo(x + 1, L.surfaceAt(x) - 8 * s); ctx.stroke(); }
+    }
+    if (season !== 'winter') for (const f of Wd.flowers) {
+      if (f.x < view.l || f.x > view.r) continue;
+      if (season === 'autumn' && f.k < .6) continue;
+      Art.drawFlower(ctx, f, L.surfaceAt(f.x) + 1, season, Math.sin(time * 1.2 + f.ph) * 2);
+    }
+    for (const r of Wd.reeds) { if (r.x < view.l || r.x > view.r) continue; Art.drawReed(ctx, r, Math.min(L.surfaceAt(r.x), WORLD.waterY + 10), season, Math.sin(time + r.ph) * 3); }
+  }
   function drawFrontGrass(G, Wd, L, view, season, time, snow) {
     if (season === 'winter' && snow > .6) return;
+    if (Art !== Sprites) {
+      for (const t of decor.tufts) {
+        if (t.x < view.l || t.x > view.r || L.inPond(t.x)) continue;
+        if (L.onHill(t.x) && Math.abs(t.x - WORLD.hillC) < 420) continue;
+        Art.drawGrass(ctx, t.x, L.surfaceAt(t.x) + 4, t.h / 11, season, Math.sin(time * 1.5 + t.ph) * 1.5, (t.n * 3 + (t.x | 0)) % 6);
+      }
+      return;
+    }
     const col = season === 'autumn' ? '#b8a050' : season === 'spring' ? '#9ad870' : '#6ab848';
     ctx.strokeStyle = col; ctx.lineWidth = 1.8; ctx.lineCap = 'round';
     for (const t of decor.tufts) {
@@ -308,6 +386,7 @@ const Render = (function () {
     const ice = season === 'winter';
     const xs = []; for (let x = WORLD.pondL; x <= WORLD.pondR; x += 6) if (L.surfaceAt(x) > WORLD.waterY) xs.push(x);
     if (!xs.length) return;
+    if (!ice && Art !== Sprites) { Art.drawPondWater(ctx, xs, L, WORLD.waterY, time, night, season); drawPads(Wd, season); return; }
     ctx.beginPath(); ctx.moveTo(xs[0], WORLD.waterY); for (const x of xs) ctx.lineTo(x, WORLD.waterY); for (let i = xs.length - 1; i >= 0; i--) ctx.lineTo(xs[i], L.surfaceAt(xs[i]) + 1); ctx.closePath();
     const g = ctx.createLinearGradient(0, WORLD.waterY, 0, WORLD.waterY + 120);
     if (ice) { g.addColorStop(0, 'rgba(220,235,250,.85)'); g.addColorStop(1, 'rgba(120,150,180,.75)'); }
@@ -321,6 +400,27 @@ const Render = (function () {
       if (pd.flower && season === 'summer') { ctx.fillStyle = '#ffd0e8'; for (let i = 0; i < 6; i++) { const a = Math.PI + i / 5 * Math.PI; ctx.beginPath(); ctx.ellipse(pd.x + Math.cos(a) * 3, WORLD.waterY - 3 + Math.sin(a) * 2.4, 2.4, 1.2, a, 0, TAU); ctx.fill(); } }
     }
   }
+  /* the painted look draws the far country on the GPU behind a transparent world, so the pond needs an
+     opaque body of deep water behind the swimmers (the classic look had an opaque backdrop already) */
+  function drawPondBackdrop(L, view, season) {
+    if (view.r < WORLD.pondL || view.l > WORLD.pondR) return;
+    const xs = []; for (let x = WORLD.pondL; x <= WORLD.pondR; x += 6) if (L.surfaceAt(x) > WORLD.waterY) xs.push(x);
+    if (!xs.length) return;
+    ctx.beginPath(); ctx.moveTo(xs[0], WORLD.waterY); for (const x of xs) ctx.lineTo(x, WORLD.waterY); for (let i = xs.length - 1; i >= 0; i--) ctx.lineTo(xs[i], L.surfaceAt(xs[i]) + 2); ctx.closePath();
+    const g = ctx.createLinearGradient(0, WORLD.waterY, 0, WORLD.waterY + 120);
+    if (season === 'winter') { g.addColorStop(0, '#5a7a8a'); g.addColorStop(1, '#203440'); } else { g.addColorStop(0, '#3a6a6a'); g.addColorStop(1, '#0e2826'); }
+    ctx.fillStyle = g; ctx.fill();
+  }
+  /* lily pads with a lit rim and veins, a white-pink water lily in summer (painted look) */
+  function drawPads(Wd, season) {
+    for (const pd of Wd.pads) {
+      const y = WORLD.waterY - .5, col = season === 'autumn' ? [138, 132, 58] : [58, 128, 56];
+      const pg = ctx.createLinearGradient(0, y - pd.r * .28, 0, y + pd.r * .28); pg.addColorStop(0, rgbStr(mixRgb(col, [220, 240, 160], .3))); pg.addColorStop(1, rgbStr(mixRgb(col, [10, 30, 10], .4)));
+      ctx.fillStyle = pg; ctx.beginPath(); ctx.ellipse(pd.x, y, pd.r, pd.r * .28, 0, .25, TAU - .25); ctx.lineTo(pd.x, y); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(20,50,20,.4)'; ctx.lineWidth = .3; for (let k = 0; k < 6; k++) { const a = .5 + k / 6 * (TAU - 1); ctx.beginPath(); ctx.moveTo(pd.x, y); ctx.lineTo(pd.x + Math.cos(a) * pd.r * .9, y + Math.sin(a) * pd.r * .25); ctx.stroke(); }
+      if (pd.flower && season === 'summer') { for (let i = 0; i < 9; i++) { const a = Math.PI + i / 8 * Math.PI; ctx.fillStyle = i % 2 ? '#fff4f8' : '#ffd0e4'; ctx.beginPath(); ctx.ellipse(pd.x + Math.cos(a) * 3, y - 3 + Math.sin(a) * 2.4, 2.6, 1.1, a, 0, TAU); ctx.fill(); } ctx.fillStyle = '#f0c030'; ctx.beginPath(); ctx.arc(pd.x, y - 3, 1.1, 0, TAU); ctx.fill(); }
+    }
+  }
   function drawFallingLeaves(G, view, time) {
     for (let k = 0; k < 24; k++) {
       const x = view.l + (((k * 97.3 + time * 12 * (1 + k % 3)) % (view.r - view.l + 200)) + (view.r - view.l + 200)) % (view.r - view.l + 200) - 100;
@@ -329,15 +429,15 @@ const Render = (function () {
       ctx.fillStyle = ['#e8902a', '#c8501a', '#f0c040'][k % 3]; ctx.beginPath(); ctx.ellipse(0, 0, 4, 2, 0, 0, TAU); ctx.fill(); ctx.restore();
     }
   }
-  function drawFireflies(G, Wd, view, night, time) {
+  function drawFireflies(G, Wd, view, night, time, big = 1) {
     ctx.globalCompositeOperation = 'lighter';
     for (const c of Wd.critters) {
       if (c.kind !== 'firefly' || c.x < view.l || c.x > view.r) continue;
       const on = Math.max(0, Math.sin(time * TAU / c.per + c.ph * 7)); if (on < .3) continue;
       const x = c.x + Math.sin(time * .5 + c.ph) * 20, y = Wd.land.surfaceAt(c.x) + c.y + Math.sin(time * .7 + c.ph * 2) * 8;
-      const a = (on - .3) / .7 * night, g = ctx.createRadialGradient(x, y, 0, x, y, 10);
-      g.addColorStop(0, `rgba(240,255,140,${a})`); g.addColorStop(1, 'rgba(240,255,140,0)');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 10, 0, TAU); ctx.fill();
+      const a = (on - .3) / .7 * night, r = 10 * big, g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, `rgba(240,255,140,${a})`); if (big > 1) g.addColorStop(.12, `rgba(230,255,120,${a * .8})`); g.addColorStop(1, 'rgba(240,255,140,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
     }
     ctx.globalCompositeOperation = 'source-over';
   }
@@ -370,7 +470,7 @@ const Render = (function () {
       const key = i + '|' + G.form;
       let pts = coilCache.get(key);
       if (!pts) { const R = mulberry32(i * 31 + 5), len = snakeUnits(30 + R() * 30), x = C.x + (i - 4) * 17 + R() * 6; pts = { P: Trail.coil(len, len * .085, x, C.y + C.ry * .75 - (i % 2) * 6, i % 2 ? 1 : -1, 1.7), th: len * .085, form: R() < .75 ? G.form : FORM_KEYS[(R() * 3) | 0] }; coilCache.set(key, pts); }
-      Sprites.drawSnake(ctx, pts.P, { thick: pts.th, form: pts.form, shadow: false, alpha: .95 });
+      Art.drawSnake(ctx, pts.P, { thick: pts.th, form: pts.form, shadow: false, alpha: .95 });
     }
   }
 
@@ -379,37 +479,37 @@ const Render = (function () {
     return Object.assign({ thick: s.thick, form: s.form, alpha: s.alpha, tongue: s.tongueT > 0 ? 1 - s.tongueT * 2 : 0, baby: s.len < 70 ? clamp((70 - s.len) / 14, 0, 1) : 0 }, extra);
   }
   function drawNPC(G, n, time) {
-    if (n.mode === 'sac') { Sprites.drawSac(ctx, n.x, n.y + n.thick * .5, n.len / 52, time, n.sacT < 1.2 ? 1 : 0, n.form); return; }
+    if (n.mode === 'sac') { Art.drawSac(ctx, n.x, n.y + n.thick * .5, n.len / 52, time, n.sacT < 1.2 ? 1 : 0, n.form); return; }
     const P = Trail.sample(n.trail, n.len, clamp(Math.round(n.len / 3.2), 20, 40));
-    Sprites.drawSnake(ctx, P, snakeOpts(n, { tongue: n.tongueT > 0 ? 1 - n.tongueT * 2 : 0, headUp: n.coiled ? .2 : 0 }));
+    Art.drawSnake(ctx, P, snakeOpts(n, { tongue: n.tongueT > 0 ? 1 - n.tongueT * 2 : 0, headUp: n.coiled ? .2 : 0 }));
   }
   function drawPlayer(G, p, time) {
     if (p.stage === 'sac') {
       /* you: a soft golden glow around your own bag */
       const g = ctx.createRadialGradient(p.x, p.y - 12, 4, p.x, p.y - 12, 34); g.addColorStop(0, `rgba(255,236,140,${.35 + .15 * Math.sin(time * 3)})`); g.addColorStop(1, 'rgba(255,236,140,0)');
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y - 12, 34, 0, TAU); ctx.fill();
-      Sprites.drawSac(ctx, p.x, p.y, 1.25, time, p.flags.sacReady ? p.crack + .4 : 0, p.form);
+      Art.drawSac(ctx, p.x, p.y, 1.25, time, p.flags.sacReady ? p.crack + .4 : 0, p.form);
       ctx.fillStyle = '#ffe27a'; ctx.strokeStyle = 'rgba(0,0,0,.4)'; ctx.lineWidth = .8; const ay = p.y - 34 + Math.sin(time * 4) * 2;
       ctx.beginPath(); ctx.moveTo(p.x, ay + 6); ctx.lineTo(p.x - 5, ay - 2); ctx.lineTo(p.x + 5, ay - 2); ctx.closePath(); ctx.fill(); ctx.stroke();
       return;
     }
     const n = clamp(Math.round(p.len / 3), 22, 44);
     let P;
-    if (p.mode === 'measured') { P = Sprites.posePts('straight', p.len, p.thick).map(q => ({ x: p.x + q.x * .9 - p.len * .1, y: p.y + Math.abs(q.x) * .06, z: 0, c: 1, g: 0 })); }
+    if (p.mode === 'measured') { P = Art.posePts('straight', p.len, p.thick).map(q => ({ x: p.x + q.x * .9 - p.len * .1, y: p.y + Math.abs(q.x) * .06, z: 0, c: 1, g: 0 })); }
     else P = Trail.sample(p.trail, p.len, n);
     const o = { thick: p.thick, form: p.form, tongue: p.tongueT > 0 ? 1 - p.tongueT : 0, blue: p.blue, dull: p.shed === 'blue' || p.shed === 'clear' || p.shed === 'tight' ? (p.shed === 'tight' ? .3 : .75) : 0, fresh: p.fresh, headUp: p.headUp, baby: p.len < 70 ? clamp((70 - p.len) / 14, 0, 1) : 0, peel: p.mode === 'shed' ? p.peel : undefined };
     if (p.mode === 'startle') o.headUp = .6;
     if ((p.mode === 'hide' || p.mode === 'birth') && p.cover) {
       const c = p.cover; ctx.save();
       ctx.beginPath(); ctx.rect(c.x - 5000, -5000, 10000, 10000); ctx.rect(c.x - c.w / 2 + 2, c.y - 200, c.w - 4, 230); ctx.clip('evenodd');
-      Sprites.drawSnake(ctx, P, o); ctx.restore();
-    } else Sprites.drawSnake(ctx, P, o);
+      Art.drawSnake(ctx, P, o); ctx.restore();
+    } else Art.drawSnake(ctx, P, o);
     if (p.mode === 'birth' && p.birth) { /* she lies coiled; the glow is in the overlay */ }
     if (G.player === p && p.flags.carrying && p.eggs > .05 && p.mode !== 'hide') { ctx.fillStyle = `rgba(255,220,240,${.25 + .15 * Math.sin(time * 2)})`; const q = P[Math.floor(P.length * .45)]; ctx.beginPath(); ctx.arc(q.x, q.y, p.thick * (.7 + p.eggs * .5), 0, TAU); ctx.fill(); }
   }
 
   /* ---------- weather on the screen ---------- */
-  function drawWeather(G, wx, time, dt) {
+  function drawWeather(G, wx, time, dt, gl) {
     const cam = G.cam;
     if (wx.rain > .03 && !G.player.underground) {
       ctx.strokeStyle = `rgba(200,220,240,${.45 * wx.rain})`; ctx.lineWidth = 1.2;
@@ -417,7 +517,7 @@ const Render = (function () {
       for (const d of drops) { d.y += dt * (1.2 + d.z) * 1.1; if (d.y > 1) { d.y -= 1; d.x = Math.random(); } const x = ((d.x - cam.x * .0002 * d.z) % 1 + 1) % 1 * W, y = d.y * H; ctx.moveTo(x, y); ctx.lineTo(x - 3, y + 14 * d.z); }
       ctx.stroke();
     }
-    if (wx.snow > .03 && !G.player.underground) {
+    if (wx.snow > .03 && !G.player.underground && !gl) {
       ctx.fillStyle = `rgba(255,255,255,${.85 * wx.snow})`;
       for (const f of flakes) { f.y += dt * .05 * f.z; f.ph += dt; if (f.y > 1) { f.y -= 1; f.x = Math.random(); } const x = ((f.x + Math.sin(f.ph) * .01 - cam.x * .0002 * f.z) % 1 + 1) % 1 * W, y = f.y * H; ctx.beginPath(); ctx.arc(x, y, 1 + f.z * 2, 0, TAU); ctx.fill(); }
     }
@@ -512,6 +612,7 @@ const Render = (function () {
   function snapshot(G) {
     const c = document.createElement('canvas'); c.width = canvas.width; c.height = canvas.height;
     frame(G, 0, true);
+    if (glOn()) c.getContext('2d').drawImage(GFX.canvas(), 0, 0, c.width, c.height);
     c.getContext('2d').drawImage(canvas, 0, 0);
     return c;
   }

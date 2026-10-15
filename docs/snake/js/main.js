@@ -97,6 +97,7 @@
     if (K === 'j') UI.openJournal();
     if (K === 'f') toggle('fast');
     if (K === 'g') toggle('science');
+    if (K === 'o' && typeof GFX !== 'undefined' && GFX.canvas()) UI.hint(GFX.toggle() ? 'New look (WebGL) on' : 'New look off (classic)');
     if (k === '?' || k === '/') document.getElementById('help').hidden = !document.getElementById('help').hidden;
     if (k === 'Escape') UI.closeModals();
   });
@@ -369,7 +370,7 @@
     camera(rawDt);
     Render.frame(G, dt);
     frames++;
-    if (params.has('debug') || params.has('debughud')) document.title = `m=${modal ? 1 : 0} st=${G.started ? 1 : 0} ts=${Cinematic.timeScale.toFixed(2)} w=${G.warp} fps=${Render.getFps().toFixed(0)} npc=${G.world.npcs.length} t=${G.time.toFixed(1)} ${p.stage}/${p.mode} i${p.instar} food=${p.cfood.toFixed(0)} belly=${p.belly.toFixed(1)} warm=${p.warm.toFixed(2)} shed=${p.shed} p=${p.x.toFixed(0)},${p.y.toFixed(0)} npc=${G.world.npcs.length} fps=${Render.getFps().toFixed(0)}`;
+    if (params.has('debug') || params.has('debughud')) document.title = `m=${modal ? 1 : 0} st=${G.started ? 1 : 0} ts=${Cinematic.timeScale.toFixed(2)} w=${G.warp} fps=${Render.getFps().toFixed(0)} npc=${G.world.npcs.length} t=${G.time.toFixed(1)} ${p.stage}/${p.mode} i${p.instar} food=${p.cfood.toFixed(0)} belly=${p.belly.toFixed(1)} warm=${p.warm.toFixed(2)} shed=${p.shed} p=${p.x.toFixed(0)},${p.y.toFixed(0)} npc=${G.world.npcs.length} fps=${Render.getFps().toFixed(0)}${typeof GFX !== 'undefined' && GFX.active() ? ` gl=${GFX.stats().ms.toFixed(1)}ms up=${GFX.stats().upload.toFixed(1)}ms` : ''}`;
     if (G.started) UI.update(rawDt);
     if (params.has('debughud')) document.getElementById('hintText').textContent = document.title;
     document.body.classList.toggle('cine', !!Cinematic.active);

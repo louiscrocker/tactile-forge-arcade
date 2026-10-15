@@ -32,6 +32,7 @@ const DENY = [
   /^tools\//, /^docs\//, /^tests?\//, /^shots\//, /^\.claude\//, /^node_modules\//,
   /^[^/]+\.md$/i, /^package(-lock)?\.json$/, /^server\.js$/, /^smoke\.js$/,
   /^\.gitignore$/, /^\.gitattributes$/, /^_[^/]*\.html$/, /^[^/]+\.png$/i,
+  /^paintsheet\.html$/,
 ];
 const ship = tracked.filter(f => !DENY.some(re => re.test(f)));
 if (!ship.includes('index.html')) { console.error('FAIL — no index.html at the repo root'); process.exit(1); }

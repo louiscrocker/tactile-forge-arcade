@@ -68,6 +68,8 @@ Copy the tagline and description from `docs/assets/games.js`. Add one line at th
 | Wolf: Song of the Valley | Adventure | kids, wolves, animals, yellowstone, life-cycle, nature, educational, reading, family-friendly, browser |
 | Polar Bear: Children of the Ice | Adventure | kids, polar-bear, arctic, animals, life-cycle, nature, educational, reading, family-friendly, browser |
 | Garter Snake: Skin by Skin | Adventure | kids, snakes, reptiles, animals, life-cycle, nature, educational, reading, family-friendly, browser |
+| Plankton: The Copepod's Year | Adventure | kids, plankton, ocean, sea-life, life-cycle, nature, educational, reading, family-friendly, browser |
+| Jellyfish: Pulse by Pulse | Adventure | kids, jellyfish, ocean, sea-life, life-cycle, nature, educational, reading, family-friendly, browser |
 | Storm Lab | Educational | weather, tornado, science, simulation, educational, kids, stem, webgl, radar, browser |
 
 Tag names must not mention the original arcade titles. "asteroids-like" and

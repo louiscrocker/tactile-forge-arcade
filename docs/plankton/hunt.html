@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plankton Spotter — Plankton: The Copepod's Year</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root { --ink: #1e2a30; --dim: #4a5e66; --line: #c8d8dc; --blue: #1e6aa0; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #dfe8ea; color: var(--ink); font-family: "Nunito", "Segoe UI", system-ui, sans-serif; }
+  .page { width: 210mm; min-height: 297mm; margin: 12px auto; padding: 14mm 14mm 10mm; background: #fdfefd; box-shadow: 0 6px 30px rgba(0,0,0,.15); }
+  h1 { margin: 0; font-size: 34px; font-weight: 900; letter-spacing: .04em; }
+  h1 span { color: var(--blue); }
+  .sub { margin: 4px 0 14px; color: var(--dim); font-weight: 700; }
+  h2 { font-size: 18px; font-weight: 900; margin: 18px 0 8px; border-bottom: 2px solid var(--line); padding-bottom: 4px; }
+  .cycle { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; align-items: end; }
+  .cycle figure { margin: 0; text-align: center; }
+  .cycle canvas { width: 100%; height: auto; border: 2px dashed var(--line); border-radius: 12px; background: #fff; }
+  .cycle figcaption { font-weight: 900; margin-top: 4px; font-size: 14px; }
+  .cycle small { display: block; color: var(--dim); font-weight: 700; font-size: 10.5px; line-height: 1.25; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .updown { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .updown div { border: 2px solid var(--ink); border-radius: 10px; height: 64mm; position: relative; background: linear-gradient(#fff, #fff 60%, #eef3f4); }
+  .updown b { position: absolute; top: 6px; left: 8px; font-size: 15px; }
+  .updown i { position: absolute; bottom: 6px; left: 8px; right: 8px; font-style: normal; color: var(--dim); font-weight: 700; font-size: 12px; }
+  .match { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; }
+  .match label { display: flex; gap: 10px; align-items: center; font-weight: 700; padding: 5px 0; border-bottom: 1px dotted var(--line); }
+  .box { flex: 0 0 22px; height: 22px; border: 2.5px solid var(--ink); border-radius: 5px; }
+  ul { margin: 6px 0; padding-left: 20px; font-weight: 600; line-height: 1.45; }
+  .note { border: 2px solid #e0b040; background: #fff8e0; border-radius: 10px; padding: 8px 10px; font-weight: 700; font-size: 13px; margin-top: 8px; }
+  .ruler { margin-top: 8px; }
+  .tiny { color: var(--dim); font-size: 11px; font-weight: 600; margin-top: 12px; }
+  .noprint { text-align: center; margin: 10px; }
+  .noprint button { font: 900 16px "Nunito", sans-serif; padding: 10px 22px; border-radius: 999px; border: 0; background: var(--blue); color: #fff; cursor: pointer; }
+  @media print { body { background: #fff; } .page { margin: 0; box-shadow: none; } .noprint { display: none; } }
+</style>
+</head>
+<body>
+<div class="noprint"><button onclick="print()">🖨️ Print this sheet</button></div>
+<div class="page">
+  <h1>PLANKTON <span>SPOTTER</span></h1>
+  <p class="sub">A copepod's year, from a tiny egg to the deep and back. Colour them in!</p>
+
+  <h2>1. The life cycle of a copepod</h2>
+  <div class="cycle" id="cycle"></div>
+  <p class="tiny">Eleven moults in one year: egg → nauplius I–VI → copepodite I–V (the last is stage V, full of oil) → the long sleep in the deep → grown up → eggs again.</p>
+
+  <div class="two">
+    <div>
+      <h2>2. Up and down</h2>
+      <div class="updown">
+        <div><b>☀️ Day</b><i>Draw the copepod down in the dark, where fish can not see it.</i></div>
+        <div><b>🌙 Night</b><i>Draw the copepod up at the top, eating green diatoms.</i></div>
+      </div>
+    </div>
+    <div>
+      <h2>3. Who is who?</h2>
+      <p style="margin:4px 0 6px;font-weight:700">Draw a line from each name to its picture in part 1.</p>
+      <div class="match" id="match"></div>
+    </div>
+  </div>
+
+  <h2>4. How small is a copepod?</h2>
+  <canvas class="ruler" id="ruler" width="1400" height="220" style="width:100%"></canvas>
+
+  <div class="two">
+    <div>
+      <h2>5. Make a plankton net</h2>
+      <ul>
+        <li>An old pair of tights or a fine stocking</li>
+        <li>A wire coat hanger bent into a ring</li>
+        <li>A small clear jar, tied in the toe</li>
+        <li>A long string</li>
+      </ul>
+      <p style="font-weight:700;margin:4px 0">Pull the net slowly through the water, then look in the jar with a magnifying glass. Little jumping specks? Copepods!</p>
+      <div class="note">⚠️ Only near water with a grown-up, from a dock or a beach. Put every living thing back into the water afterwards.</div>
+    </div>
+    <div>
+      <h2>6. Spot them</h2>
+      <div class="match" id="spot"></div>
+    </div>
+  </div>
+  <p class="tiny">Plankton: The Copepod's Year · Calanus finmarchicus, the copepod of the Gulf of Maine. Real sizes: egg 0.15 mm, grown-up about 3 mm.</p>
+</div>
+<script src="js/core.js"></script>
+<script src="js/facts.js"></script>
+<script src="js/sprites.js"></script>
+<script>
+  const stages = [
+    ['Egg', '0.15 mm, let go in the sea', (g) => { g.translate(70, 60); Sprites.drawEgg(g, { s: 26, eye: true }); g.fillStyle = '#fff'; g.beginPath(); g.arc(0, 0, 22, 0, TAU); g.fill(); }],
+    ['Nauplius', 'one red eye, three pairs of legs', (g) => { g.translate(72, 62); Sprites.drawNauplius(g, { s: 9, form: 'clear', step: 3, ph: 1, gut: 0 }); }],
+    ['Copepodite', 'a long body and a tail', (g) => { g.translate(84, 66); Sprites.drawCopepod(g, { s: 3.6, form: 'clear', step: 8, ph: 1, gut: 0 }); }],
+    ['Stage V', 'full of oil', (g) => { g.translate(84, 66); Sprites.drawCopepod(g, { s: 4, form: 'clear', step: 11, oil: 1, ph: 1, gut: 0 }); }],
+    ['Long sleep', 'months in the deep', (g) => { g.translate(84, 66); Sprites.drawCopepod(g, { s: 4, form: 'clear', step: 11, oil: .8, sleep: true, gut: 0 }); g.fillStyle = '#1e2a30'; g.font = '900 20px sans-serif'; g.fillText('z z', 28, -30); }],
+    ['Grown up', 'about 3 mm long', (g) => { g.translate(84, 66); Sprites.drawCopepod(g, { s: 4.2, form: 'clear', step: 12, sex: 'girl', ph: 1, gut: 0 }); }]
+  ];
+  /* line art: draw the sprite, then keep only its outlines (pale fill) so it can be coloured in */
+  const cyc = document.getElementById('cycle');
+  stages.forEach(([name, note, fn], i) => {
+    const f = document.createElement('figure'), c = document.createElement('canvas'); c.width = 280; c.height = 240;
+    const g = c.getContext('2d'); g.scale(2, 2); fn(g);
+    const id = g.getImageData(0, 0, c.width, c.height), d = id.data, W2 = c.width, A = (i) => (i >= 0 && i < d.length / 4 ? d[i * 4 + 3] : 0);
+    const out = new Uint8ClampedArray(d.length);
+    for (let i = 0; i < d.length / 4; i++) {
+      const a = d[i * 4 + 3]; if (a < 25) continue;
+      const edge = A(i - 1) < 25 || A(i + 1) < 25 || A(i - W2) < 25 || A(i + W2) < 25;
+      const l = (d[i * 4] + d[i * 4 + 1] + d[i * 4 + 2]) / 3, dark = edge || (a > 120 && l < 150);
+      const v = dark ? 30 : 255; out[i * 4] = out[i * 4 + 1] = out[i * 4 + 2] = v; out[i * 4 + 3] = dark ? 255 : 0;
+    }
+    id.data.set(out);
+    g.putImageData(id, 0, 0);
+    f.appendChild(c);
+    const cap = document.createElement('figcaption'); cap.innerHTML = `${i + 1}. ${name}<small>${note}</small>`; f.appendChild(cap);
+    cyc.appendChild(f);
+  });
+  const names = ['Nauplius', 'Egg', 'Grown up', 'Stage V', 'Copepodite', 'Long sleep'];
+  document.getElementById('match').innerHTML = names.sort(() => Math.random() - .5).map(n => `<label><span class="box"></span>${n}</label>`).join('');
+  document.getElementById('spot').innerHTML = [['A diatom', 'tiny green glass plant'], ['A diatom chain', 'cells in a row'], ['A dinoflagellate', 'it glows when bumped'], ['A comb jelly', 'rainbow lights'], ['A copepod jump', 'zip!'], ['Marine snow', 'falling bits']].map(([a, b]) => `<label><span class="box"></span><span>${a}<br><small style="color:#4a5e66">${b}</small></span></label>`).join('');
+  /* a real-size ruler (when printed on A4): 0 to 40 mm; a grown copepod is the red 3 mm bracket. Then both ten times bigger. */
+  const r = document.getElementById('ruler'), rg = r.getContext('2d'), mm = 1400 / 182;
+  rg.fillStyle = '#fff'; rg.fillRect(0, 0, 1400, 220);
+  rg.strokeStyle = '#1e2a30'; rg.lineWidth = 2; rg.font = '700 16px sans-serif'; rg.fillStyle = '#1e2a30';
+  const x0 = 30; rg.strokeRect(x0 - 8, 10, 40 * mm + 16, 44);
+  for (let k = 0; k <= 40; k++) { const x = x0 + k * mm; rg.beginPath(); rg.moveTo(x, 10); rg.lineTo(x, k % 10 ? (k % 5 ? 20 : 26) : 32); rg.stroke(); if (k % 10 === 0) rg.fillText(k + ' mm', x - 12, 50); }
+  rg.strokeStyle = '#d8322a'; rg.lineWidth = 4; rg.beginPath(); rg.moveTo(x0, 64); rg.lineTo(x0 + 3 * mm, 64); rg.stroke();
+  rg.fillStyle = '#d8322a'; rg.font = '800 18px sans-serif'; rg.fillText('← a grown copepod (3 mm)', x0 + 3 * mm + 8, 70);
+  rg.fillStyle = '#1e2a30'; rg.font = '800 20px sans-serif'; rg.fillText('Ten times bigger:', 380, 100);
+  rg.save(); rg.translate(450, 150); Sprites.drawEgg(rg, { s: .75 * mm * 10 * .5 }); rg.restore(); rg.fillText('egg', 425, 205);
+  rg.save(); rg.translate(900, 140); Sprites.drawCopepod(rg, { s: 30 * mm / 27, form: 'red', step: 12, sex: 'girl', ph: 1, gut: .5, oil: .4 }); rg.restore(); rg.fillText('grown-up', 860, 205);
+</script>
+</body>
+</html>

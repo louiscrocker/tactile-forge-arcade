@@ -36,9 +36,14 @@ const Render = (function () {
   let builtFor = null;
   let decor = null, glowSpots = [], clumpCache = new Map();
   const fore = [];
+  /* the painted art goes with the WebGL look (?gfx=gl, O flips both); the classic sprites everywhere else */
+  const art = () => (typeof Painted !== 'undefined' && typeof GFX !== 'undefined' && GFX.active() ? Painted : Sprites);
+  const painted = () => art() !== Sprites;
+  let origTop = null, logPath = null, soilPath = null;                      /* the first solid cell of each column at the start (the surface, for the cut-away) */
 
   function init(c) {
     canvas = c; ctx = c.getContext('2d');
+    if (typeof GFX !== 'undefined') GFX.init(c);
     for (let i = 0; i < 220; i++) stars.push([Math.random(), Math.random() * .8, Math.random(), Math.random() * TAU]);
     buildGrain();
     buildLayers();
@@ -49,6 +54,7 @@ const Render = (function () {
     canvas.width = Math.round(w * DPR); canvas.height = Math.round(h * DPR);
     canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
     buf = document.createElement('canvas'); buf.width = canvas.width; buf.height = canvas.height; bufCtx = buf.getContext('2d');
+    if (typeof GFX !== 'undefined') GFX.resize(w, h, DPR, canvas.width, canvas.height);
   }
   function setQuality(q) { if (q !== quality) { quality = q; resize(W, H, Math.min(2, devicePixelRatio || 1)); } }
   function getFps() { return fps; }
@@ -171,17 +177,118 @@ const Render = (function () {
     for (let k = 0; k < 9000; k++) { const x = R() * back.width, y = R() * back.height; backCtx.fillRect(x, y, 1.5, 1.2); }
     S.dirtyAll = false; S.paint.fill(0);
     for (let r = 0; r < S.rows; r += 40) for (let c = 0; c < S.cols; c += 40) paintCells(S, c, r, c + 39, r + 39, false);
-    builtFor = S;
+    builtFor = S; hiP = null; pReady = null;
+    /* outlines for the painted detail tiles: the log, and the soil below the floor (and below the log) */
+    logPath = new Path2D(); soilPath = new Path2D();
+    { const xs = []; for (let x = WORLD.logL - 40; x <= WORLD.logR + 40; x += 6) if (S.radAt(x) > 0) xs.push(x);
+      xs.forEach((x, i) => { const y = S.logAxis(x) - S.radAt(x); i ? logPath.lineTo(x, y) : logPath.moveTo(x, y); });
+      for (let i = xs.length - 1; i >= 0; i--) logPath.lineTo(xs[i], S.logAxis(xs[i]) + S.radAt(xs[i]));
+      logPath.closePath();
+      soilPath.moveTo(WORLD.left - 50, WORLD.bottom + 60);
+      for (let x = WORLD.left - 50; x <= WORLD.right + 50; x += 6) { const g = S.groundAt(x), lr = S.radAt(x); soilPath.lineTo(x, lr > 0 ? Math.max(g, S.logAxis(x) + lr) : g); }
+      soilPath.lineTo(WORLD.right + 50, WORLD.bottom + 60); soilPath.closePath(); }
+    origTop = new Float32Array(S.cols);
+    for (let c = 0; c < S.cols; c++) { let y = WORLD.bottom; for (let r = 0; r < S.rows; r++) if (S.orig[r * S.cols + c] !== MAT.AIR) { y = S.Y0 + r * S.C; break; } origTop[c] = y; }
     buildDecor(S);
   }
   function updateWood(S) {
     if (builtFor !== S) buildWood(S);
-    if (S.dirtyAll) { S.dirtyAll = false; S.paint.fill(0); for (let r = 0; r < S.rows; r += 40) for (let c = 0; c < S.cols; c += 40) paintCells(S, c, r, c + 39, r + 39, false); }
+    if (S.dirtyAll) { S.dirtyAll = false; S.paint.fill(0); for (let r = 0; r < S.rows; r += 40) for (let c = 0; c < S.cols; c += 40) paintCells(S, c, r, c + 39, r + 39, false); if (pReady) pReady.fill(0); }
     for (let k = 0; k < S.paint.length; k++) if (S.paint[k]) {
       S.paint[k] = 0;
       const kc = k % S.ccols, kr = (k / S.ccols) | 0;
       paintCells(S, kc * WOOD_CH - 2, kr * WOOD_CH - 2, kc * WOOD_CH + WOOD_CH + 1, kr * WOOD_CH + WOOD_CH + 1, false);
+      if (pReady && pReady[k]) paintCellsP(S, kc * WOOD_CH - 2, kr * WOOD_CH - 2, kc * WOOD_CH + WOOD_CH + 1, kr * WOOD_CH + WOOD_CH + 1);
     }
+  }
+
+  /* ---------- the painted cut-away (GL look only) ----------
+     The classic layer blends neighbouring cells' colours into soft blobs.  This one is built from the same
+     cells, chunk by chunk as they come into view: each pixel takes the colour of ONE cell (picked after a
+     small noise warp, so material boundaries are crisp but ragged, like real decay), then gets the detail
+     of its material in world space: lengthwise grain, cracks, beetle galleries with frass in the rotting
+     wood; dark punky decay laced with white fungus threads; soil crumbs and depth; speckled stones.
+     The alpha (the tunnels' shapes) is the classic one, so what you see is still exactly what is solid. */
+  let hiP = null, hiPCtx = null, pReady = null, nA = null, nB = null, nC = null;
+  const isWood = (m) => m === MAT.ROT || m === MAT.PUNK || m === MAT.HEART || m === MAT.BARK || m === MAT.FRASS;
+  function paintCellsP(S, c0, r0, c1, r1) {
+    c0 = Math.max(0, c0); r0 = Math.max(0, r0); c1 = Math.min(S.cols - 1, c1); r1 = Math.min(S.rows - 1, r1);
+    if (c1 < c0 || r1 < r0) return;
+    const cols = S.cols, rows = S.rows, w = (c1 - c0 + 1) * HI, h = (r1 - r0 + 1) * HI;
+    /* occupancy, smoothed like the classic layer (same tunnel shapes) */
+    const oc0 = Math.max(0, c0 - 2), or0 = Math.max(0, r0 - 2), oc1 = Math.min(cols - 1, c1 + 2), or1 = Math.min(rows - 1, r1 + 2), ow = oc1 - oc0 + 1;
+    const occ = new Float32Array(ow * (or1 - or0 + 1));
+    for (let r = or0; r <= or1; r++) for (let c = oc0; c <= oc1; c++) {
+      let a = 0;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const cc = clamp(c + dx, 0, cols - 1), r2 = clamp(r + dy, 0, rows - 1); a += (dx ? 1 : 2) * (dy ? 1 : 2) * (S.mat[r2 * cols + cc] !== MAT.AIR ? 1 : 0); }
+      occ[(r - or0) * ow + (c - oc0)] = a / 16;
+    }
+    const O = (c, r) => occ[(clamp(r, or0, or1) - or0) * ow + (clamp(c, oc0, oc1) - oc0)];
+    /* the same smoothing for each material on its own (10 fields), so patches come out round, not blocky */
+    const NM = 10, mf = new Float32Array(ow * (or1 - or0 + 1) * NM);
+    for (let r = or0; r <= or1; r++) for (let c = oc0; c <= oc1; c++) {
+      const base = ((r - or0) * ow + (c - oc0)) * NM;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const m2 = S.mat[clamp(r + dy, 0, rows - 1) * cols + clamp(c + dx, 0, cols - 1)]; if (m2 !== MAT.AIR) mf[base + m2] += (dx ? 1 : 2) * (dy ? 1 : 2) / 16; }
+    }
+    const MF = (c, r, m2) => mf[((clamp(r, or0, or1) - or0) * ow + (clamp(c, oc0, oc1) - oc0)) * NM + m2];
+    const img = hiPCtx.createImageData(w, h), q = img.data;
+    for (let y = 0; y < h; y++) {
+      const v = (r0 * HI + y + .5) / HI - .5, rA = Math.floor(v), fy = v - rA, wy = S.Y0 + (v + .5) * S.C;
+      for (let x = 0; x < w; x++) {
+        const u = (c0 * HI + x + .5) / HI - .5, cA = Math.floor(u), fx = u - cA, k = (y * w + x) * 4;
+        const o = (1 - fx) * (1 - fy) * O(cA, rA) + fx * (1 - fy) * O(cA + 1, rA) + (1 - fx) * fy * O(cA, rA + 1) + fx * fy * O(cA + 1, rA + 1);
+        const A = clamp((o - .5) * 5 + .5, 0, 1);
+        if (A <= 0) { q[k + 3] = 0; continue; }
+        const wx = S.X0 + (u + .5) * S.C;
+        /* which material is this pixel? each material among the four nearest cells scores its bilinear weight
+           plus a little low-frequency noise of its own: boundaries come out smooth, ragged and crisp */
+        let bm = -1, bs = -9, ss = -9, bi = 0;
+        for (let m2 = 1; m2 < 10; m2++) {
+          let sc = (1 - fx) * (1 - fy) * MF(cA, rA, m2) + fx * (1 - fy) * MF(cA + 1, rA, m2) + (1 - fx) * fy * MF(cA, rA + 1, m2) + fx * fy * MF(cA + 1, rA + 1, m2);
+          if (sc <= 0) continue;
+          sc += (nA(wx * .11 + m2 * 7.1, wy * .11) - .5) * .32;
+          if (sc > bs) { ss = bs; bs = sc; bm = m2; } else if (sc > ss) ss = sc;
+        }
+        if (bm >= 0) { bi = clamp(Math.round(v), 0, rows - 1) * cols + clamp(Math.round(u), 0, cols - 1); }
+        if (bm < 0) { q[k + 3] = 0; continue; }
+        const i = bi, m = bm, t = S.tex[i] / 255, edge = ss > -9 ? 1 - smoothstep(0, .14, bs - ss) : 0;
+        const mott = nC(wx * .03, wy * .03) - .5;
+        let R, Gc, B, f = 1 + mott * .22 + (t - .5) * .1;
+        if (m === MAT.ROT) { R = 128; Gc = 74; B = 40; }
+        else if (m === MAT.PUNK) { R = 80; Gc = 48; B = 30; f = 1 + mott * .3; }
+        else if (m === MAT.HEART) { R = 150; Gc = 96; B = 56; }
+        else if (m === MAT.FRASS) { R = 140; Gc = 104; B = 68; }
+        else if (m === MAT.BARK) { R = 60; Gc = 42; B = 28; }
+        else if (m === MAT.SOIL) { R = 72; Gc = 49; B = 32; const depth = wy - S.groundAt(wx); f *= (1 - clamp(depth / 700, 0, 1) * .4) * (depth < 14 ? .8 : 1); }
+        else if (m === MAT.CLAY) { R = 128; Gc = 80; B = 52; }
+        else if (m === MAT.ROCK) { R = 118; Gc = 114; B = 106; f = 1 + mott * .35; }
+        else { R = 112; Gc = 78; B = 48; }
+        /* a darker line round every patch: decay, stones, the log's edge against the soil */
+        f *= 1 - edge * (m === MAT.PUNK || m === MAT.ROCK || isWood(m) !== true ? .45 : .3);
+        R *= f; Gc *= f; B *= f;
+        if (m === MAT.BARK) {
+          const lr = S.radAt(wx), axis = S.logAxis(wx);
+          if (lr > 0 && wy < axis - lr * .55) { const moss = smoothstep(-.55, -.85, (wy - axis) / lr) * (.6 + t * .4); R = lerp(R, 66, moss); Gc = lerp(Gc, 104, moss); B = lerp(B, 44, moss); }
+        }
+        const dmg = S.dmg[i]; if (dmg > 0) { const k2 = 1 - dmg * .3; R *= k2; Gc *= k2; B *= k2; }
+        q[k] = clamp(R, 0, 255); q[k + 1] = clamp(Gc, 0, 255); q[k + 2] = clamp(B, 0, 255); q[k + 3] = A * 255;
+      }
+    }
+    hiPCtx.putImageData(img, c0 * HI, r0 * HI);
+  }
+  /* make the visible chunks ready, inside a time budget; true when all of them are */
+  function readyP(S, sx0, sy0, sx1, sy1) {
+    if (!hiP) {
+      hiP = document.createElement('canvas'); hiP.width = S.cols * HI; hiP.height = S.rows * HI; hiPCtx = hiP.getContext('2d');
+      pReady = new Uint8Array(S.ccols * S.crows); nA = makeNoise2D(S.seed + 41); nB = makeNoise2D(S.seed + 42); nC = makeNoise2D(S.seed + 43);
+    }
+    const t0 = performance.now(); let all = true;
+    for (let kr = Math.floor(sy0 / WOOD_CH); kr <= Math.floor((sy1 - 1) / WOOD_CH); kr++) for (let kc = Math.floor(sx0 / WOOD_CH); kc <= Math.floor((sx1 - 1) / WOOD_CH); kc++) {
+      const k = kr * S.ccols + kc; if (kc < 0 || kr < 0 || kc >= S.ccols || kr >= S.crows || pReady[k]) continue;
+      if (performance.now() - t0 > 8) { all = false; continue; }
+      paintCellsP(S, kc * WOOD_CH, kr * WOOD_CH, kc * WOOD_CH + WOOD_CH - 1, kr * WOOD_CH + WOOD_CH - 1); pReady[k] = 1;
+    }
+    return all;
   }
   /* things that sit on the surface: moss tufts, ferns, mushrooms, leaf litter; glowing fungus spots */
   function buildDecor(S) {
@@ -235,9 +342,10 @@ const Render = (function () {
     const time = G.time, wind = G.forest.weather.gust;
     if (back) {
       /* leaf clumps behind the branches */
-      for (const cl of T.leafClusters) { const img = clump(cl.r, (cl.ph * 1000) | 0, T.kind); const sway = Math.sin(time * .7 + cl.ph) * (3 + wind * 8); ctx.drawImage(img, cl.x - img.width / 2 + sway, cl.y - img.height / 2); }
+      for (const cl of T.leafClusters) { const sway = Math.sin(time * .7 + cl.ph) * (3 + wind * 8); if (painted() && Painted.drawClump(ctx, cl, T.kind, cl.x + sway, cl.y)) continue; const img = clump(cl.r, (cl.ph * 1000) | 0, T.kind); ctx.drawImage(img, cl.x - img.width / 2 + sway, cl.y - img.height / 2); }
       return;
     }
+    if (painted() && Painted.drawTree(ctx, T, time, wind, false)) return;
     /* buttress roots */
     ctx.fillStyle = '#5a4430';
     if (T.kind === 'ceiba') for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(base.x + s * 20, base.y - 160); ctx.quadraticCurveTo(base.x + s * 40, base.y - 30, base.x + s * 110, base.y + 6); ctx.lineTo(base.x + s * 20, base.y + 10); ctx.closePath(); ctx.fill(); }
@@ -281,6 +389,11 @@ const Render = (function () {
     G.night = night;
     if (dt > 0 && dt < .05) { fpsAcc += dt; fpsN++; if (fpsAcc >= 1) { fps = fpsN / fpsAcc; fpsAcc = 0; fpsN = 0; if (G.settings.quality === 'auto') { if (fps < 40) { if (++lowFor >= 3) setQuality('low'); } else lowFor = 0; } } }
     updateWood(S);
+    /* the WebGL look (?gfx=gl): the world is drawn as usual but into a transparent layer; GFX paints the sky,
+       the far forest, the light and the air; only the overlays stay on this canvas */
+    const gx = typeof GFX !== 'undefined' && GFX.active(), mainCtx = ctx;
+    if (gx && typeof Painted !== 'undefined') Painted.beginFrame();
+    if (gx) { ctx = GFX.worldCtx(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height); }
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = quality === 'low' ? 'low' : 'high';
     const horizonY = (0 - cam.y) * cam.zoom + H / 2;
@@ -288,6 +401,7 @@ const Render = (function () {
     /* --- sky --- */
     let [top, bot] = skyColours(tod);
     if (weather.cloud > .01) { top = mixHex(top, '#3a4450', weather.cloud * .6); bot = mixHex(bot, '#7a8a90', weather.cloud * .55); }
+    if (!gx) {
     const sky = ctx.createLinearGradient(0, Math.min(0, horizonY - H * 1.4), 0, Math.max(horizonY, 10));
     sky.addColorStop(0, top); sky.addColorStop(1, bot);
     ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
@@ -318,6 +432,7 @@ const Render = (function () {
     });
     ctx.filter = 'none';
     if (horizonY < H) { ctx.fillStyle = '#1c120a'; ctx.fillRect(0, Math.max(0, horizonY), W, H); }
+    }
 
     /* ---------------- world space ---------------- */
     ctx.save();
@@ -326,7 +441,7 @@ const Render = (function () {
     for (const T of F.trees) drawTree(G, T, view, night, true);
     for (const T of F.trees) drawTree(G, T, view, night, false);
     /* hanging fruit draws behind the leaves' front edge but in front of branches */
-    for (const f of F.fruits) if (f.hanging && f.x > view.l && f.x < view.r) { ctx.save(); ctx.translate(f.x, f.y); Sprites.drawFruit(ctx, f.kind, f.bites, FRUIT_KINDS[f.kind].bites, Math.sin(time + f.s) * .1); ctx.restore(); }
+    for (const f of F.fruits) if (f.hanging && f.x > view.l && f.x < view.r) { ctx.save(); ctx.translate(f.x, f.y); art().drawFruit(ctx, f.kind, f.bites, FRUIT_KINDS[f.kind].bites, Math.sin(time + f.s) * .1); ctx.restore(); }
     ctx.restore();
 
     /* the inside of the log and the holes in the soil, then the solid wood/soil with a shadow */
@@ -337,22 +452,46 @@ const Render = (function () {
     drawSurfaceDecor(G, S, view, night);
     drawThreads(S, view, night, time, false);
     /* shed skins and the egg chamber's leftovers, inside the tunnels */
-    for (const e of F.exuviae || []) { ctx.save(); ctx.translate(e.x, e.y); Sprites.drawExuvia(ctx, e.r, e.ang); ctx.restore(); }
+    for (const e of F.exuviae || []) { ctx.save(); ctx.translate(e.x, e.y); art().drawExuvia(ctx, e.r, e.ang); ctx.restore(); }
     if (p.stage !== 'egg') { ctx.save(); ctx.translate(WORLD.nestX, WORLD.nestY + 2); ctx.globalAlpha = .7; ctx.fillStyle = 'rgba(240,232,210,.7)'; ctx.beginPath(); ctx.ellipse(-2, 1, 4, 2, .3, 0, Math.PI); ctx.fill(); ctx.beginPath(); ctx.ellipse(3, 0, 3, 2, -.4, Math.PI, TAU); ctx.fill(); ctx.restore(); ctx.globalAlpha = 1; }
-    for (const g of F.grubs) { const pts = Sprites.grubShape(g.r, .55 + Math.sin(g.t * .7) * .25, g.t); ctx.save(); ctx.translate(g.x, g.y); ctx.rotate(g.ang + Math.PI / 2); Sprites.drawGrub(ctx, pts, g.r, { phase: g.t * 3, instar: g.r < 5 ? 1 : 2 }); ctx.restore(); }
-    for (const f of F.fruits) if (!f.hanging && f.x > view.l && f.x < view.r) { ctx.save(); ctx.translate(f.x, f.y); ctx.globalAlpha = f.gone ? clamp(1 - f.gone / 6, 0, 1) : 1; Sprites.drawFruit(ctx, f.kind, f.bites, FRUIT_KINDS[f.kind].bites, f.falling ? f.rot : 0); ctx.restore(); }
+    for (const g of F.grubs) { const pts = Sprites.grubShape(g.r, .55 + Math.sin(g.t * .7) * .25, g.t); ctx.save(); ctx.translate(g.x, g.y); ctx.rotate(g.ang + Math.PI / 2); art().drawGrub(ctx, pts, g.r, { phase: g.t * 3, instar: g.r < 5 ? 1 : 2 }); ctx.restore(); }
+    for (const f of F.fruits) if (!f.hanging && f.x > view.l && f.x < view.r) { ctx.save(); ctx.translate(f.x, f.y); ctx.globalAlpha = f.gone ? clamp(1 - f.gone / 6, 0, 1) : 1; art().drawFruit(ctx, f.kind, f.bites, FRUIT_KINDS[f.kind].bites, f.falling ? f.rot : 0); ctx.restore(); }
     ctx.globalAlpha = 1;
-    for (const s of F.sticks) { if (s.x < view.l || s.x > view.r) continue; const y = S.walkTop(s.x, 10) - 4; ctx.save(); ctx.translate(s.x, y - (s.lift || 0) * 18); ctx.rotate(s.ang + (s.flipped ? Math.PI * .04 : 0)); if (s.flipped) ctx.scale(1, -1); Sprites.drawStick(ctx, s.len, s.lift || 0, (s.kind * 1e6) | 0); ctx.restore(); }
-    for (const c of F.critters) { ctx.save(); ctx.translate(c.x, c.y); if (c.what === 'beetle') { ctx.scale(.12 * c.dir, .12); Sprites.drawBeetle(ctx, { s: 1, male: false, form: 'lichyi', wet: .6, moving: true, walk: c.ph }); } else { ctx.scale(c.kind === 'scuttle' ? 1 : .9, .9); Sprites.drawMillipede(ctx, c.ph, c.dir); } ctx.restore(); }
+    for (const s of F.sticks) { if (s.x < view.l || s.x > view.r) continue; const y = S.walkTop(s.x, 10) - 4; ctx.save(); ctx.translate(s.x, y - (s.lift || 0) * 18); ctx.rotate(s.ang + (s.flipped ? Math.PI * .04 : 0)); if (s.flipped) ctx.scale(1, -1); art().drawStick(ctx, s.len, s.lift || 0, (s.kind * 1e6) | 0); ctx.restore(); }
+    for (const c of F.critters) { ctx.save(); ctx.translate(c.x, c.y); if (c.what === 'beetle') { ctx.scale(.12 * c.dir, .12); art().drawBeetle(ctx, { s: 1, male: false, form: 'lichyi', wet: .6, moving: true, walk: c.ph }); } else { ctx.scale(c.kind === 'scuttle' ? 1 : .9, .9); art().drawMillipede(ctx, c.ph, c.dir); } ctx.restore(); }
     drawCoati(G, F);
     for (const n of F.npcs) drawNPC(G, n);
     drawPlayer(G, p, time);
     G.particles.draw(ctx, cam);
-    drawRain(G, view, weather, time);
+    if (!gx) drawRain(G, view, weather, time);
     ctx.restore();
 
     /* ---------------- light ---------------- */
     const dark = Math.max(night * .78, weather.cloud * .3) * (p.underground ? .55 : 1);
+    if (gx) {
+      const warmG = (Math.max(0, 1 - Math.abs(tod - .8) / .07) + Math.max(0, 1 - Math.abs(tod - .25) / .06)) * (1 - weather.cloud);
+      drawForeground(G, cam, night, time);
+      /* whatever glows (fungus threads, mushrooms) goes on the emissive layer, so the night does not dim it */
+      if (night > .2) {
+        const gc = GFX.glowCtx(), keep = ctx;
+        gc.setTransform(1, 0, 0, 1, 0, 0); gc.clearRect(0, 0, gc.canvas.width, gc.canvas.height);
+        gc.setTransform(gc.canvas.width / W, 0, 0, gc.canvas.height / H, 0, 0);
+        ctx = gc; ctx.save(); cam.apply(ctx); drawGlows(G, S, view, night, time); ctx.restore(); ctx = keep;
+      }
+      const [px, py] = cam.toScreen(p.x, p.y);
+      GFX.render(G, {
+        night, dark: Math.max(night * .78, weather.cloud * .3), warm: warmG, floorY: horizonY, top, bot, cloud: weather.cloud, rain: weather.rain, humid: G.forest.humid,
+        sun: sunPos(tod, horizonY, weather.cloud), moon: moonPos(tod, night, horizonY, weather.cloud),
+        under: p.underground, player: [px, py], poolR: Math.max(W, H) * .4,
+        tops: (sx) => { const wx = (sx - W / 2) / cam.zoom + cam.x, u = clamp((wx - S.X0) / S.C - .5, 0, S.cols - 1), c = Math.floor(u), c2 = Math.min(S.cols - 1, c + 1); return (lerp(origTop[c], origTop[c2], u - c) - cam.y) * cam.zoom + H / 2; }
+      });
+      ctx = mainCtx;
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      if (!clean) drawOverlays(G, night, time);
+      Cinematic.draw(ctx, W, H);
+      return;
+    }
     if (dark > .01) {
       ctx.globalCompositeOperation = 'multiply';
       const nb = dark;
@@ -391,20 +530,44 @@ const Render = (function () {
     const sx1 = clamp(Math.ceil((view.r - S.X0) / S.C) + 1, 0, S.cols), sy1 = clamp(Math.ceil((view.b - S.Y0) / S.C) + 1, 0, S.rows);
     if (sx1 <= sx0 || sy1 <= sy0) return;
     const src = [sx0 * HI, sy0 * HI, (sx1 - sx0) * HI, (sy1 - sy0) * HI], dst = [S.X0 + sx0 * S.C, S.Y0 + sy0 * S.C, (sx1 - sx0) * S.C, (sy1 - sy0) * S.C];
+    const pats = painted() && Painted.cutPatterns(b);
+    if (pats) {
+      /* painted: the back wall through the buffer, with the wood and soil detail laid over it, darker */
+      b.setTransform(1, 0, 0, 1, 0, 0); b.clearRect(0, 0, buf.width, buf.height);
+      b.setTransform(DPR, 0, 0, DPR, 0, 0); b.save(); cam.apply(b);
+      b.drawImage(back, ...src, ...dst);
+      b.globalCompositeOperation = 'source-atop'; b.globalAlpha = .6;
+      b.save(); b.clip(soilPath); b.fillStyle = pats.soil; b.fillRect(view.l, view.t, view.r - view.l, view.b - view.t); b.restore();
+      b.save(); b.clip(logPath); b.fillStyle = pats.wood; b.fillRect(view.l, view.t, view.r - view.l, view.b - view.t); b.restore();
+      b.globalAlpha = 1; b.globalCompositeOperation = 'source-over';
+      if (view.b > WORLD.bottom) { b.fillStyle = '#1a110a'; b.fillRect(view.l, WORLD.bottom - 1, view.r - view.l, view.b - WORLD.bottom + 1); }
+      b.restore();
+      ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(buf, 0, 0); ctx.restore();
+    } else {
     /* the back wall, straight onto the screen */
     ctx.save(); cam.apply(ctx);
     ctx.drawImage(back, ...src, ...dst);
     if (view.b > WORLD.bottom) { ctx.fillStyle = '#1a110a'; ctx.fillRect(view.l, WORLD.bottom - 1, view.r - view.l, view.b - WORLD.bottom + 1); }
     ctx.restore();
+    }
     /* the solid layer, via a buffer: grain, then a shadow onto the back wall */
     b.setTransform(1, 0, 0, 1, 0, 0); b.clearRect(0, 0, buf.width, buf.height);
     b.setTransform(DPR, 0, 0, DPR, 0, 0);
     b.save(); cam.apply(b);
     b.imageSmoothingEnabled = true; b.imageSmoothingQuality = quality === 'low' ? 'low' : 'high';
-    b.drawImage(hi, ...src, ...dst);
+    b.drawImage(pats && readyP(S, sx0, sy0, sx1, sy1) ? hiP : hi, ...src, ...dst);
     b.globalCompositeOperation = 'source-atop';
+    if (pats) {
+      b.globalAlpha = .45;
+      b.save(); b.clip(soilPath); b.fillStyle = pats.soil; b.fillRect(view.l, view.t, view.r - view.l, view.b - view.t); b.restore();
+      b.save(); b.clip(logPath); b.fillStyle = pats.wood; b.fillRect(view.l, view.t, view.r - view.l, view.b - view.t); b.restore();
+      /* a firm line where the log's round body meets the soil */
+      b.globalAlpha = .55; b.strokeStyle = '#1a0e06'; b.lineWidth = 2.2; b.stroke(logPath);
+      b.globalAlpha = 1;
+    } else {
     b.globalAlpha = quality === 'low' ? .5 : .9; b.fillStyle = grainPat; b.fillRect(view.l, view.t, view.r - view.l, view.b - view.t);
     b.globalAlpha = 1;
+    }
     b.restore(); b.globalCompositeOperation = 'source-over';
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (quality !== 'low') { ctx.shadowColor = 'rgba(6,3,0,.85)'; ctx.shadowBlur = 10 * DPR * Math.min(2, cam.zoom); ctx.shadowOffsetX = 2 * DPR * cam.zoom; ctx.shadowOffsetY = 3 * DPR * cam.zoom; }
@@ -412,6 +575,17 @@ const Render = (function () {
     ctx.restore();
   }
 
+  /* where the sun and the moon are on screen (CSS px), the same arcs as drawSunMoon; vis 0 when not up (for GFX) */
+  function sunPos(tod, horizonY, cloud) {
+    if (!(tod > .22 && tod < .82)) return { x: W / 2, y: H * 2, vis: 0, t: 0 };
+    const skyTop = Math.min(horizonY, H) * .85, t = invLerp(.22, .82, tod);
+    return { x: W * (.1 + .8 * t), y: horizonY - Math.sin(Math.PI * t) * Math.max(160, skyTop) - 20, vis: 1 - cloud * .7, t };
+  }
+  function moonPos(tod, night, horizonY, cloud) {
+    if (!(night > .05)) return { x: W / 2, y: H * 2, vis: 0 };
+    const skyTop = Math.min(horizonY, H) * .85, t = tod > .5 ? invLerp(.78, 1.28, tod) : invLerp(-.22, .28, tod);
+    return { x: W * (.15 + .7 * t), y: horizonY - Math.sin(Math.PI * clamp(t, 0, 1)) * Math.max(160, skyTop) * .9 - 30, vis: night * (1 - cloud * .8) };
+  }
   function drawSunMoon(tod, night, horizonY, cloud, cam) {
     const skyTop = Math.min(horizonY, H) * .85;
     if (tod > .22 && tod < .82) {
@@ -436,16 +610,26 @@ const Render = (function () {
 
   function drawSurfaceDecor(G, S, view, night) {
     if (!decor) return;
-    const time = G.time, wind = G.forest.weather.gust;
+    const time = G.time, wind = G.forest.weather.gust, pd = painted();
+    if (pd) {
+      /* moss cushions along the top of the log's bark */
+      for (let x = Math.max(view.l, WORLD.logL); x < Math.min(view.r, WORLD.logR); x += 11) {
+        const xx = Math.floor(x / 11) * 11, h = ((xx * 2654435761) >>> 0) / 4294967296, y = S.topAt(xx);
+        if (S.matAt(xx, y + 3) !== MAT.BARK || h < .25) continue;
+        Painted.drawMoss(ctx, xx + (h - .5) * 6, y + 2.5, .7 + h * .6, (h * 97) | 0);
+      }
+    }
     for (const l of decor.litter) {
       if (l.x < view.l || l.x > view.r) continue;
       const y = S.topAt(l.x); if (y > S.groundAt(l.x) + 30) continue;
+      if (pd && Painted.drawLitter(ctx, l, y)) continue;
       ctx.save(); ctx.translate(l.x, y + 1); ctx.rotate(l.a * .3); ctx.fillStyle = l.col; ctx.beginPath(); ctx.ellipse(0, 0, 6 * l.s, 2.2 * l.s, 0, 0, TAU); ctx.fill(); ctx.restore();
     }
     for (const f of decor.ferns) {
       if (f.x < view.l - 80 || f.x > view.r + 80) continue;
       const y = S.walkTop(f.x, 6) + 2, sw = Math.sin(time * .9 + f.ph) * (.04 + wind * .08);
       ctx.save(); ctx.translate(f.x, y); ctx.scale(f.s * f.flip, f.s);
+      if (pd && Painted.drawPlant(ctx, f, sw)) { ctx.restore(); continue; }
       if (f.kind === 'fern') { for (let k = 0; k < 6; k++) { const a = -Math.PI / 2 + (k - 2.5) * .33 + sw; ctx.save(); ctx.rotate(a + Math.PI / 2); ctx.strokeStyle = '#3f7a32'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(10, -30, 4, -60); ctx.stroke(); ctx.fillStyle = k % 2 ? '#4f9a3a' : '#3f8a30'; for (let j = 1; j < 9; j++) { const t = j / 9, x = lerp(0, 6, t) + Math.sin(t * 3) * 4, yy = -t * 58; ctx.beginPath(); ctx.ellipse(x - 5, yy, 5 * (1 - t * .6), 1.8, -.5, 0, TAU); ctx.ellipse(x + 5, yy, 5 * (1 - t * .6), 1.8, .5, 0, TAU); ctx.fill(); } ctx.restore(); } }
       else if (f.kind === 'broad') { for (let k = 0; k < 4; k++) { ctx.save(); ctx.rotate(-1.2 + k * .7 + sw); Sprites.drawLeaf(ctx, 46, -Math.PI / 2 + .2, k % 2 ? '#3f8a3a' : '#2f7a32'); ctx.restore(); } }
       else { ctx.strokeStyle = '#4a6a2a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(sw * 30, -50); ctx.stroke(); for (let k = 0; k < 7; k++) { ctx.save(); ctx.translate(sw * 30, -50); ctx.rotate(k / 7 * TAU + sw); Sprites.drawLeaf(ctx, 34, 0, '#4a8a3a'); ctx.restore(); } }
@@ -454,7 +638,7 @@ const Render = (function () {
     for (const m of decor.shrooms) {
       if (m.x < view.l || m.x > view.r) continue;
       const x = m.x, y = S.topAt(x) + (m.kind === 'bracket' ? 3 + m.side * 6 : 1);
-      ctx.save(); ctx.translate(x, y); Sprites.drawMushroom(ctx, m.s, 0, m.kind); ctx.restore();
+      ctx.save(); ctx.translate(x, y); art().drawMushroom(ctx, m.s, 0, m.kind); ctx.restore();
     }
   }
   /* white fungus threads (mycelium) in the fungus wood, still there until eaten */
@@ -480,7 +664,7 @@ const Render = (function () {
       const gl = ctx.createRadialGradient(m.x, y, 1, m.x, y, 22 * m.s);
       gl.addColorStop(0, `rgba(150,255,170,${.5 * night})`); gl.addColorStop(1, 'rgba(150,255,170,0)');
       ctx.fillStyle = gl; ctx.fillRect(m.x - 22 * m.s, y - 22 * m.s, 44 * m.s, 44 * m.s);
-      ctx.save(); ctx.translate(m.x, y + (m.kind === 'cap' ? 6 * m.s : 0)); Sprites.drawMushroom(ctx, m.s, night, m.kind); ctx.restore();
+      ctx.save(); ctx.translate(m.x, y + (m.kind === 'cap' ? 6 * m.s : 0)); art().drawMushroom(ctx, m.s, night, m.kind); ctx.restore();
     }
     ctx.globalCompositeOperation = 'source-over';
   }
@@ -488,7 +672,7 @@ const Render = (function () {
   function drawCoati(G, F) {
     const c = F.coati; if (c.state === 'away') return;
     ctx.save(); ctx.translate(c.x, c.y + 1);
-    Sprites.drawCoati(ctx, { s: 1.15, dir: c.dir, legs: c.state === 'sniff' ? c.t * 2 : c.legs, sniff: c.state === 'sniff' ? .6 + Math.sin(c.t * 6) * .3 : 0 });
+    art().drawCoati(ctx, { s: 1.15, dir: c.dir, legs: c.state === 'sniff' ? c.t * 2 : c.legs, sniff: c.state === 'sniff' ? .6 + Math.sin(c.t * 6) * .3 : 0 });
     ctx.restore();
   }
   function drawNPC(G, n) {
@@ -498,7 +682,7 @@ const Render = (function () {
     const s = n.lengthMM * .38 / 150;
     const flying = n.mode === 'fly' || n.mode === 'tossed';
     if (flying) ctx.rotate(-.15);
-    Sprites.drawBeetle(ctx, { s, male: n.male, form: n.form, wet: n.wet, walk: n.walk + G.time * (n.mode === 'wrestle' ? 6 : 0), moving: n.mode === 'wrestle' || (n.mode === 'ground' && n.walk > 0 && G.time % 3 < 2), open: flying ? 1 : 0, flap: n.flap, lengthMM: n.lengthMM, seed: (n.lengthMM * 7) | 0, lift: n.mode === 'wrestle' ? .3 + Math.sin(G.time * 5) * .2 : 0, pinch: n.mode === 'wrestle' ? .5 : 0 });
+    art().drawBeetle(ctx, { s, male: n.male, form: n.form, wet: n.wet, walk: n.walk + G.time * (n.mode === 'wrestle' ? 6 : 0), moving: n.mode === 'wrestle' || (n.mode === 'ground' && n.walk > 0 && G.time % 3 < 2), open: flying ? 1 : 0, flap: n.flap, lengthMM: n.lengthMM, seed: (n.lengthMM * 7) | 0, lift: n.mode === 'wrestle' ? .3 + Math.sin(G.time * 5) * .2 : 0, pinch: n.mode === 'wrestle' ? .5 : 0 });
     ctx.restore();
   }
 
@@ -509,7 +693,7 @@ const Render = (function () {
     const gg = ctx.createRadialGradient(p.x, p.y, 1, p.x, p.y, glowR);
     gg.addColorStop(0, `rgba(255,240,190,${.16 + G.night * .16})`); gg.addColorStop(1, 'rgba(255,240,180,0)');
     ctx.fillStyle = gg; ctx.fillRect(p.x - glowR, p.y - glowR, glowR * 2, glowR * 2);
-    if (p.stage === 'egg') { ctx.translate(p.x, p.y); ctx.rotate(Math.sin(time * 9) * p.crack * .2); Sprites.drawEgg(ctx, { s: 1.5, grow: Math.min(1, p.eggT / 4), crack: p.crack }); ctx.restore(); return; }
+    if (p.stage === 'egg') { ctx.translate(p.x, p.y); ctx.rotate(Math.sin(time * 9) * p.crack * .2); art().drawEgg(ctx, { s: 1.5, grow: Math.min(1, p.eggT / 4), crack: p.crack }); ctx.restore(); return; }
     if (p.stage === 'grub' || p.stage === 'chamber') {
       const r = p.r;
       let pts;
@@ -520,13 +704,13 @@ const Render = (function () {
         const off = { x: pts[0].x - p.x, y: pts[0].y - p.y }; pts = pts.map(q => ({ x: q.x - off.x, y: q.y - off.y }));
         if (p.stage === 'chamber') { const sp = p.build * 1.3 + time * .4; pts = curl.map(q => ({ x: p.room.x + q.x * Math.cos(sp) - q.y * Math.sin(sp), y: p.room.y + q.x * Math.sin(sp) + q.y * Math.cos(sp) })); }
       } else pts = p.trail;
-      Sprites.drawGrub(ctx, pts, r, { phase: p.phase * 1.6, instar: p.instar, shed: p.molting > 0 ? 1 - p.molting / MOLT_T : 0, pale: p.molting > 0 });
+      art().drawGrub(ctx, pts, r, { phase: p.phase * 1.6, instar: p.instar, shed: p.molting > 0 ? 1 - p.molting / MOLT_T : 0, pale: p.molting > 0 });
       if (p.tight > 0 && !p.molting) { ctx.strokeStyle = `rgba(255,220,120,${.4 + .4 * Math.sin(time * 8)})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(p.x, p.y, r * 1.8, 0, TAU); ctx.stroke(); }
       ctx.restore(); return;
     }
     if (p.stage === 'pupa') {
       ctx.translate(p.x, p.y);
-      Sprites.drawPupa(ctx, { s: p.size * .9, lengthMM: p.lengthMM, progress: clamp(p.pupaT / PUPA_T, 0, 1), t: time, wiggle: p.input.x || p.input.y ? 1 : .3 });
+      art().drawPupa(ctx, { s: p.size * .9, lengthMM: p.lengthMM, progress: clamp(p.pupaT / PUPA_T, 0, 1), t: time, wiggle: p.input.x || p.input.y ? 1 : .3 });
       ctx.restore(); return;
     }
     /* the adult */
@@ -536,7 +720,7 @@ const Render = (function () {
     if (p.mode === 'climb' && p.perch && !p.perch.path.parent) { ctx.rotate(p.perch.dir >= 0 ? -Math.PI / 2 : Math.PI / 2); }
     else { ctx.rotate(p.mode === 'tossed' ? p.ang : (p.mode === 'ground' || p.mode === 'climb' ? p.ang : (p.mode === 'tunnel' ? (p.face < 0 ? p.ang - Math.PI : p.ang) * (p.hardT < HARDEN_T ? 0 : 1) : p.ang))); if (p.face < 0) ctx.scale(-1, 1); }
     const s = p.size;
-    Sprites.drawBeetle(ctx, { s, male: true, form: p.form, wet: p.wet, pale: p.pale, walk: p.walk, moving: p.moving || (p.mode === 'tunnel' && (p.input.x || p.input.y)), open: p.open, flap: p.flap, lift: p.lift, pinch: p.pinch, lengthMM: p.lengthMM, seed: 11, eat: p.eatAnim || 0 });
+    art().drawBeetle(ctx, { s, male: true, form: p.form, wet: p.wet, pale: p.pale, walk: p.walk, moving: p.moving || (p.mode === 'tunnel' && (p.input.x || p.input.y)), open: p.open, flap: p.flap, lift: p.lift, pinch: p.pinch, lengthMM: p.lengthMM, seed: 11, eat: p.eatAnim || 0 });
     ctx.restore();
   }
 
@@ -562,7 +746,7 @@ const Render = (function () {
       const x = ((f.x * W * 1.6 - cam.x * cam.zoom * 1.25) % (W * 1.6) + W * 1.6) % (W * 1.6) - W * .3;
       const y = H + 30 - (f.side ? 40 : 0);
       ctx.save(); ctx.translate(x, y); ctx.rotate(-Math.PI / 2 + (f.side ? -.5 : .5) + Math.sin(time * .5 + f.a) * .05); ctx.scale(f.s, f.s);
-      Sprites.drawLeaf(ctx, 220, 0, night > .5 ? '#0c1a14' : '#1e3a24');
+      art().drawLeaf(ctx, 220, 0, night > .5 ? '#0c1a14' : '#1e3a24');
       ctx.restore();
     }
     ctx.restore();
@@ -635,6 +819,7 @@ const Render = (function () {
   function snapshot(G) {
     const c = document.createElement('canvas'); c.width = canvas.width; c.height = canvas.height;
     frame(G, 0, true);
+    if (typeof GFX !== 'undefined' && GFX.active()) c.getContext('2d').drawImage(GFX.canvas(), 0, 0, c.width, c.height);
     c.getContext('2d').drawImage(canvas, 0, 0);
     return c;
   }

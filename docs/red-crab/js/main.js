@@ -102,6 +102,7 @@
     if (K === 'j') UI.openJournal();
     if (K === 'f') toggle('fast');
     if (K === 'g') toggle('science');
+    if (K === 'o' && typeof GFX !== 'undefined' && GFX.canvas()) UI.hint(GFX.toggle() ? 'New look (WebGL) on' : 'New look off (classic)');
     if (k === '?' || k === '/') document.getElementById('help').hidden = !document.getElementById('help').hidden;
     if (k === 'Escape') UI.closeModals();
   });
@@ -554,7 +555,7 @@
     camera(rawDt);
     Render.frame(G, dt);
     frames++;
-    if (params.has('debug')) document.title = `t=${G.time.toFixed(1)} ${p.stage}/${p.mode} i${p.instar} z${p.zinstar} food=${p.food.toFixed(0)}/${p.cfood.toFixed(0)} w=${p.water.toFixed(2)} p=${p.x.toFixed(0)},${p.y.toFixed(0)} fps=${Render.getFps().toFixed(0)}`;
+    if (params.has('debug')) document.title = `t=${G.time.toFixed(1)} ${p.stage}/${p.mode} i${p.instar} z${p.zinstar} food=${p.food.toFixed(0)}/${p.cfood.toFixed(0)} w=${p.water.toFixed(2)} p=${p.x.toFixed(0)},${p.y.toFixed(0)} fps=${Render.getFps().toFixed(0)}${typeof GFX !== 'undefined' && GFX.active() ? ` gl=${GFX.stats().ms.toFixed(1)}ms` : ''}`;
     if (G.started) UI.update(rawDt);
     document.body.classList.toggle('cine', !!Cinematic.active);
     const Wd = G.world, edge = Wd.waterEdge();

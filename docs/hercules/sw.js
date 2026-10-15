@@ -1,11 +1,11 @@
 /* Hercules: Rainforest Giant — offline cache.  Everything the game needs
    is a static file, so we cache the lot on install and serve from the
    cache first.  Bump VERSION when files change. */
-const VERSION = 'hercules-v2';
+const VERSION = 'hercules-v3';
 const FILES = [
   './', './index.html', './hunt.html', './manifest.webmanifest', './css/style.css',
-  './js/core.js', './js/facts.js', './js/readlex.js', './js/wood.js', './js/forest.js', './js/sprites.js', './js/particles.js',
-  './js/cinematic.js', './js/player.js', './js/render.js', './js/audio.js', './js/grownups.js', './js/voice.js', './js/gamepad.js',
+  './js/core.js', './js/facts.js', './js/readlex.js', './js/wood.js', './js/forest.js', './js/sprites.js', './js/paint.js', './js/particles.js',
+  './js/cinematic.js', './js/player.js', './js/gfx.js', './js/render.js', './js/audio.js', './js/grownups.js', './js/voice.js', './js/gamepad.js',
   './js/stickers.js', './js/journal.js', './js/microscope.js', './js/save.js', './js/reading.js', './js/ui.js', './js/main.js',
   './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png',
   './fonts/fonts.css', './fonts/nunito-9abf3bd2.woff2', './fonts/nunito-ff573f56.woff2'

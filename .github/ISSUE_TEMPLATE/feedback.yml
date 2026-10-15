@@ -32,6 +32,8 @@ body:
         - 'Wolf: Song of the Valley'
         - 'Polar Bear: Children of the Ice'
         - 'Garter Snake: Skin by Skin'
+        - "Plankton: The Copepod's Year"
+        - 'Jellyfish: Pulse by Pulse'
         - Storm Lab
         - The arcade website itself
     validations:

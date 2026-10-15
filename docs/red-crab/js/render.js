@@ -39,9 +39,13 @@ const Render = (function () {
   let builtFor = null, decor = null;
   const fore = [];
   const crowdCache = new Map();
+  /* the painted art (paint.js) goes with the WebGL look (gfx.js, ?gfx=gl); the classic sprites everywhere else */
+  const painted = () => typeof Painted !== 'undefined' && typeof GFX !== 'undefined' && GFX.active();
+  const art = () => (painted() ? Painted : Sprites);
 
   function init(c) {
     canvas = c; ctx = c.getContext('2d');
+    if (typeof GFX !== 'undefined') GFX.init(c);
     for (let i = 0; i < 220; i++) stars.push([Math.random(), Math.random() * .8, Math.random(), Math.random() * TAU]);
     for (let i = 0; i < 90; i++) snow.push({ x: Math.random(), y: Math.random(), z: .3 + Math.random() * .7, ph: Math.random() * TAU });
     buildGrain();
@@ -53,6 +57,7 @@ const Render = (function () {
     canvas.width = Math.round(w * DPR); canvas.height = Math.round(h * DPR);
     canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
     buf = document.createElement('canvas'); buf.width = canvas.width; buf.height = canvas.height; bufCtx = buf.getContext('2d');
+    if (typeof GFX !== 'undefined') GFX.resize(w, h, DPR, canvas.width, canvas.height);
   }
   function setQuality(q) { if (q !== quality) { quality = q; resize(W, H, Math.min(2, devicePixelRatio || 1)); } }
   function getFps() { return fps; }
@@ -202,12 +207,14 @@ const Render = (function () {
 
   /* a crowd crab, pre-drawn for speed (form, size, sex, walking frame) */
   function crowdSprite(form, px, male, frame) {
-    const key = `${form}|${px}|${male}|${frame}`;
+    /* painted crowds once the painted crab's parts exist (until then, and in the classic look, the classic sprite) */
+    const pc = painted() && Painted.crabReady(form, 0, false);
+    const key = `${pc ? 'P' : ''}${form}|${px}|${male}|${frame}`;
     let c = crowdCache.get(key); if (c) return c;
     /* wide enough for the legs' full splay: about three shells across */
     c = document.createElement('canvas'); const w = Math.ceil(px * 3.1), h = Math.ceil(px * 1.05); c.width = w * 2; c.height = h * 2;
     const g = c.getContext('2d'); g.scale(2, 2); g.translate(w / 2, px * .5);
-    Sprites.drawCrab(g, { s: px / 100, form, sex: male ? 'boy' : 'girl', walk: frame / 6 * TAU, moving: true, seed: frame + 2 });
+    (pc ? Painted : Sprites).drawCrab(g, { s: px / 100, form, sex: male ? 'boy' : 'girl', walk: frame / 6 * TAU, moving: true, seed: frame + 2 });
     crowdCache.set(key, c);
     if (crowdCache.size > 400) crowdCache.delete(crowdCache.keys().next().value);
     return c;
@@ -220,7 +227,8 @@ const Render = (function () {
 
   /* ---------- trees ---------- */
   const clumpCache = new Map();
-  function clump(r, seed, tint) {
+  function clump(r, seed, tint, classic) {
+    if (painted() && !classic) { const pc = Painted.clump(r, seed, tint); if (pc) return pc; }
     const key = `${Math.round(r)}|${seed}|${tint}`;
     let c = clumpCache.get(key); if (c) return c;
     c = document.createElement('canvas'); const s = Math.ceil(r * 2.6); c.width = c.height = s;
@@ -244,6 +252,7 @@ const Render = (function () {
     if (T.x + 400 < view.l || T.x - 400 > view.r) return;
     if (T.kind === 'palm' || T.kind === 'pandanus') {
       if (part !== 'front') return;
+      if (painted() && Painted.drawPalm(ctx, T, g, time, wind)) return;
       const h = T.kind === 'palm' ? 230 : 120, lean = T.lean;
       const topX = T.x + Math.sin(lean) * h, topY = g - h;
       if (T.kind === 'pandanus') {
@@ -272,10 +281,11 @@ const Render = (function () {
     /* the big rainforest trees: buttressed trunks up out of sight, a canopy high above */
     const h = T.kind === 'tall' ? 1050 : T.kind === 'chestnut' ? 820 : 900, w = T.w, top = g - h;
     if (part === 'canopy') {
-      for (let k = 0; k < 5; k++) { const R = mulberry32(T.seed + k), cx = T.x + (R() - .5) * 360, cy = top - 30 + R() * 120, r = 90 + R() * 70; const img = clump(r, (T.seed + k) % 997, T.kind === 'fig' ? 'fig' : 'rain'); ctx.drawImage(img, cx - img.width / 2 + Math.sin(time * .5 + k) * (3 + wind * 6), cy - img.height / 2); }
+      for (let k = 0; k < 5; k++) { const R = mulberry32(T.seed + k), cx = T.x + (R() - .5) * 360, cy = top - 30 + R() * 120, r = 90 + R() * 70; const img = clump(r, (T.seed + k) % 997, T.kind === 'fig' ? 'fig' : 'rain'), iw = img.uw || img.width, ih = img.uh || img.height; ctx.drawImage(img, cx - iw / 2 + Math.sin(time * .5 + k) * (3 + wind * 6), cy - ih / 2, iw, ih); }
       return;
     }
     if (part !== 'trunk') return;
+    if (painted() && Painted.drawTrunk(ctx, T, g, time)) return;
     const tg = ctx.createLinearGradient(T.x - w / 2, 0, T.x + w / 2, 0);
     const bark = T.kind === 'tall' ? ['#5a5448', '#b8b0a0', '#4a443a'] : T.kind === 'chestnut' ? ['#4a3a2a', '#8a7a62', '#3a2c1e'] : ['#4a4a3a', '#8a8a6a', '#3a3a2a'];
     tg.addColorStop(0, bark[0]); tg.addColorStop(.35, bark[1]); tg.addColorStop(1, bark[2]);
@@ -306,17 +316,18 @@ const Render = (function () {
       const g = canopyTile.getContext('2d'), R = mulberry32(55);
       const grad = g.createLinearGradient(0, 0, 0, 640); grad.addColorStop(0, '#12301e'); grad.addColorStop(.7, '#1e4a2c'); grad.addColorStop(1, '#2a5a36');
       g.fillStyle = grad; g.fillRect(0, 0, 1024, 640);
-      for (let i = 0; i < 70; i++) { const r = 40 + R() * 70, img = clump(r, (R() * 997) | 0, R() < .5 ? 'fig' : 'rain'); const x = R() * 1024, y = R() * 600; g.globalAlpha = .35 + R() * .45; for (const dx of [-1024, 0, 1024]) g.drawImage(img, x + dx - img.width / 2, y - img.height / 2); }
+      for (let i = 0; i < 70; i++) { const r = 40 + R() * 70, img = clump(r, (R() * 997) | 0, R() < .5 ? 'fig' : 'rain', true); const x = R() * 1024, y = R() * 600; g.globalAlpha = .35 + R() * .45; for (const dx of [-1024, 0, 1024]) g.drawImage(img, x + dx - img.width / 2, y - img.height / 2); }
       /* flecks of sunlight through the leaves */
       g.globalAlpha = 1; g.fillStyle = 'rgba(220,255,180,.18)';
       for (let i = 0; i < 160; i++) { g.beginPath(); g.arc(R() * 1024, R() * 640, 1 + R() * 3, 0, TAU); g.fill(); }
     }
-    const cam = G.cam, s = Math.max(.6, Math.min(1.2, cam.zoom * .5)), tw = canopyTile.width * s, th = canopyTile.height * s;
+    const tile = (painted() && Painted.canopyTile()) || canopyTile;
+    const cam = G.cam, s = Math.max(.6, Math.min(1.2, cam.zoom * .5)), tw = tile.width * s, th = tile.height * s;
     const bottom = cam.toScreen(0, WORLD.plateau + 20)[1];
     const y0 = Math.min(bottom - th, -th * .2) - (cam.y + 500) * .05;
     let x0 = (-(cam.x * cam.zoom * .3) % tw) - tw; while (x0 > -tw) x0 -= tw;
     ctx.save(); ctx.globalAlpha = k * (1 - night * .3);
-    for (let x = x0; x < W; x += tw) for (let y = y0; y < bottom; y += th) ctx.drawImage(canopyTile, x, y, tw, th);
+    for (let x = x0; x < W; x += tw) for (let y = y0; y < bottom; y += th) ctx.drawImage(tile, x, y, tw, th);
     ctx.restore();
   }
   /* the understory: saplings, palms and vines between the big trunks, so the forest floor feels enclosed */
@@ -340,8 +351,9 @@ const Render = (function () {
       } else {
         const img = clump(u.r, u.seed, 'rain');
         ctx.save(); ctx.globalAlpha = .96; ctx.filter = 'brightness(.72)';
-        ctx.drawImage(img, tx - img.width / 2 + Math.sin(time * .4 + u.seed) * 2, top - img.height / 2);
-        ctx.drawImage(img, tx - img.width / 2 - u.r * .5, top - img.height / 2 + u.r * .6, img.width * .8, img.height * .8);
+        const iw = img.uw || img.width, ih = img.uh || img.height;
+        ctx.drawImage(img, tx - iw / 2 + Math.sin(time * .4 + u.seed) * 2, top - ih / 2, iw, ih);
+        ctx.drawImage(img, tx - iw / 2 - u.r * .5, top - ih / 2 + u.r * .6, iw * .8, ih * .8);
         ctx.restore();
       }
     }
@@ -361,40 +373,53 @@ const Render = (function () {
     G.night = night;
     if (dt > 0 && dt < .05) { fpsAcc += dt; fpsN++; if (fpsAcc >= 1) { fps = fpsN / fpsAcc; fpsAcc = 0; fpsN = 0; if (G.settings.quality === 'auto') { if (fps < 40) { if (++lowFor >= 3) setQuality('low'); } else lowFor = 0; } } }
     updateCells(S);
+    /* the WebGL look (?gfx=gl): the world is drawn as usual, but into a transparent layer; GFX paints the sky,
+       the far ocean and hills, the sea's body and the light, and only the overlays stay on this canvas */
+    const gx = typeof GFX !== 'undefined' && GFX.active(), mainCtx = ctx;
+    if (gx) {
+      if (typeof Painted !== 'undefined') Painted.beginFrame();
+      ctx = GFX.worldCtx(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    try { drawFrame(G, dt, clean, gx, mainCtx, cam, Wd, S, weather, p, night, tod, time); }
+    finally { ctx = mainCtx; }
+  }
+  function drawFrame(G, dt, clean, gx, mainCtx, cam, Wd, S, weather, p, night, tod, time) {
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = quality === 'low' ? 'low' : 'high';
     const view = cam.viewRect(80);
-    const seaSY = cam.toScreen(0, Wd.seaLevel())[1];
 
     /* --- sky --- */
     let [top, bot] = skyColours(tod);
     if (weather.cloud > .01) { top = mixHex(top, '#3a4450', weather.cloud * .6); bot = mixHex(bot, '#7a8a90', weather.cloud * .55); }
-    const sky = ctx.createLinearGradient(0, 0, 0, H);
-    sky.addColorStop(0, top); sky.addColorStop(1, bot);
-    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
     /* the horizon: the far ocean sits a little below the middle of the sky */
     const horizon = clamp(H * .5 - (cam.y + 120) * cam.zoom * .06, H * .25, H * .8);
-    if (night > .05 && weather.cloud < .85) {
-      for (const [sx, sy, r, ph] of stars) {
-        const y = sy * horizon; if (y > horizon - 10) continue;
-        ctx.globalAlpha = night * (0.3 + .7 * (.5 + .5 * Math.sin(time * 2 + ph * 6))) * (1 - weather.cloud);
-        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(sx * W, y, .5 + r * 1.2, 0, TAU); ctx.fill();
+    const under = p.swimming && p.y > Wd.seaLevel() + 2;
+    if (!gx) {
+      const sky = ctx.createLinearGradient(0, 0, 0, H);
+      sky.addColorStop(0, top); sky.addColorStop(1, bot);
+      ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+      if (night > .05 && weather.cloud < .85) {
+        for (const [sx, sy, r, ph] of stars) {
+          const y = sy * horizon; if (y > horizon - 10) continue;
+          ctx.globalAlpha = night * (0.3 + .7 * (.5 + .5 * Math.sin(time * 2 + ph * 6))) * (1 - weather.cloud);
+          ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(sx * W, y, .5 + r * 1.2, 0, TAU); ctx.fill();
+        }
+        ctx.globalAlpha = 1;
       }
-      ctx.globalAlpha = 1;
+      drawSunMoon(G, tod, night, horizon, weather.cloud);
+      /* the far ocean, with glitter under the sun or the moon */
+      const og = ctx.createLinearGradient(0, horizon, 0, H);
+      og.addColorStop(0, mixHex('#5aa8d0', '#0a1830', night)); og.addColorStop(1, mixHex('#1a5a8a', '#040a18', night));
+      ctx.fillStyle = og; ctx.fillRect(0, horizon, W, H - horizon);
+      ctx.fillStyle = `rgba(255,250,220,${.25 * (1 - weather.cloud) * (night > .5 ? .4 : 1)})`;
+      for (let k = 0; k < 40; k++) { const x = W * (.3 + .4 * ((k * 0.618) % 1)) + Math.sin(time + k) * 10, y = horizon + 4 + ((k * 7) % 30) * (1 + k * .05); ctx.fillRect(x, y, 10 + (k % 5) * 4, 1.4); }
     }
-    drawSunMoon(G, tod, night, horizon, weather.cloud);
-    /* the far ocean, with glitter under the sun or the moon */
-    const og = ctx.createLinearGradient(0, horizon, 0, H);
-    og.addColorStop(0, mixHex('#5aa8d0', '#0a1830', night)); og.addColorStop(1, mixHex('#1a5a8a', '#040a18', night));
-    ctx.fillStyle = og; ctx.fillRect(0, horizon, W, H - horizon);
-    ctx.fillStyle = `rgba(255,250,220,${.25 * (1 - weather.cloud) * (night > .5 ? .4 : 1)})`;
-    for (let k = 0; k < 40; k++) { const x = W * (.3 + .4 * ((k * 0.618) % 1)) + Math.sin(time + k) * 10, y = horizon + 4 + ((k * 7) % 30) * (1 + k * .05); ctx.fillRect(x, y, 10 + (k % 5) * 4, 1.4); }
     /* far rainforest hills behind the plateau (they fade in as you go inland) */
     const inland = smoothstep(200, 1000, cam.x);
     /* in the forest the canopy closes in overhead: a wall of leaves where the sky was */
     const canopyK = smoothstep(860, 1100, cam.x) * (Wd.inClearing(cam.x) ? .35 : 1);
     if (canopyK > .02) drawCanopyWall(G, canopyK, night, horizon);
-    if (inland > .02) {
+    if (inland > .02 && !gx) {
       layers.forEach((L, li) => {
         const z = Math.min(1, cam.zoom) * (.5 + li * .14);
         const w = L.img.width * z, h = L.img.height * z;
@@ -407,11 +432,13 @@ const Render = (function () {
       });
       ctx.filter = 'none';
     }
+    /* far away in the blue: in the new look the shoals sit behind everything, in the water's haze */
+    if (gx && under) drawDeepLife(G, night, time);
 
     /* ---------------- world space ---------------- */
     ctx.save();
     cam.apply(ctx);
-    drawSea(G, Wd, S, view, night, time);
+    drawSea(G, Wd, S, view, night, time, gx);
     for (const T of Wd.trees) drawTree(G, T, view, S, 'canopy');
     drawUnderstory(G, S, view, night);
     for (const T of Wd.trees) drawTree(G, T, view, S, 'trunk');
@@ -426,8 +453,8 @@ const Render = (function () {
     drawSurfaceDecor(G, Wd, S, view, night);
     for (const T of Wd.trees) drawTree(G, T, view, S, 'front');
     drawRoad(G, Wd, S, view);
-    for (const e of Wd.exuviae) { if (e.x < view.l || e.x > view.r) continue; ctx.save(); ctx.translate(e.x, e.y); Sprites.drawExuvia(ctx, e.s, e.form); ctx.restore(); }
-    for (const it of Wd.items) { if (it.x < view.l || it.x > view.r) continue; ctx.save(); ctx.translate(it.x, it.fy !== null ? it.fy : it.y - 1); ctx.globalAlpha = it.gone ? clamp(1 - it.gone / 3, 0, 1) : 1; if (it.fy !== null) ctx.rotate(Math.sin(time * 3 + it.col * 9) * .8); Sprites.drawFood(ctx, it, time); ctx.restore(); }
+    for (const e of Wd.exuviae) { if (e.x < view.l || e.x > view.r) continue; ctx.save(); ctx.translate(e.x, e.y); art().drawExuvia(ctx, e.s, e.form); ctx.restore(); }
+    for (const it of Wd.items) { if (it.x < view.l || it.x > view.r) continue; ctx.save(); ctx.translate(it.x, it.fy !== null ? it.fy : it.y - 1); ctx.globalAlpha = it.gone ? clamp(1 - it.gone / 3, 0, 1) : 1; if (it.fy !== null) ctx.rotate(Math.sin(time * 3 + it.col * 9) * .8); (gx && Painted.drawFood ? Painted : Sprites).drawFood(ctx, it, time); ctx.restore(); }
     ctx.globalAlpha = 1;
     drawCrowds(G, Wd, S, view);
     drawRobber(G, Wd);
@@ -436,16 +463,40 @@ const Render = (function () {
     drawSeaLife(G, Wd, view, night, time);
     drawPlayer(G, p, time);
     G.particles.draw(ctx, cam);
-    drawWaterTint(G, Wd, S, view, night, time);
+    drawWaterTint(G, Wd, S, view, night, time, gx);
     drawShelters(G, Wd, view, night);
     if (G.player.stage === 'crab' && G.player.shade === 'shelter') { ctx.save(); ctx.globalAlpha = .45; drawPlayer(G, G.player, time); ctx.restore(); }
     drawBird(G, Wd);
-    drawRain(G, Wd, view, weather, time);
+    if (!gx) drawRain(G, Wd, view, weather, time);
     ctx.restore();
 
     /* ---------------- light ---------------- */
-    const under = p.swimming && p.y > Wd.seaLevel() + 2;
     const dark = Math.max(night * .78, weather.cloud * .3) * (p.underground ? .55 : 1);
+    const forest = smoothstep(900, 1050, cam.x) * (Wd.inClearing(cam.x) ? .4 : 1);
+    const warm = (Math.max(0, 1 - Math.abs(tod - .8) / .07) + Math.max(0, 1 - Math.abs(tod - .25) / .06)) * (1 - weather.cloud);
+    if (gx) {
+      ctx.save(); cam.apply(ctx); drawGlows(G, Wd, view, night, time); ctx.restore();
+      if (p.underground) drawBurrowDark(G, p, night);
+      if (typeof Painted !== 'undefined') Painted.idle();
+      /* the strip of columns: where the sea's surface is, how deep its tint reaches, where the ground is */
+      const z = cam.zoom, sy = (y) => (y - cam.y) * z + H / 2;
+      let water = false;
+      GFX.columns((sx) => {
+        const wx = (sx - W / 2) / z + cam.x, ground = S.topAt(wx), gs = sy(ground);
+        if (wx > 220) return [1e6, 1e6, gs];
+        const surf = Wd.surfaceY(wx), ts = sy(surf);
+        if (ts < H) water = true;
+        const deep = ground <= surf ? surf : Math.max(surf, Math.min(view.b + 10, ground + 30));
+        return [ts, sy(deep), gs];
+      });
+      GFX.render(G, { night, dark, warm, horizon, top, bot, inland, forest, under, water, underground: p.underground, sun: sunPos(tod, horizon, weather.cloud), moon: moonPos(tod, horizon, night, weather.cloud) });
+      ctx = mainCtx;
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      if (!clean) drawOverlays(G, night, time);
+      Cinematic.draw(ctx, W, H);
+      return;
+    }
     if (dark > .01) {
       ctx.globalCompositeOperation = 'multiply';
       ctx.fillStyle = `rgb(${lerp(255, 70, dark) | 0},${lerp(255, 92, dark) | 0},${lerp(255, 150, dark) | 0})`;
@@ -453,9 +504,7 @@ const Render = (function () {
       ctx.globalCompositeOperation = 'source-over';
     }
     /* the forest floor is shady under the canopy */
-    const forest = smoothstep(900, 1050, cam.x) * (Wd.inClearing(cam.x) ? .4 : 1);
     if (forest > .01 && !under) { ctx.fillStyle = `rgba(10,30,14,${forest * .18 * (1 - night * .5)})`; ctx.fillRect(0, 0, W, H); }
-    const warm = (Math.max(0, 1 - Math.abs(tod - .8) / .07) + Math.max(0, 1 - Math.abs(tod - .25) / .06)) * (1 - weather.cloud);
     if (warm > .01) { ctx.globalCompositeOperation = 'soft-light'; ctx.fillStyle = `rgba(255,140,70,${warm * .55})`; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = 'source-over'; }
     /* glowing plankton, sunbeams in the forest */
     ctx.save(); cam.apply(ctx);
@@ -463,23 +512,33 @@ const Render = (function () {
     if (!under && night < .6 && forest > .1) drawSunbeams(G, Wd, view, night, time);
     ctx.restore();
     if (under) { drawDeepLife(G, night, time); drawSnow(G, time, dt); }
-    if (p.underground) {
-      const [sx, sy] = cam.toScreen(p.x, p.y), rad = Math.max(W, H) * .5;
-      const lg = ctx.createRadialGradient(sx, sy, rad * .18, sx, sy, rad);
-      lg.addColorStop(0, 'rgba(10,5,2,0)'); lg.addColorStop(1, `rgba(10,5,2,${.45 + night * .2})`);
-      ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H);
-    }
+    if (p.underground) drawBurrowDark(G, p, night);
     const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .45, W / 2, H / 2, Math.max(W, H) * .8);
     vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, under ? `rgba(2,14,34,${.45 + night * .2})` : `rgba(4,10,8,${.3 + night * .18})`);
     ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
     if (!clean) drawOverlays(G, night, time);
     Cinematic.draw(ctx, W, H);
   }
+  function drawBurrowDark(G, p, night) {
+    const [sx, sy] = G.cam.toScreen(p.x, p.y), rad = Math.max(W, H) * .5;
+    const lg = ctx.createRadialGradient(sx, sy, rad * .18, sx, sy, rad);
+    lg.addColorStop(0, 'rgba(10,5,2,0)'); lg.addColorStop(1, `rgba(10,5,2,${.45 + night * .2})`);
+    ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H);
+  }
+  /* where the sun and the moon are on screen (the same arcs as drawSunMoon), for the WebGL look */
+  function sunPos(tod, horizon, cloud) {
+    const skyTop = horizon * .85, t = clamp(invLerp(.22, .82, tod), 0, 1);
+    return { x: W * (.1 + .8 * t), y: horizon - Math.sin(Math.PI * t) * Math.max(120, skyTop) + 10, vis: tod > .22 && tod < .82 ? 1 - cloud * .7 : 0, t };
+  }
+  function moonPos(tod, horizon, night, cloud) {
+    const skyTop = horizon * .85, t = tod > .5 ? invLerp(.78, 1.28, tod) : invLerp(-.22, .28, tod);
+    return { x: W * (.15 + .7 * t), y: horizon - Math.sin(Math.PI * clamp(t, 0, 1)) * Math.max(120, skyTop) * .9 - 10, vis: night > .05 ? night * (1 - cloud * .8) : 0 };
+  }
 
   /* the sea itself: a body of water from the wavy surface down, getting darker with depth */
-  function drawSea(G, Wd, S, view, night, time) {
+  function drawSea(G, Wd, S, view, night, time, gx) {
     const x0 = view.l, x1 = Math.min(view.r, 220);
-    if (x1 <= x0) return;
+    if (x1 <= x0 || gx) return;
     const y0 = Wd.seaLevel() - 6;
     if (view.b < y0) return;
     const yb = Math.max(view.b, y0 + 10);
@@ -530,6 +589,15 @@ const Render = (function () {
     b.globalCompositeOperation = 'source-atop';
     b.globalAlpha = quality === 'low' ? .5 : .85; b.fillStyle = grainPat; b.fillRect(view.l, view.t, view.r - view.l, view.b - view.t);
     b.globalAlpha = 1;
+    if (painted()) {
+      /* the painted look: a detail tile per stretch of the island (reef rubble, sand, limestone cliff, red soil) */
+      for (const [kind, x0, x1] of [['reef', -1e5, -150], ['sand', -150, WORLD.cliffL], ['rock', WORLD.cliffL, WORLD.cliffR + 10], ['soil', WORLD.cliffR + 10, 1e5]]) {
+        const l = Math.max(view.l, x0), r = Math.min(view.r, x1); if (r <= l) continue;
+        const pat = Painted.detailPattern(b, kind); if (!pat) continue;
+        b.globalAlpha = .9; b.fillStyle = pat; b.fillRect(l, view.t, r - l, view.b - view.t);
+      }
+      b.globalAlpha = 1;
+    }
     b.restore(); b.globalCompositeOperation = 'source-over';
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (quality !== 'low') { ctx.shadowColor = 'rgba(6,3,0,.75)'; ctx.shadowBlur = 8 * DPR * Math.min(2, cam.zoom); ctx.shadowOffsetX = 1.5 * DPR * cam.zoom; ctx.shadowOffsetY = 2.5 * DPR * cam.zoom; }
@@ -601,6 +669,7 @@ const Render = (function () {
     for (const f of decor.fans) {
       if (f.x < view.l - 40 || f.x > view.r + 40) continue;
       const y = S.topAt(f.x); ctx.save(); ctx.translate(f.x, y + 2); ctx.rotate(Math.sin(time * .8 + f.ph) * .08); ctx.scale(f.s, f.s);
+      if (painted() && Painted.drawCoral(ctx, 'fan', f.col)) { ctx.restore(); continue; }
       ctx.strokeStyle = f.col; ctx.lineWidth = 1.4;
       const branch = (x, y2, a, L, d) => { if (d > 4) return; const ex = x + Math.cos(a) * L, ey = y2 + Math.sin(a) * L; ctx.beginPath(); ctx.moveTo(x, y2); ctx.lineTo(ex, ey); ctx.stroke(); branch(ex, ey, a - .45, L * .72, d + 1); branch(ex, ey, a + .45, L * .72, d + 1); };
       branch(0, 0, -Math.PI / 2, 12, 0); ctx.restore();
@@ -608,6 +677,7 @@ const Render = (function () {
     for (const b of decor.brain) {
       if (b.x < view.l - 40 || b.x > view.r + 40) continue;
       const y = S.topAt(b.x) + 1; ctx.save(); ctx.translate(b.x, y); ctx.scale(b.s, b.s);
+      if (painted() && Painted.drawCoral(ctx, b.kind, b.col)) { ctx.restore(); continue; }
       if (b.kind === 'brain') {
         const g = ctx.createRadialGradient(-3, -9, 1, 0, -4, 12); g.addColorStop(0, '#fff0d8'); g.addColorStop(.4, b.col); g.addColorStop(1, shade(b.col, .6));
         ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, 12, 10, 0, Math.PI, TAU); ctx.fill();
@@ -633,12 +703,14 @@ const Render = (function () {
     for (const l of decor.litter) {
       if (l.x < view.l || l.x > view.r) continue;
       const y = S.topAt(l.x); if (y > S.surfaceAt(l.x) + 6) continue;
+      if (painted() && Painted.drawLitter(ctx, l, y)) continue;
       ctx.save(); ctx.translate(l.x, y + .5); ctx.rotate(l.a * .3); ctx.fillStyle = l.col; ctx.beginPath(); ctx.ellipse(0, 0, 4 * l.s, 1.4 * l.s, 0, 0, TAU); ctx.fill(); ctx.restore();
     }
     for (const f of decor.ferns) {
       if (f.x < view.l - 80 || f.x > view.r + 80) continue;
       const y = S.walkTop(f.x, 4) + 2, sw = Math.sin(time * .9 + f.ph) * (.04 + wind * .08);
       ctx.save(); ctx.translate(f.x, y); ctx.scale(f.s * f.flip, f.s);
+      if (painted() && Painted.drawFern(ctx, f, sw)) { ctx.restore(); continue; }
       if (f.kind === 'fern') { for (let k = 0; k < 6; k++) { const a = -Math.PI / 2 + (k - 2.5) * .33 + sw; ctx.save(); ctx.rotate(a + Math.PI / 2); ctx.strokeStyle = '#3f7a32'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(10, -30, 4, -60); ctx.stroke(); ctx.fillStyle = k % 2 ? '#4f9a3a' : '#3f8a30'; for (let j = 1; j < 9; j++) { const t = j / 9, x = lerp(0, 6, t) + Math.sin(t * 3) * 4, yy = -t * 58; ctx.beginPath(); ctx.ellipse(x - 5, yy, 5 * (1 - t * .6), 1.8, -.5, 0, TAU); ctx.ellipse(x + 5, yy, 5 * (1 - t * .6), 1.8, .5, 0, TAU); ctx.fill(); } ctx.restore(); } }
       else { for (let k = 0; k < 4; k++) { ctx.save(); ctx.rotate(-1.2 + k * .7 + sw); Sprites.drawLeaf(ctx, 46, -Math.PI / 2 + .2, k % 2 ? '#3f8a3a' : '#2f7a32'); ctx.restore(); } }
       ctx.restore();
@@ -676,7 +748,7 @@ const Render = (function () {
     }
     /* the ranger and the sign */
     const r = Wd.ranger, ry = S.surfaceAt(r.x) + 1;
-    ctx.save(); ctx.translate(r.x, ry); Sprites.drawRanger(ctx, { s: 1.5, wave: r.wave }); ctx.restore();
+    ctx.save(); ctx.translate(r.x, ry); art().drawRanger(ctx, { s: 1.5, wave: r.wave }); ctx.restore();
     const sx = WORLD.roadR - 16, sy = S.surfaceAt(sx);
     ctx.fillStyle = '#6a6a6a'; ctx.fillRect(sx - 1.5, sy - 70, 3, 70);
     ctx.save(); ctx.translate(sx, sy - 82); ctx.rotate(Math.PI / 4); ctx.fillStyle = '#ffd23f'; ctx.strokeStyle = '#2a2016'; ctx.lineWidth = 2; ctx.fillRect(-15, -15, 30, 30); ctx.strokeRect(-15, -15, 30, 30); ctx.rotate(-Math.PI / 4); ctx.scale(.12, .12); Sprites.drawCrab(ctx, { s: 1, form: 'red' }); ctx.restore();
@@ -698,6 +770,7 @@ const Render = (function () {
     for (const sh of Wd.shelters) {
       if (sh.x + sh.w < view.l || sh.x - sh.w > view.r) continue;
       const y = sh.y;
+      if (painted() && (sh.kind === 'log' ? Painted.drawLog(ctx, sh) : sh.kind === 'rock' ? Painted.drawRock(ctx, sh) : false)) continue;
       if (sh.kind === 'log') {
         const g = ctx.createLinearGradient(0, y - 22, 0, y); g.addColorStop(0, '#7a5a3a'); g.addColorStop(1, '#3a2a1a');
         ctx.fillStyle = g; rr(ctx, sh.x - sh.w / 2, y - 20, sh.w, 16, 8); ctx.fill();
@@ -746,49 +819,52 @@ const Render = (function () {
   function drawRobber(G, Wd) {
     const r = Wd.robber; if (r.state === 'away') return;
     const w = 66;
-    ctx.save(); ctx.translate(r.x, r.y - w * .5); Sprites.drawCrab(ctx, { s: w / 100, robber: true, walk: r.legs, moving: r.state !== 'sniff', up: r.state === 'sniff' ? .3 + Math.sin(r.t * 3) * .2 : 0, pinch: r.state === 'sniff' ? .5 : 0, seed: 7 }); ctx.restore();
+    ctx.save(); ctx.translate(r.x, r.y - w * .5); art().drawCrab(ctx, { s: w / 100, robber: true, walk: r.legs, moving: r.state !== 'sniff', up: r.state === 'sniff' ? .3 + Math.sin(r.t * 3) * .2 : 0, pinch: r.state === 'sniff' ? .5 : 0, seed: 7 }); ctx.restore();
   }
   function drawNPC(G, n) {
     ctx.save(); ctx.translate(n.x, n.y);
     if (n.spin) ctx.rotate(n.spin);
     if (n.mode === 'door') { ctx.beginPath(); ctx.rect(-n.w, -n.w, n.w * 2, n.w * 1.14); ctx.clip(); }
     if (n.mode === 'enter') ctx.globalAlpha = clamp(1 - (n.sink || 0), 0, 1);
-    Sprites.drawCrab(ctx, { s: n.w / 100, form: n.form, sex: n.sex, walk: n.walk, moving: n.mode === 'walk' || n.mode === 'leave' || n.mode === 'shove', up: n.mode === 'shove' ? .5 + Math.sin(G.time * 9) * .2 : n.mode === 'door' ? .2 + Math.sin(G.time * 2 + n.x) * .15 : 0, pinch: n.mode === 'shove' ? .6 : 0, eggs: n.role === 'female' && n.eggs ? n.eggs : 0, seed: (n.cm * 13) | 0, face: n.face });
+    art().drawCrab(ctx, { s: n.w / 100, form: n.form, sex: n.sex, walk: n.walk, moving: n.mode === 'walk' || n.mode === 'leave' || n.mode === 'shove', up: n.mode === 'shove' ? .5 + Math.sin(G.time * 9) * .2 : n.mode === 'door' ? .2 + Math.sin(G.time * 2 + n.x) * .15 : 0, pinch: n.mode === 'shove' ? .6 : 0, eggs: n.role === 'female' && n.eggs ? n.eggs : 0, seed: (n.cm * 13) | 0, face: n.face });
     ctx.restore();
   }
   function drawMum(G, m) {
     ctx.save(); ctx.translate(m.x, m.y);
-    Sprites.drawCrab(ctx, { s: m.w / 100, form: m.form, sex: 'girl', walk: m.ph * 4, moving: m.shake > 0, eggs: m.eggs, up: m.shake > 0 ? .3 + Math.sin(m.ph * 20) * .2 : .1, seed: 5 });
+    art().drawCrab(ctx, { s: m.w / 100, form: m.form, sex: 'girl', walk: m.ph * 4, moving: m.shake > 0, eggs: m.eggs, up: m.shake > 0 ? .3 + Math.sin(m.ph * 20) * .2 : .1, seed: 5 });
     ctx.restore();
   }
   function drawSeaLife(G, Wd, view, night, time) {
-    const mt = Wd.manta; if (mt) { ctx.save(); ctx.translate(mt.x, mt.y); ctx.scale(mt.dir, 1); ctx.globalAlpha = .85; Sprites.drawManta(ctx, { s: 1.4, t: mt.t }); ctx.restore(); ctx.globalAlpha = 1; }
-    const w = Wd.whale; if (w) { ctx.save(); ctx.translate(w.x, w.y); ctx.scale(w.dir, 1); Sprites.drawWhaleShark(ctx, { s: .62, t: w.t, gulp: w.gulp, seed: 5 }); ctx.restore(); }
-    for (const f of Wd.reefFish) { if (f.x < view.l - 20 || f.x > view.r + 20) continue; ctx.save(); ctx.translate(f.x, f.y); ctx.scale(f.dir * f.s * .5, f.s * .5); Sprites.drawFish(ctx, { col: f.col, col2: f.col2, ph: f.ph, stripe: f.col2 === '#ffffff' ? '#ffffff' : null }); ctx.restore(); }
-    const tu = Wd.turtle; if (tu.x > view.l - 60 && tu.x < view.r + 60) { ctx.save(); ctx.translate(tu.x, tu.y); ctx.scale(tu.dir, 1); Sprites.drawTurtle(ctx, { s: 1.2, ph: tu.ph }); ctx.restore(); }
-    for (const j of Wd.jellies) if (j.x > view.l - 80 && j.x < view.r + 80) Sprites.drawJelly(ctx, j, time);
+    const mt = Wd.manta; if (mt) { ctx.save(); ctx.translate(mt.x, mt.y); ctx.scale(mt.dir, 1); ctx.globalAlpha = .85; art().drawManta(ctx, { s: 1.4, t: mt.t }); ctx.restore(); ctx.globalAlpha = 1; }
+    const w = Wd.whale; if (w) { ctx.save(); ctx.translate(w.x, w.y); ctx.scale(w.dir, 1); art().drawWhaleShark(ctx, { s: .62, t: w.t, gulp: w.gulp, seed: 5 }); ctx.restore(); }
+    for (const f of Wd.reefFish) { if (f.x < view.l - 20 || f.x > view.r + 20) continue; ctx.save(); ctx.translate(f.x, f.y); ctx.scale(f.dir * f.s * .5, f.s * .5); art().drawFish(ctx, { col: f.col, col2: f.col2, ph: f.ph, stripe: f.col2 === '#ffffff' ? '#ffffff' : null }); ctx.restore(); }
+    const tu = Wd.turtle; if (tu.x > view.l - 60 && tu.x < view.r + 60) { ctx.save(); ctx.translate(tu.x, tu.y); ctx.scale(tu.dir, 1); art().drawTurtle(ctx, { s: 1.2, ph: tu.ph }); ctx.restore(); }
+    for (const j of Wd.jellies) if (j.x > view.l - 80 && j.x < view.r + 80) art().drawJelly(ctx, j, time);
     for (const q of Wd.plankton) if (q.x > view.l && q.x < view.r && q.y > view.t && q.y < view.b) { ctx.save(); ctx.translate(q.x, q.y); ctx.scale(1.5, 1.5); ctx.translate(-q.x, -q.y); Sprites.drawPlankton(ctx, q, night, time); ctx.restore(); }
-    for (const s of Wd.sibs) { if (s.x < view.l || s.x > view.r) continue; ctx.save(); ctx.translate(s.x, s.y); ctx.scale(Math.cos(s.a) < 0 ? -1 : 1, 1); ctx.globalAlpha = .75; if (s.mega) Sprites.drawMegalopa(ctx, { s: .3, ph: s.ph, form: 'red' }); else Sprites.drawZoea(ctx, { s: .28, ph: s.ph, form: 'red', instar: 1 }); ctx.restore(); }
+    for (const s of Wd.sibs) { if (s.x < view.l || s.x > view.r) continue; ctx.save(); ctx.translate(s.x, s.y); ctx.scale(Math.cos(s.a) < 0 ? -1 : 1, 1); ctx.globalAlpha = .75; if (s.mega) art().drawMegalopa(ctx, { s: .3, ph: s.ph, form: 'red' }); else art().drawZoea(ctx, { s: .28, ph: s.ph, form: 'red', instar: 1 }); ctx.restore(); }
     ctx.globalAlpha = 1;
     const sc = Wd.school;
-    if (sc) for (const f of sc.fish) { const x = sc.x + f.dx, y = sc.y + f.dy + Math.sin(sc.t * 2 + f.ph) * 6; if (x < view.l - 40 || x > view.r + 40) continue; ctx.save(); ctx.translate(x, y); ctx.scale(sc.dir * f.s, f.s); Sprites.drawFish(ctx, { ph: f.ph, col: '#d8e4ee', col2: '#4a6a8a' }); ctx.restore(); }
+    if (sc) for (const f of sc.fish) { const x = sc.x + f.dx, y = sc.y + f.dy + Math.sin(sc.t * 2 + f.ph) * 6; if (x < view.l - 40 || x > view.r + 40) continue; ctx.save(); ctx.translate(x, y); ctx.scale(sc.dir * f.s, f.s); art().drawFish(ctx, { ph: f.ph, col: '#d8e4ee', col2: '#4a6a8a' }); ctx.restore(); }
     for (const e of Wd.eggCloud) {
-      if (e.t < e.pop) { ctx.save(); ctx.translate(e.x, e.y); Sprites.drawEgg(ctx, { s: .9 }); ctx.restore(); }
-      else { ctx.save(); ctx.translate(e.x, e.y); ctx.globalAlpha = clamp(4 - e.t, 0, 1) * .8; ctx.scale(-1, 1); Sprites.drawZoea(ctx, { s: .2, ph: e.t * 10, form: 'red', instar: 1 }); ctx.restore(); ctx.globalAlpha = 1; }
+      if (e.t < e.pop) { ctx.save(); ctx.translate(e.x, e.y); art().drawEgg(ctx, { s: .9 }); ctx.restore(); }
+      else { ctx.save(); ctx.translate(e.x, e.y); ctx.globalAlpha = clamp(4 - e.t, 0, 1) * .8; ctx.scale(-1, 1); art().drawZoea(ctx, { s: .2, ph: e.t * 10, form: 'red', instar: 1 }); ctx.restore(); ctx.globalAlpha = 1; }
     }
   }
   /* the tint of the water over everything under the surface, the bright underside of the waves, foam on the rocks */
-  function drawWaterTint(G, Wd, S, view, night, time) {
+  function drawWaterTint(G, Wd, S, view, night, time, gx) {
     const x0 = view.l, x1 = Math.min(view.r, 220); if (x1 <= x0) return;
     const lvl = Wd.seaLevel();
     if (view.b < lvl - 10) return;
-    ctx.fillStyle = `rgba(30,120,180,${.16 + night * .1})`;
-    ctx.beginPath();
-    const pts = [];
-    for (let x = x0; x <= x1; x += 6) { const top = Wd.surfaceY(x), ground = S.topAt(x), bot = ground <= top ? top : Math.max(top, Math.min(view.b + 10, ground + 30)); pts.push([x, top, bot]); }
-    ctx.moveTo(pts[0][0], pts[0][1]); for (const q of pts) ctx.lineTo(q[0], q[1]);
-    for (let k = pts.length - 1; k >= 0; k--) ctx.lineTo(pts[k][0], pts[k][2]);
-    ctx.closePath(); ctx.fill();
+    if (!gx) {
+      /* (the new look fogs everything under the water in its shader instead) */
+      ctx.fillStyle = `rgba(30,120,180,${.16 + night * .1})`;
+      ctx.beginPath();
+      const pts = [];
+      for (let x = x0; x <= x1; x += 6) { const top = Wd.surfaceY(x), ground = S.topAt(x), bot = ground <= top ? top : Math.max(top, Math.min(view.b + 10, ground + 30)); pts.push([x, top, bot]); }
+      ctx.moveTo(pts[0][0], pts[0][1]); for (const q of pts) ctx.lineTo(q[0], q[1]);
+      for (let k = pts.length - 1; k >= 0; k--) ctx.lineTo(pts[k][0], pts[k][2]);
+      ctx.closePath(); ctx.fill();
+    }
     /* the surface: a bright line, seen from above or below */
     ctx.strokeStyle = `rgba(230,250,255,${.75 - night * .4})`; ctx.lineWidth = 1.4 / Math.max(.6, G.cam.zoom) * 2;
     ctx.beginPath(); let started = false;
@@ -874,7 +950,7 @@ const Render = (function () {
     if (p.swimming) return;
     ctx.save(); ctx.translate(b.x, b.y);
     if (b.state === 'dive') ctx.rotate(.3 * Math.cos(b.t * 2));
-    Sprites.drawBird(ctx, { s: b.state === 'dive' ? .6 : .45, ph: b.ph * 3 });
+    art().drawBird(ctx, { s: b.state === 'dive' ? .6 : .45, ph: b.ph * 3 });
     ctx.restore();
     /* its shadow on the ground when it swoops low */
     if (b.state === 'dive') { const gy = Wd.ground.walkTop(b.x, 4); ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.beginPath(); ctx.ellipse(b.x, gy, 30, 4, 0, 0, TAU); ctx.fill(); }
@@ -884,20 +960,20 @@ const Render = (function () {
     ctx.save();
     const glowR = p.stage === 'crab' ? p.w * .9 + 6 : p.r * 4 + 4;
     const gg = ctx.createRadialGradient(p.x, p.y, 1, p.x, p.y, glowR);
-    gg.addColorStop(0, `rgba(255,240,190,${.18 + G.night * .16})`); gg.addColorStop(1, 'rgba(255,240,180,0)');
+    gg.addColorStop(0, `rgba(255,240,190,${(.18 + G.night * .16) * (painted() ? .45 : 1)})`); gg.addColorStop(1, 'rgba(255,240,180,0)');
     ctx.fillStyle = gg; ctx.fillRect(p.x - glowR, p.y - glowR, glowR * 2, glowR * 2);
     if (p.stage === 'egg') {
       ctx.translate(p.x, p.y); ctx.rotate(Math.sin(time * 9) * p.crack * .4);
       ctx.strokeStyle = `rgba(255,240,150,${.5 + .4 * Math.sin(time * 4)})`; ctx.lineWidth = .4; ctx.beginPath(); ctx.arc(0, 0, 2.2, 0, TAU); ctx.stroke();
-      Sprites.drawEgg(ctx, { s: 1.4, eye: true }); ctx.restore(); return;
+      art().drawEgg(ctx, { s: 1.4, eye: true }); ctx.restore(); return;
     }
     if (p.swimming) {
       ctx.translate(p.x, p.y);
       if (p.tumble > 0) ctx.rotate(p.spin);
       ctx.scale(p.face, 1); ctx.rotate(p.ang * p.face);
       if (p.molting > 0) { ctx.globalAlpha = .6 + .4 * Math.sin(time * 20); }
-      if (p.stage === 'zoea') Sprites.drawZoea(ctx, { s: p.r / 3.2, ph: p.phase * (p.moving ? 2.2 : 1), form: p.form, instar: p.zinstar });
-      else Sprites.drawMegalopa(ctx, { s: p.r / 4, ph: p.phase * (p.moving ? 2.2 : 1), form: p.form });
+      if (p.stage === 'zoea') art().drawZoea(ctx, { s: p.r / 3.2, ph: p.phase * (p.moving ? 2.2 : 1), form: p.form, instar: p.zinstar });
+      else art().drawMegalopa(ctx, { s: p.r / 4, ph: p.phase * (p.moving ? 2.2 : 1), form: p.form });
       ctx.restore(); return;
     }
     /* the crab */
@@ -906,8 +982,8 @@ const Render = (function () {
     else if (p.mode === 'burrow' || p.mode === 'moult' || p.mode === 'harden' || p.mode === 'brood') ctx.rotate(clamp(Math.sin(p.ang) * 0, -1, 1));
     else ctx.rotate(p.ang);
     const inBurrow = p.underground;
-    if (p.mode === 'moult') { const k = 1 - p.molting / MOLT_T; ctx.globalAlpha = .5; Sprites.drawCrab(ctx, { s: p.w / 100 * .97, form: p.form, sex: p.sex, pale: .9, tuck: .5, eyes: .2 }); ctx.globalAlpha = 1; ctx.translate(0, -k * p.w * .25); }
-    Sprites.drawCrab(ctx, { s: p.w / 100, form: p.form, sex: p.sex, walk: p.walk, moving: p.moving, pale: p.pale, wet: p.water > .8 ? (p.water - .8) * 5 : 0, up: p.up, pinch: p.pinch, eat: p.eatAnim, eyes: p.mode === 'rest' ? .1 : inBurrow ? .7 : 1, tuck: p.mode === 'rest' ? .8 : inBurrow ? .6 : 0, eggs: p.sex === 'girl' ? p.eggs : 0, face: p.face, seed: 11 });
+    if (p.mode === 'moult') { const k = 1 - p.molting / MOLT_T; ctx.globalAlpha = .5; art().drawCrab(ctx, { s: p.w / 100 * .97, form: p.form, sex: p.sex, pale: .9, tuck: .5, eyes: .2 }); ctx.globalAlpha = 1; ctx.translate(0, -k * p.w * .25); }
+    art().drawCrab(ctx, { s: p.w / 100, form: p.form, sex: p.sex, walk: p.walk, moving: p.moving, pale: p.pale, wet: p.water > .8 ? (p.water - .8) * 5 : 0, up: p.up, pinch: p.pinch, eat: p.eatAnim, eyes: p.mode === 'rest' ? .1 : inBurrow ? .7 : 1, tuck: p.mode === 'rest' ? .8 : inBurrow ? .6 : 0, eggs: p.sex === 'girl' ? p.eggs : 0, face: p.face, seed: 11 });
     ctx.restore();
   }
 
@@ -1039,6 +1115,7 @@ const Render = (function () {
   function snapshot(G) {
     const c = document.createElement('canvas'); c.width = canvas.width; c.height = canvas.height;
     frame(G, 0, true);
+    if (typeof GFX !== 'undefined' && GFX.active()) c.getContext('2d').drawImage(GFX.canvas(), 0, 0, c.width, c.height);
     c.getContext('2d').drawImage(canvas, 0, 0);
     return c;
   }

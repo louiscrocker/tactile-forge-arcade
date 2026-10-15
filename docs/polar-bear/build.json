@@ -1,7 +1,7 @@
 {
   "slug": "polar-bear",
-  "commit": "da978ff",
-  "builtAt": "2026-10-12T03:38:36.494Z",
+  "commit": "6df382a",
+  "builtAt": "2026-10-15T21:46:15.781Z",
   "files": {
     "css/style.css": "f6d1c7c0881aee7f515914a16d65e36677560577acfdefce01471da4d720d45c",
     "fonts/LICENSE-nunito.txt": "580df76c95a1ec5ab878ceb25bb3d85c6a076804e9c970c8c6972aea775fdf65",
@@ -12,22 +12,24 @@
     "icons/icon-192.png": "833c04483f35f5fc6ac9839eaa7b616b91dc22f13d2dbdba322ebbeb487765a8",
     "icons/icon-512.png": "11b92d202d53d9008a3be74614cab708f611de60883bf2f28e8dfa8d14ca5489",
     "icons/icon.svg": "7367ff5b85992dafacee808e10370b999f0ca4f3a08f9d22c2a1805673f779f4",
-    "index.html": "a147c1c4c5a962c2962b988db31a440bd370bc82ebe586b311c4d8ab0347d14b",
+    "index.html": "c01650da68572491caa34be2f06f05fc8a609acf57436551decc74861d2a7868",
     "js/arctic.js": "d89f769bcc4c79a7393c752650b23af3b8124ba837cb0fea1bf95171c198f4d8",
     "js/audio.js": "725e03dd0ce88bfd8dd96b1d5a33882d7d11a5471b09becc38ebb0ff5ee93f28",
     "js/cinematic.js": "08cf40b386d0938e4b0498269461738d5b058dc855e76b90a2af9cff816b22a6",
     "js/core.js": "256f0094900e3f6cb7cf1453e94da68c39115371091ccc6b4b5b235166b73ed3",
     "js/facts.js": "15e30b14cf8000e2a352971d88b058477ceaa0974247e892398135d2ec683f49",
     "js/gamepad.js": "c1e1c59f057ac85f3f0c3d139c63666a618a741b69f83ba935fd8cfd49cac1a1",
+    "js/gfx.js": "78b28a89a1bd4bfba2d7afca986ab97ede1a0450294bf00794ae82c0e04f1626",
     "js/grownups.js": "45bfe5ed0ac3a453b47708dd7f19f2da1c9860742472a6836a3cebd1b445377f",
     "js/journal.js": "e11570dcf9d2567fe7810f31c0a53d001fa0aeca84c59d6edd9524060aacfe3e",
-    "js/main.js": "91402139f13f48c91889568a40d038fca5ed561e67eca5361e288abe3c832c20",
+    "js/main.js": "f97866cef5b89256c404d315cfa6baa6f3989416f941b06dcfb360de6cdf0b18",
     "js/microscope.js": "df94c94b62ffa7c871041cafbfe1215d1657ffb90c9ad1cf5e32070deae1374e",
+    "js/paint.js": "3d46fa55f60378a9e589b1cfc092d8ce21375dde9ea8b44af715e16bdcd87f5a",
     "js/particles.js": "8d0afb577f913996e9b83dd647fdf6e5339a8f1c6c8520d27ad3d9d52b4794a6",
     "js/player.js": "d9177946c49e3587c81ff8485c86055c6fc0a246f64ce96de29374805d619588",
     "js/reading.js": "f50bd4ac9e780c3954ce83110d6d3c6ea13282305d6f6b12f8b534fd0ee74422",
     "js/readlex.js": "6f6e052a89cd91baf0da0467a80ba777440e279e4ac44ff0361d09eba4469e3c",
-    "js/render.js": "d72e62e054fb46d7237e8e43f2396fe15d0aa72ad0985a15c8315bf156d74363",
+    "js/render.js": "9e19a5402ca97f978a76f4a987973f8f3e406ef1f143f8ba74e8edc50b0651da",
     "js/save.js": "70ade8725112448c740e98a6e2323e48ce23e0e14ca284996fdbb3788f8662e5",
     "js/sprites.js": "2ed17358682345ead42e3b0eb6458fe113d36c11f3daa8ff9b91aa9bec760c12",
     "js/stickers.js": "69b4bf89ed6d90d6c8a985c121d6bf8b4c70090fcbefcd5fa78d8a619d8c96c5",
@@ -35,6 +37,6 @@
     "js/voice.js": "5d02130701f0b95d54c81a7c3e6ef6dbf1dfab1e556aaf29df92ae9b7bff2a84",
     "js/world.js": "f56c74fdf950ca1c2cb7c98c1111b1c7704322138114e63fb03f63448fc8d400",
     "manifest.webmanifest": "ec0dc468bc00492f5052dd7bdbbaa403e532f2192cb6aba6ef2c7a3417d5fba9",
-    "sw.js": "f696f429042af7065d18a06d4443ab3c9f1d4ba56d81b80ce7d25decb7e8d2ec"
+    "sw.js": "3345e220b136ff8dcd2ef0e9eb48687f2fc1598160b97b0a1ab63a4c1c144269"
   }
 }

@@ -38,9 +38,14 @@ const Render = (function () {
   let buf = null, bufCtx = null, grainPat = null, grain = null;
   let builtFor = null, decor = null;
   const crowdCache = new Map();
+  /* the painted art goes with the WebGL look (?gfx=gl); the classic sprites everywhere else */
+  const noPaint = (() => { try { return new URLSearchParams(location.search).get('paint') === '0'; } catch (e) { return false; } })();
+  const painting = () => !noPaint && typeof Painted !== 'undefined' && typeof GFX !== 'undefined' && GFX.active();
+  const lobArt = () => (painting() ? Painted : Sprites);
 
   function init(c) {
     canvas = c; ctx = c.getContext('2d');
+    if (typeof GFX !== 'undefined' && GFX.init(c)) GFX.setQualitySource(() => quality);
     for (let i = 0; i < 220; i++) stars.push([Math.random(), Math.random() * .8, Math.random(), Math.random() * TAU]);
     for (let i = 0; i < 90; i++) snow.push({ x: Math.random(), y: Math.random(), z: .3 + Math.random() * .7, ph: Math.random() * TAU });
     for (let i = 0; i < 120; i++) flakes.push({ x: Math.random(), y: Math.random(), z: .4 + Math.random() * .6, ph: Math.random() * TAU });
@@ -52,6 +57,7 @@ const Render = (function () {
     canvas.width = Math.round(w * DPR); canvas.height = Math.round(h * DPR);
     canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
     buf = document.createElement('canvas'); buf.width = canvas.width; buf.height = canvas.height; bufCtx = buf.getContext('2d');
+    if (typeof GFX !== 'undefined') GFX.resize(w, h, DPR, canvas.width, canvas.height);
   }
   function setQuality(q) { if (q !== quality) { quality = q; resize(W, H, Math.min(2, devicePixelRatio || 1)); } }
   function getFps() { return fps; }
@@ -172,19 +178,22 @@ const Render = (function () {
 
   /* a crowd lobster, pre-drawn for speed (form, size, sex, walking frame) */
   function crowdSprite(form, px, male, frame) {
-    const key = `${form}|${px}|${male}|${frame}`;
+    const painted = painting() && Painted.lobsterReady({ form, sex: male ? 'boy' : 'girl' });
+    const key = `${form}|${px}|${male}|${frame}|${painted ? 1 : 0}`;
     let c = crowdCache.get(key); if (c) return c;
     c = document.createElement('canvas'); const w = Math.ceil(px * 2.3), h = Math.ceil(px * .7); c.width = w * 2; c.height = h * 2;
     const g = c.getContext('2d'); g.scale(2, 2); g.translate(w / 2 - px * .1, px * .3);
-    Sprites.drawLobster(g, { s: px / 100, form, sex: male ? 'boy' : 'girl', walk: frame / 6 * TAU, moving: true, seed: frame + 2, crusher: 'right', simple: px < 24 });
+    (painted ? Painted : Sprites).drawLobster(g, { s: px / 100, form, sex: male ? 'boy' : 'girl', walk: frame / 6 * TAU, moving: true, seed: frame + 2, crusher: 'right', simple: px < 24 });
     crowdCache.set(key, c);
     if (crowdCache.size > 400) crowdCache.delete(crowdCache.keys().next().value);
     return c;
   }
   function drawCrowdLob(x, y, w, form, male, ph, face) {
-    const px = Math.max(6, Math.round(w)), frame = ((Math.floor(ph) % 6) + 6) % 6, img = crowdSprite(form, px, male, frame);
-    const iw = img.width / 2, ih = img.height / 2;
-    ctx.save(); ctx.translate(x, y); ctx.scale(face, 1); ctx.drawImage(img, -iw / 2 + px * .1, -px * .3, iw, ih); ctx.restore();
+    /* painted crowds come in size steps of about 15 % (each step is a set of painted frames), scaled to fit */
+    const px0 = Math.max(6, Math.round(w)), px = painting() ? Math.round(Math.pow(1.15, Math.round(Math.log(px0) / Math.log(1.15)))) : px0;
+    const frame = ((Math.floor(ph) % 6) + 6) % 6, img = crowdSprite(form, px, male, frame), k = px0 / px;
+    const iw = img.width / 2 * k, ih = img.height / 2 * k;
+    ctx.save(); ctx.translate(x, y); ctx.scale(face, 1); ctx.drawImage(img, -iw / 2 + px0 * .1, -px0 * .3, iw, ih); ctx.restore();
   }
 
   /* ---------- the frame ---------- */
@@ -201,6 +210,11 @@ const Render = (function () {
     G.night = night;
     if (dt > 0 && dt < .05) { fpsAcc += dt; fpsN++; if (fpsAcc >= 1) { fps = fpsN / fpsAcc; fpsAcc = 0; fpsN = 0; if (G.settings.quality === 'auto') { if (fps < 40) { if (++lowFor >= 3) setQuality('low'); } else lowFor = 0; } } }
     updateCells(S);
+    /* the WebGL look (?gfx=gl): the world is drawn as usual into a transparent layer; GFX paints the
+       water, the sky and the light, and only the glows and the overlays stay on this canvas */
+    const gx = typeof GFX !== 'undefined' && GFX.active(), mainCtx = ctx;
+    if (gx && typeof Painted !== 'undefined') Painted.beginFrame();
+    if (gx) { ctx = GFX.worldCtx(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height); }
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = quality === 'low' ? 'low' : 'high';
     const view = cam.viewRect(80);
@@ -209,14 +223,17 @@ const Render = (function () {
 
     /* --- the sea body fills the screen, darker with depth --- */
     const topDepth = Math.max(0, view.t), botDepth = Math.max(topDepth + 10, view.b);
+    if (!gx) {
     const sea = ctx.createLinearGradient(0, cam.toScreen(0, topDepth)[1], 0, cam.toScreen(0, Math.min(botDepth, 820))[1]);
     for (const [d] of SEA_STOPS) { const u = clamp((d - topDepth) / (Math.min(botDepth, 820) - topDepth), 0, 1); sea.addColorStop(u, rgbStr(mixRgb(seaCol(d), [8, 20, 40], night * .6 + (winter ? .1 : 0)))); }
     ctx.fillStyle = sea; ctx.fillRect(0, 0, W, H);
+    }
 
     /* --- the sky above the surface, when the camera sees it --- */
+    let [top, bot] = skyColours(tod);
+    if (weather.cloud > .01) { top = mixHex(top, '#3a4450', weather.cloud * .6); bot = mixHex(bot, '#7a8a90', weather.cloud * .55); }
     if (seaSY > -40) {
-      let [top, bot] = skyColours(tod);
-      if (weather.cloud > .01) { top = mixHex(top, '#3a4450', weather.cloud * .6); bot = mixHex(bot, '#7a8a90', weather.cloud * .55); }
+      if (!gx) {
       const sky = ctx.createLinearGradient(0, 0, 0, Math.max(60, seaSY));
       sky.addColorStop(0, top); sky.addColorStop(1, bot);
       ctx.fillStyle = sky; ctx.fillRect(0, 0, W, Math.max(0, seaSY));
@@ -229,21 +246,24 @@ const Render = (function () {
         ctx.globalAlpha = 1;
       }
       drawSunMoon(G, tod, night, seaSY, weather.cloud);
+      }
       drawFarShore(G, seaSY, night, winter);
       if (weather.snow > .02 && seaSY > 0) drawFlakes(G, seaSY, dt);
       /* the surface's silver underside and crests, seen from below or above */
       ctx.save(); cam.apply(ctx);
+      if (!gx) {
       ctx.strokeStyle = `rgba(240,250,255,${.8 - night * .4})`; ctx.lineWidth = 1.6 / Math.max(.6, cam.zoom) * 2;
       ctx.beginPath(); for (let x = view.l; x <= view.r; x += 5) { const y = Wd.surfaceY(x); x === view.l ? ctx.moveTo(x, y) : ctx.lineTo(x, y); } ctx.stroke();
       ctx.fillStyle = `rgba(200,235,255,${.18 * (1 - night * .5)})`;
       ctx.beginPath(); ctx.moveTo(view.l, Wd.surfaceY(view.l)); for (let x = view.l; x <= view.r; x += 5) ctx.lineTo(x, Wd.surfaceY(x)); ctx.lineTo(view.r, Wd.surfaceY(view.r) + 6); for (let x = view.r; x >= view.l; x -= 5) ctx.lineTo(x, Wd.surfaceY(x) + 6 + Math.sin(x * .05 + time) * 2); ctx.closePath(); ctx.fill();
+      }
       if (weather.storm > .05) { ctx.fillStyle = `rgba(255,255,255,${.35 * weather.storm})`; for (let x = view.l; x <= view.r; x += 40) { const y = Wd.surfaceY(x); ctx.beginPath(); ctx.ellipse(x + Math.sin(time * 2 + x) * 6, y - 1, 12, 2.5, 0, 0, TAU); ctx.fill(); } }
       ctx.restore();
     }
 
     /* light rays from the surface by day; far boulders and kelp in blue haze */
     const day = 1 - night;
-    if (day > .05 && seaSY < H && !p.underground) {
+    if (!gx && day > .05 && seaSY < H && !p.underground) {
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
       for (let k = 0; k < 10; k++) {
         const bx = (k / 10 + ((time * .01 + k * .37) % .1)) * W, len = H * .9;
@@ -254,7 +274,8 @@ const Render = (function () {
       }
       ctx.restore();
     }
-    drawFarLayers(G, S, view, night);
+    if (!gx) drawFarLayers(G, S, view, night);
+    else drawDeepLife(G, night, time, true);
 
     /* ---------------- world space ---------------- */
     ctx.save();
@@ -270,8 +291,8 @@ const Render = (function () {
     drawRim(G, S, view);
     drawFloorDecor(G, Wd, S, view, night);
     drawBoat(G, Wd, view);
-    for (const e of Wd.exuviae) { if (e.x < view.l || e.x > view.r || e.eaten) continue; ctx.save(); ctx.translate(e.x, e.y); Sprites.drawExuvia(ctx, e.s, e.form); ctx.restore(); }
-    for (const it of Wd.items) { if (it.x < view.l || it.x > view.r) continue; ctx.save(); ctx.translate(it.x, it.fy !== null ? it.fy : it.y - 1); ctx.globalAlpha = it.gone ? clamp(1 - it.gone / 3, 0, 1) : 1; if (it.fy !== null) ctx.rotate(Math.sin(time * 3 + it.col * 9) * .8); Sprites.drawFood(ctx, it, time); ctx.restore(); }
+    for (const e of Wd.exuviae) { if (e.x < view.l || e.x > view.r || e.eaten) continue; ctx.save(); ctx.translate(e.x, e.y); lobArt().drawExuvia(ctx, e.s, e.form); ctx.restore(); }
+    for (const it of Wd.items) { if (it.x < view.l || it.x > view.r) continue; ctx.save(); ctx.translate(it.x, it.fy !== null ? it.fy : it.y - 1); ctx.globalAlpha = it.gone ? clamp(1 - it.gone / 3, 0, 1) : 1; if (it.fy !== null) ctx.rotate(Math.sin(time * 3 + it.col * 9) * .8); lobArt().drawFood(ctx, it, time); ctx.restore(); }
     ctx.globalAlpha = 1;
     drawCrowds(G, Wd, S, view);
     for (const n of Wd.npcs) drawNPC(G, n);
@@ -288,6 +309,21 @@ const Render = (function () {
 
     /* ---------------- light ---------------- */
     const deep = clamp((cam.y - 150) / 500, 0, 1);
+    if (gx) {
+      if (p.underground) denDark(G, p, night);
+      const sm = sunMoonPos(tod, night, seaSY, weather.cloud);
+      GFX.render(G, { night, warm: (Math.max(0, 1 - Math.abs(tod - .8) / .07) + Math.max(0, 1 - Math.abs(tod - .25) / .06)) * (1 - weather.cloud) * (1 - deep), deep, top, bot,
+        sun: sm.sun, moon: sm.moon, seaLevel: Wd.seaLevel(), surf: (sx) => cam.toScreen(0, Wd.surfaceY((sx - W / 2) / cam.zoom + cam.x))[1],
+        floorY: S.surfaceAt(cam.x), farK: clamp((cam.x - (WORLD.deepR - 500)) / 200, 0, 1), winter, underground: p.underground });
+      ctx = mainCtx;
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      /* glows are light, not paint: they go on top, after the lighting */
+      ctx.save(); cam.apply(ctx); drawGlows(G, Wd, view, night, time); ctx.restore();
+      if (!clean) drawOverlays(G, night, time);
+      Cinematic.draw(ctx, W, H);
+      return;
+    }
     const dark = Math.max(night * .72, weather.cloud * .25) * (p.underground ? .55 : 1) + deep * .25 * (1 - night);
     if (dark > .01) {
       ctx.globalCompositeOperation = 'multiply';
@@ -302,12 +338,7 @@ const Render = (function () {
     ctx.restore();
     drawDeepLife(G, night, time);
     drawSnow(G, time, dt, deep);
-    if (p.underground) {
-      const [sx, sy] = cam.toScreen(p.x, p.y), rad = Math.max(W, H) * .5;
-      const lg = ctx.createRadialGradient(sx, sy, rad * .18, sx, sy, rad);
-      lg.addColorStop(0, 'rgba(6,4,2,0)'); lg.addColorStop(1, `rgba(6,4,2,${.45 + night * .2})`);
-      ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H);
-    }
+    if (p.underground) denDark(G, p, night);
     const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .45, W / 2, H / 2, Math.max(W, H) * .8);
     vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, `rgba(2,14,34,${.4 + night * .2})`);
     ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
@@ -315,6 +346,19 @@ const Render = (function () {
     Cinematic.draw(ctx, W, H);
   }
 
+  function denDark(G, p, night) {
+    const [sx, sy] = G.cam.toScreen(p.x, p.y), rad = Math.max(W, H) * .5;
+    const lg = ctx.createRadialGradient(sx, sy, rad * .18, sx, sy, rad);
+    lg.addColorStop(0, 'rgba(6,4,2,0)'); lg.addColorStop(1, `rgba(6,4,2,${.45 + night * .2})`);
+    ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H);
+  }
+  /* where the sun and the moon are on screen (CSS px), as drawSunMoon puts them; vis 0 when not up */
+  function sunMoonPos(tod, night, horizon, cloud) {
+    const skyTop = horizon * .85, out = { sun: { x: W * .5, y: -H, vis: 0 }, moon: { x: W * .5, y: -H, vis: 0 } };
+    if (tod > .22 && tod < .82) { const t = invLerp(.22, .82, tod); out.sun = { x: W * (.1 + .8 * t), y: horizon - Math.sin(Math.PI * t) * Math.max(80, skyTop) + 10, vis: (1 - cloud * .7) * clamp(Math.sin(Math.PI * t) * 4, 0, 1) }; }
+    if (night > .05) { const t = tod > .5 ? invLerp(.78, 1.28, tod) : invLerp(-.22, .28, tod); out.moon = { x: W * (.15 + .7 * t), y: horizon - Math.sin(Math.PI * clamp(t, 0, 1)) * Math.max(80, skyTop) * .9 - 10, vis: night * (1 - cloud * .8) }; }
+    return out;
+  }
   /* the far shore above the surface: granite, spruce trees and a lighthouse, seen when you are near the coast */
   let shoreImg = null;
   function drawFarShore(G, seaSY, night, winter) {
@@ -390,6 +434,8 @@ const Render = (function () {
     b.globalCompositeOperation = 'source-atop';
     b.globalAlpha = quality === 'low' ? .5 : .85; b.fillStyle = grainPat; b.fillRect(view.l, view.t, view.r - view.l, view.b - view.t);
     b.globalAlpha = 1;
+    const fp = painting() && Painted.floorPattern(b);
+    if (fp) { b.fillStyle = fp; b.fillRect(view.l, view.t, view.r - view.l, view.b - view.t); }
     b.restore(); b.globalCompositeOperation = 'source-over';
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (quality !== 'low') { ctx.shadowColor = 'rgba(2,6,14,.7)'; ctx.shadowBlur = 8 * DPR * Math.min(2, cam.zoom); ctx.shadowOffsetX = 1.5 * DPR * cam.zoom; ctx.shadowOffsetY = 2.5 * DPR * cam.zoom; }
@@ -457,18 +503,19 @@ const Render = (function () {
   }
   function drawFloorDecor(G, Wd, S, view, night) {
     if (!decor) return;
-    const time = G.time;
+    const time = G.time, pt = painting();
     /* sea grass and brown weed on the floor */
     for (const w of decor.weed) { if (w.x < view.l - 20 || w.x > view.r + 20) continue; const y = S.topAt(w.x); if (y > S.surfaceAt(w.x) + 6) continue; ctx.strokeStyle = w.col; ctx.lineWidth = 1.4 * w.s; ctx.lineCap = 'round'; for (let k = -1; k <= 1; k++) { ctx.beginPath(); ctx.moveTo(w.x + k * 2, y + 2); ctx.quadraticCurveTo(w.x + k * 3 + Math.sin(time * 1.2 + w.ph + k) * 4, y - 8 * w.s, w.x + k * 2 + Math.sin(time + w.ph) * 6, y - 16 * w.s); ctx.stroke(); } }
     /* tube worms in the mud offshore */
     for (const wm of decor.worms) { if (wm.x < view.l || wm.x > view.r) continue; const y = S.topAt(wm.x); ctx.strokeStyle = '#8a7a6a'; ctx.lineWidth = 1.2 * wm.s; ctx.beginPath(); ctx.moveTo(wm.x, y + 1); ctx.lineTo(wm.x + Math.sin(time + wm.ph) * 1.5, y - 7 * wm.s); ctx.stroke(); ctx.strokeStyle = '#e0a070'; ctx.lineWidth = .7; for (let k = 0; k < 5; k++) { const a = -Math.PI / 2 + (k - 2) * .5 + Math.sin(time * 2 + wm.ph + k) * .2; ctx.beginPath(); ctx.moveTo(wm.x, y - 7 * wm.s); ctx.lineTo(wm.x + Math.cos(a) * 4 * wm.s, y - 7 * wm.s + Math.sin(a) * 4 * wm.s); ctx.stroke(); } }
     /* empty shells and bits of sea-urchin test */
-    for (const sh of decor.shells) { if (sh.x < view.l || sh.x > view.r) continue; const y = S.topAt(sh.x); if (y > S.surfaceAt(sh.x) + 6) continue; ctx.save(); ctx.translate(sh.x, y); ctx.rotate(sh.a * .2); ctx.fillStyle = sh.col; ctx.beginPath(); ctx.ellipse(0, 0, 3 * sh.s, 1.4 * sh.s, 0, Math.PI, TAU); ctx.fill(); ctx.restore(); }
+    for (const sh of decor.shells) { if (sh.x < view.l || sh.x > view.r) continue; const y = S.topAt(sh.x); if (y > S.surfaceAt(sh.x) + 6) continue; if (pt && Painted.drawShell(ctx, sh.x, y, sh.s, sh.a, sh.col)) continue; ctx.save(); ctx.translate(sh.x, y); ctx.rotate(sh.a * .2); ctx.fillStyle = sh.col; ctx.beginPath(); ctx.ellipse(0, 0, 3 * sh.s, 1.4 * sh.s, 0, Math.PI, TAU); ctx.fill(); ctx.restore(); }
     /* blue mussels clustered on the mussel beds */
-    for (const m of decor.mussels) { if (m.x < view.l || m.x > view.r) continue; const y = S.topAt(m.x) + 1; ctx.save(); ctx.translate(m.x, y); ctx.rotate(m.a * .3 - 1.2); ctx.scale(m.s, m.s); ctx.fillStyle = '#1e1e48'; ctx.beginPath(); ctx.moveTo(-4, 1); ctx.quadraticCurveTo(-2, -4, 4, -3); ctx.quadraticCurveTo(5, 0, 3, 2); ctx.quadraticCurveTo(0, 3, -4, 1); ctx.fill(); ctx.fillStyle = 'rgba(180,200,255,.35)'; ctx.beginPath(); ctx.ellipse(1, -1.5, 2, .7, .3, 0, TAU); ctx.fill(); ctx.restore(); }
+    for (const m of decor.mussels) { if (m.x < view.l || m.x > view.r) continue; const y = S.topAt(m.x) + 1; if (pt && Painted.drawMusselDecor(ctx, m.x, y, m.s, m.a)) continue; ctx.save(); ctx.translate(m.x, y); ctx.rotate(m.a * .3 - 1.2); ctx.scale(m.s, m.s); ctx.fillStyle = '#1e1e48'; ctx.beginPath(); ctx.moveTo(-4, 1); ctx.quadraticCurveTo(-2, -4, 4, -3); ctx.quadraticCurveTo(5, 0, 3, 2); ctx.quadraticCurveTo(0, 3, -4, 1); ctx.fill(); ctx.fillStyle = 'rgba(180,200,255,.35)'; ctx.beginPath(); ctx.ellipse(1, -1.5, 2, .7, .3, 0, TAU); ctx.fill(); ctx.restore(); }
     /* sea stars and frilled anemones on the rocks and cobbles */
     for (const st of decor.stars) {
       if (st.x < view.l || st.x > view.r) continue; const y = S.topAt(st.x); if (y > S.surfaceAt(st.x) + 6) continue;
+      if (pt && Painted.drawStar(ctx, st.x, y, st.s, st.col, st.a)) continue;
       ctx.save(); ctx.translate(st.x, y); ctx.rotate(st.a); ctx.scale(st.s, st.s * .55); ctx.fillStyle = st.col;
       ctx.beginPath(); for (let i = 0; i < 10; i++) { const r = i % 2 ? 2.6 : 7, a = i * Math.PI / 5; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); } ctx.closePath(); ctx.fill();
       ctx.fillStyle = 'rgba(255,255,255,.3)'; for (let i = 0; i < 5; i++) { const a = i * TAU / 5; ctx.beginPath(); ctx.arc(Math.cos(a) * 4, Math.sin(a) * 4, .8, 0, TAU); ctx.fill(); }
@@ -476,6 +523,7 @@ const Render = (function () {
     }
     for (const a of decor.anem) {
       if (a.x < view.l || a.x > view.r) continue; const y = S.topAt(a.x); if (y > S.surfaceAt(a.x) + 6) continue;
+      if (pt && Painted.drawAnemone(ctx, a.x, y, a.s, a.col, time, a.ph)) continue;
       ctx.fillStyle = a.col; ctx.beginPath(); ctx.ellipse(a.x, y - 2 * a.s, 3 * a.s, 3 * a.s, 0, 0, TAU); ctx.fill();
       ctx.strokeStyle = a.col; ctx.lineWidth = 1 * a.s; ctx.lineCap = 'round';
       for (let k = 0; k < 12; k++) { const ang = -Math.PI + k / 11 * Math.PI; ctx.beginPath(); ctx.moveTo(a.x, y - 3 * a.s); ctx.quadraticCurveTo(a.x + Math.cos(ang) * 5 * a.s + Math.sin(time * 1.5 + k + a.ph) * 1.5, y - 3 * a.s + Math.sin(ang) * 5 * a.s, a.x + Math.cos(ang) * 8 * a.s + Math.sin(time * 1.5 + k + a.ph) * 2.5, y - 3 * a.s + Math.sin(ang) * 8 * a.s); ctx.stroke(); }
@@ -491,8 +539,8 @@ const Render = (function () {
       k++;
       if ((which === 'back') !== (k % 2 === 0)) continue;
       if (K.x + 60 < view.l || K.x - 60 > view.r) continue;
-      ctx.save(); if (which === 'front') ctx.globalAlpha = .9;
-      Sprites.drawKelp(ctx, K, time + (which === 'front' ? 1 : 0), S.topAt(K.x));
+      ctx.save(); if (which === 'front' && !painting()) ctx.globalAlpha = .9;
+      lobArt().drawKelp(ctx, K, time + (which === 'front' ? 1 : 0), S.topAt(K.x), which === 'back');
       ctx.restore();
     }
   }
@@ -502,11 +550,11 @@ const Render = (function () {
     if (T.state !== 'away') {
       /* the rope and the buoy */
       ctx.strokeStyle = 'rgba(230,220,180,.8)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(T.x + 26, T.y - 28); ctx.quadraticCurveTo(T.x + 34, (T.y + lvl) / 2, b.x - 40, lvl - 2); ctx.stroke();
-      ctx.save(); ctx.translate(T.x, T.y); Sprites.drawTrap(ctx, { s: 1, bait: T.bait > 0 }); ctx.restore();
+      ctx.save(); ctx.translate(T.x, T.y); lobArt().drawTrap(ctx, { s: 1, bait: T.bait > 0 }); ctx.restore();
     }
     if (b.x + 200 < view.l || b.x - 200 > view.r || view.t > lvl + 60) return;
-    ctx.save(); ctx.translate(b.x, Wd.surfaceY(b.x) + 2 + b.wave); Sprites.drawBoat(ctx, { s: .9, roll: b.wave });
-    ctx.translate(-20, -16); Sprites.drawLobsterman(ctx, { s: .7, wave: b.ph, measure: T.state === 'up' ? 1 : 0 });
+    ctx.save(); ctx.translate(b.x, Wd.surfaceY(b.x) + 2 + b.wave); lobArt().drawBoat(ctx, { s: .9, roll: b.wave });
+    ctx.translate(-20, -16); lobArt().drawLobsterman(ctx, { s: .7, wave: b.ph, measure: T.state === 'up' ? 1 : 0 });
     if (T.state === 'up') { ctx.translate(0, -74); ctx.fillStyle = '#c8a030'; ctx.fillRect(-10, 0, 20, 2); }
     ctx.restore();
     /* the hull's reflection and the wake */
@@ -517,6 +565,7 @@ const Render = (function () {
     for (const sh of Wd.shelters) {
       if (sh.x + sh.w < view.l || sh.x - sh.w > view.r) continue;
       const y = sh.y, w = sh.w;
+      if (painting() && Painted.drawShelter(ctx, sh, G.time)) { if (sh.kind === 'hollow') peek(G, sh, y, w, sh.rad || 12); continue; }
       if (sh.kind === 'hollow') {
         /* a rounded cobble resting on the sand, with a dark hole dug out under its front edge */
         const R = mulberry32((sh.x * 13) | 0), rad = sh.rad || 12, cy = y - rad * .5;
@@ -533,13 +582,7 @@ const Render = (function () {
         hg.addColorStop(0, 'rgba(6,4,2,.95)'); hg.addColorStop(.75, 'rgba(10,8,4,.85)'); hg.addColorStop(1, 'rgba(10,8,4,0)');
         ctx.fillStyle = hg; ctx.beginPath(); ctx.ellipse(sh.x, y + 1, w * .4, rad * .42, 0, Math.PI, TAU); ctx.fill();
         ctx.fillStyle = 'rgba(200,180,140,.5)'; ctx.beginPath(); ctx.ellipse(sh.x, y + 1.5, w * .44, 1.6, 0, 0, TAU); ctx.fill();
-        if (sh.taken && !sh.mine) {
-          /* another little lobster lives here: its claws and feelers at the door */
-          ctx.save(); ctx.translate(sh.x + Math.sin(sh.npcPh) * 3, y - 3); ctx.scale(Math.sin(sh.npcPh) > 0 ? 1 : -1, 1);
-          ctx.beginPath(); ctx.rect(-w * .3, -rad * .5, w * .6, rad * .6); ctx.clip();
-          Sprites.drawLobster(ctx, { s: .1, form: sh.npcForm, up: .3 + Math.sin(G.time * 2 + sh.npcPh) * .15, simple: true, seed: 4, ph: G.time * 2 });
-          ctx.restore();
-        }
+        peek(G, sh, y, w, rad);
       } else if (sh.kind === 'crevice') {
         const hg = ctx.createRadialGradient(sh.x, y, 1, sh.x, y - 4, w * .6);
         hg.addColorStop(0, 'rgba(8,6,4,.92)'); hg.addColorStop(1, 'rgba(8,6,4,0)');
@@ -556,6 +599,14 @@ const Render = (function () {
     }
   }
 
+  /* another little lobster lives in a taken hole: its claws and feelers at the door */
+  function peek(G, sh, y, w, rad) {
+    if (!sh.taken || sh.mine) return;
+    ctx.save(); ctx.translate(sh.x + Math.sin(sh.npcPh) * 3, y - 3); ctx.scale(Math.sin(sh.npcPh) > 0 ? 1 : -1, 1);
+    ctx.beginPath(); ctx.rect(-w * .3, -rad * .5, w * .6, rad * .6); ctx.clip();
+    lobArt().drawLobster(ctx, { s: .1, form: sh.npcForm, up: .3 + Math.sin(G.time * 2 + sh.npcPh) * .15, simple: true, seed: 4, ph: G.time * 2 });
+    ctx.restore();
+  }
   function drawCrowds(G, Wd, S, view) {
     const p = G.player, busy = p.mode === 'box' || p.mode === 'release' || p.busy > 0 || (p.flags.home && !p.flags.met);
     for (const m of Wd.marchers) {
@@ -572,7 +623,7 @@ const Render = (function () {
       if (h.x + K.len < view.l || h.x - K.len > view.r) continue;
       ctx.save(); ctx.translate(h.x, h.y); ctx.scale(h.dir, 1);
       if (h.state === 'strike') ctx.rotate(Math.sin(h.t * 8) * .12);
-      if (h.kind === 'seal') Sprites.drawSeal(ctx, { s: K.len / 100, ph: h.ph }); else Sprites.drawHunter(ctx, h.kind, { s: K.len / 100, ph: h.ph });
+      if (h.kind === 'seal') lobArt().drawSeal(ctx, { s: K.len / 100, ph: h.ph }); else lobArt().drawHunter(ctx, h.kind, { s: K.len / 100, ph: h.ph });
       ctx.restore();
       /* its shadow on the floor */
       const gy = Wd.ground.walkTop(h.x, 6); ctx.fillStyle = 'rgba(0,0,0,.18)'; ctx.beginPath(); ctx.ellipse(h.x, gy, K.len * .4, 3, 0, 0, TAU); ctx.fill();
@@ -583,24 +634,24 @@ const Render = (function () {
     if (n.spin) ctx.rotate(n.spin);
     if (n.mode === 'door') { ctx.beginPath(); ctx.rect(-n.w * .7, -n.w * .3, n.w * 1.6, n.w * .5); ctx.clip(); }
     if (n.mode === 'enter') ctx.globalAlpha = clamp(1 - (n.sink || 0), 0, 1);
-    Sprites.drawLobster(ctx, { s: n.w / 100, form: n.form, sex: n.sex, walk: n.walk, moving: n.mode === 'walk' || n.mode === 'leave' || n.mode === 'box', up: n.mode === 'box' ? .6 + Math.sin(G.time * 9) * .2 : n.mode === 'door' ? .25 + Math.sin(G.time * 2 + n.x) * .15 : 0, pinch: n.mode === 'box' ? .6 : 0, eggs: n.role === 'female' && n.eggs ? n.eggs : 0, seed: (n.cm * 13) | 0, crusher: 'right', ph: G.time * 2 });
+    lobArt().drawLobster(ctx, { s: n.w / 100, form: n.form, sex: n.sex, walk: n.walk, moving: n.mode === 'walk' || n.mode === 'leave' || n.mode === 'box', up: n.mode === 'box' ? .6 + Math.sin(G.time * 9) * .2 : n.mode === 'door' ? .25 + Math.sin(G.time * 2 + n.x) * .15 : 0, pinch: n.mode === 'box' ? .6 : 0, eggs: n.role === 'female' && n.eggs ? n.eggs : 0, seed: (n.cm * 13) | 0, crusher: 'right', ph: G.time * 2 });
     ctx.restore();
   }
   function drawMum(G, m) {
     ctx.save(); ctx.translate(m.x, m.y); ctx.scale(m.face || 1, 1); ctx.globalAlpha = clamp(1 - (m.fade || 0), 0, 1);
-    Sprites.drawLobster(ctx, { s: m.w / 100, form: m.form, sex: 'girl', walk: m.ph * 4, moving: m.leaving, eggs: m.eggs, up: m.shake > 0 ? .5 + Math.sin(m.ph * 20) * .1 : .1, fan: m.shake > 0 ? m.ph : 0, seed: 5, crusher: 'right', ph: m.ph });
+    lobArt().drawLobster(ctx, { s: m.w / 100, form: m.form, sex: 'girl', walk: m.ph * 4, moving: m.leaving, eggs: m.eggs, up: m.shake > 0 ? .5 + Math.sin(m.ph * 20) * .1 : .1, fan: m.shake > 0 ? m.ph : 0, seed: 5, crusher: 'right', ph: m.ph });
     ctx.restore();
   }
   function drawSeaLife(G, Wd, view, night, time) {
-    const w = Wd.shark; if (w) { ctx.save(); ctx.translate(w.x, w.y); ctx.scale(w.dir, 1); Sprites.drawBaskingShark(ctx, { s: .6, t: w.t, gulp: w.gulp }); ctx.restore(); }
-    for (const f of Wd.smallFish) { if (f.x < view.l - 20 || f.x > view.r + 20) continue; ctx.save(); ctx.translate(f.x, f.y); ctx.scale(f.dir * f.s * .5, f.s * .5); Sprites.drawFish(ctx, { col: f.col, col2: f.col2, ph: f.ph }); ctx.restore(); }
-    for (const j of Wd.jellies) if (j.x > view.l - 80 && j.x < view.r + 80) Sprites.drawCombJelly(ctx, j, time);
-    for (const q of Wd.plankton) if (q.x > view.l && q.x < view.r && q.y > view.t && q.y < view.b) { ctx.save(); ctx.translate(q.x, q.y); ctx.scale(1.5, 1.5); ctx.translate(-q.x, -q.y); Sprites.drawPlankton(ctx, q, night, time); ctx.restore(); }
-    for (const s of Wd.sibs) { if (s.x < view.l || s.x > view.r) continue; ctx.save(); ctx.translate(s.x, s.y); ctx.scale(Math.cos(s.a) < 0 ? -1 : 1, 1); ctx.globalAlpha = .75; if (s.post) Sprites.drawPostlarva(ctx, { s: .07, ph: s.ph, form: 'normal' }); else Sprites.drawLarva(ctx, { s: .3, ph: s.ph, form: 'normal', instar: 1 }); ctx.restore(); }
+    const w = Wd.shark; if (w) { ctx.save(); ctx.translate(w.x, w.y); ctx.scale(w.dir, 1); lobArt().drawBaskingShark(ctx, { s: .6, t: w.t, gulp: w.gulp }); ctx.restore(); }
+    for (const f of Wd.smallFish) { if (f.x < view.l - 20 || f.x > view.r + 20) continue; ctx.save(); ctx.translate(f.x, f.y); ctx.scale(f.dir * f.s * .5, f.s * .5); lobArt().drawFish(ctx, { col: f.col, col2: f.col2, ph: f.ph }); ctx.restore(); }
+    for (const j of Wd.jellies) if (j.x > view.l - 80 && j.x < view.r + 80) lobArt().drawCombJelly(ctx, j, time);
+    for (const q of Wd.plankton) if (q.x > view.l && q.x < view.r && q.y > view.t && q.y < view.b) { ctx.save(); ctx.translate(q.x, q.y); ctx.scale(1.5, 1.5); ctx.translate(-q.x, -q.y); lobArt().drawPlankton(ctx, q, night, time); ctx.restore(); }
+    for (const s of Wd.sibs) { if (s.x < view.l || s.x > view.r) continue; ctx.save(); ctx.translate(s.x, s.y); ctx.scale(Math.cos(s.a) < 0 ? -1 : 1, 1); ctx.globalAlpha = .75; if (s.post) lobArt().drawPostlarva(ctx, { s: .07, ph: s.ph, form: 'normal' }); else lobArt().drawLarva(ctx, { s: .3, ph: s.ph, form: 'normal', instar: 1 }); ctx.restore(); }
     ctx.globalAlpha = 1;
     const sc = Wd.school;
-    if (sc) for (const f of sc.fish) { const x = sc.x + f.dx, y = sc.y + f.dy + Math.sin(sc.t * 2 + f.ph) * 6; if (x < view.l - 40 || x > view.r + 40) continue; ctx.save(); ctx.translate(x, y); ctx.scale(sc.dir * f.s, f.s); Sprites.drawFish(ctx, { ph: f.ph, col: '#d8e4ee', col2: '#2a4a6a' }); ctx.restore(); }
-    for (const e of Wd.larvaCloud) { ctx.save(); ctx.translate(e.x, e.y); ctx.globalAlpha = clamp(6 - e.t, 0, 1) * .85; ctx.scale(e.vx < 0 ? -1 : 1, 1); Sprites.drawLarva(ctx, { s: .24, ph: e.t * 10 + e.ph, form: 'normal', instar: 1 }); ctx.restore(); }
+    if (sc) for (const f of sc.fish) { const x = sc.x + f.dx, y = sc.y + f.dy + Math.sin(sc.t * 2 + f.ph) * 6; if (x < view.l - 40 || x > view.r + 40) continue; ctx.save(); ctx.translate(x, y); ctx.scale(sc.dir * f.s, f.s); lobArt().drawFish(ctx, { ph: f.ph, col: '#d8e4ee', col2: '#2a4a6a' }); ctx.restore(); }
+    for (const e of Wd.larvaCloud) { ctx.save(); ctx.translate(e.x, e.y); ctx.globalAlpha = clamp(6 - e.t, 0, 1) * .85; ctx.scale(e.vx < 0 ? -1 : 1, 1); lobArt().drawLarva(ctx, { s: .24, ph: e.t * 10 + e.ph, form: 'normal', instar: 1 }); ctx.restore(); }
     ctx.globalAlpha = 1;
   }
   function drawGlows(G, Wd, view, night, time) {
@@ -629,7 +680,7 @@ const Render = (function () {
   /* far away in the blue: shoals of little fish turning, and on dark nights the sea twinkles */
   const shoals = Array.from({ length: 3 }, (_, i) => ({ ph: i * 2.1, y: .2 + i * .27, n: 26 + i * 6, dir: i % 2 ? -1 : 1, sp: .006 + i * .003 }));
   const twinkles = Array.from({ length: 70 }, () => ({ x: Math.random(), y: Math.random(), ph: Math.random() * TAU, sp: .5 + Math.random() * 2 }));
-  function drawDeepLife(G, night, time) {
+  function drawDeepLife(G, night, time, shoalsOnly) {
     if (G.player.underground) return;
     ctx.save();
     for (const sh of shoals) {
@@ -637,7 +688,7 @@ const Render = (function () {
       ctx.fillStyle = `rgba(150,190,220,${.08 * (1 - night * .7)})`;
       for (let k = 0; k < sh.n; k++) { const a = k * 2.399 + time * .3 * sh.dir, r = Math.sqrt(k) * 9; const x = cx + Math.cos(a) * r * 1.8, y = cy + Math.sin(a) * r * .7; ctx.beginPath(); ctx.ellipse(x, y, 5, 1.6, sh.dir * .1, 0, TAU); ctx.fill(); }
     }
-    if (night > .3) {
+    if (night > .3 && !shoalsOnly) {
       ctx.globalCompositeOperation = 'lighter';
       for (const t of twinkles) { const b = Math.max(0, Math.sin(time * t.sp + t.ph)); if (b < .6) continue; const x = ((t.x - G.cam.x * .0004) % 1 + 1) % 1 * W, y = ((t.y - G.cam.y * .0004) % 1 + 1) % 1 * H; ctx.fillStyle = `rgba(110,220,255,${(b - .6) * 2 * night * .5})`; ctx.beginPath(); ctx.arc(x, y, 1.6 + b, 0, TAU); ctx.fill(); }
     }
@@ -662,7 +713,7 @@ const Render = (function () {
     if (!p.swimming || p.y > 120) return;
     ctx.save(); ctx.translate(b.x, b.y);
     if (b.state === 'dive') ctx.rotate(.4 * Math.cos(b.t * 2));
-    Sprites.drawTern(ctx, { s: b.state === 'dive' ? .4 : .32, ph: b.ph * 4 });
+    lobArt().drawTern(ctx, { s: b.state === 'dive' ? .4 : .32, ph: b.ph * 4 });
     ctx.restore();
     if (b.state === 'dive' && b.y > Wd.seaLevel() - 6) { ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.beginPath(); ctx.ellipse(b.x, Wd.seaLevel(), 10, 2, 0, 0, TAU); ctx.fill(); }
   }
@@ -676,15 +727,15 @@ const Render = (function () {
     if (p.stage === 'egg') {
       ctx.translate(p.x, p.y); ctx.rotate(Math.sin(time * 9) * p.crack * .4);
       ctx.strokeStyle = `rgba(255,240,150,${.5 + .4 * Math.sin(time * 4)})`; ctx.lineWidth = .4; ctx.beginPath(); ctx.arc(0, 0, 2.2, 0, TAU); ctx.stroke();
-      Sprites.drawEgg(ctx, { s: 1.4, eye: true }); ctx.restore(); return;
+      lobArt().drawEgg(ctx, { s: 1.4, eye: true }); ctx.restore(); return;
     }
     if (p.swimming) {
       ctx.translate(p.x, p.y);
       if (p.tumble > 0) ctx.rotate(p.spin);
       ctx.scale(p.face, 1); ctx.rotate(p.ang * p.face);
       if (p.molting > 0) { ctx.globalAlpha = .6 + .4 * Math.sin(time * 20); }
-      if (p.stage === 'larva') Sprites.drawLarva(ctx, { s: p.r / 3.2, ph: p.phase * (p.moving ? 2.2 : 1), form: p.form, instar: p.zinstar });
-      else Sprites.drawPostlarva(ctx, { s: .11, ph: p.phase * (p.moving ? 2.2 : 1), form: p.form });
+      if (p.stage === 'larva') lobArt().drawLarva(ctx, { s: p.r / 3.2, ph: p.phase * (p.moving ? 2.2 : 1), form: p.form, instar: p.zinstar });
+      else lobArt().drawPostlarva(ctx, { s: .11, ph: p.phase * (p.moving ? 2.2 : 1), form: p.form });
       ctx.restore(); return;
     }
     /* the lobster */
@@ -694,9 +745,9 @@ const Render = (function () {
     else ctx.rotate(p.ang * p.face);
     ctx.scale(p.face, 1);
     const inDen = p.underground;
-    if (p.mode === 'moult') { const k = 1 - p.molting / MOLT_T; ctx.globalAlpha = .5; Sprites.drawLobster(ctx, { s: p.w / 100 * .97, form: p.form, sex: p.sex, pale: .9, tuck: .3, simple: true, crusher: p.crusher }); ctx.globalAlpha = 1; ctx.translate(-k * p.w * .3, -k * p.w * .08); }
+    if (p.mode === 'moult') { const k = 1 - p.molting / MOLT_T; ctx.globalAlpha = .5; lobArt().drawLobster(ctx, { s: p.w / 100 * .97, form: p.form, sex: p.sex, pale: .9, tuck: .3, simple: true, crusher: p.crusher }); ctx.globalAlpha = 1; ctx.translate(-k * p.w * .3, -k * p.w * .08); }
     const flip = p.flipT > 0 ? Math.sin(Math.min(1, p.flipT / FLIP_T) * Math.PI) : 0;
-    Sprites.drawLobster(ctx, { s: p.w / 100, form: p.form, sex: p.sex, walk: p.walk, moving: p.moving, pale: p.pale, up: p.up, pinch: p.pinch, eat: p.eatAnim, flip, tuck: p.mode === 'tuck' ? .8 : inDen ? .35 : p.mode === 'winter' ? .7 : 0, eggs: p.sex === 'girl' ? p.eggs : 0, fan: p.mode === 'release' || p.mode === 'brood' ? p.t : 0, crusher: p.crusher, face: p.face, seed: 11, ph: p.t });
+    lobArt().drawLobster(ctx, { s: p.w / 100, form: p.form, sex: p.sex, walk: p.walk, moving: p.moving, pale: p.pale, up: p.up, pinch: p.pinch, eat: p.eatAnim, flip, tuck: p.mode === 'tuck' ? .8 : inDen ? .35 : p.mode === 'winter' ? .7 : 0, eggs: p.sex === 'girl' ? p.eggs : 0, fan: p.mode === 'release' || p.mode === 'brood' ? p.t : 0, crusher: p.crusher, face: p.face, seed: 11, ph: p.t });
     ctx.restore();
   }
 
@@ -806,6 +857,7 @@ const Render = (function () {
   function snapshot(G) {
     const c = document.createElement('canvas'); c.width = canvas.width; c.height = canvas.height;
     frame(G, 0, true);
+    if (typeof GFX !== 'undefined' && GFX.active()) c.getContext('2d').drawImage(GFX.canvas(), 0, 0, c.width, c.height);
     c.getContext('2d').drawImage(canvas, 0, 0);
     return c;
   }
