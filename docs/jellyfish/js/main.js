@@ -348,7 +348,9 @@
     } else if (!G.started) { G.time += rawDt; G.world.update(rawDt * .3, G.tod, p); }
     G.particles.update(dt, (x) => G.world.ground.topAt(x));
     camera(rawDt);
-    Render.frame(G, dt);
+    /* behind the title the painted sea is shown in daylight; the game itself still starts at dusk */
+    if (!G.started && typeof GFX !== 'undefined' && GFX.active()) { const tod0 = G.tod, n0 = G.night; G.tod = .45; Render.frame(G, dt); G.tod = tod0; G.night = n0; }
+    else Render.frame(G, dt);
     frames++;
     if (params.has('debug')) document.title = `t=${G.time.toFixed(1)} ${p.stage}/${p.mode} p${p.pinst} e${p.einst} m${p.minst} food=${(p.stage === 'polyp' ? p.pfood : p.stage === 'ephyra' ? p.efood : p.mfood).toFixed(0)} p=${p.x.toFixed(0)},${p.y.toFixed(0)} fps=${Render.getFps().toFixed(0)}${typeof GFX !== 'undefined' && GFX.active() ? ` gl=${GFX.stats().ms.toFixed(1)}ms` : ''}`;
     if (G.started) UI.update(rawDt);
@@ -370,15 +372,20 @@
     tt += dt;
     if (tc.width !== W * DPR || tc.height !== H * DPR) { tc.width = W * DPR; tc.height = H * DPR; }
     tctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    const g = tctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#5ab8e0'); g.addColorStop(.12, '#2a86c0'); g.addColorStop(.6, '#0e4a80'); g.addColorStop(1, '#06203a');
-    tctx.fillStyle = g; tctx.fillRect(0, 0, W, H);
-    tctx.fillStyle = 'rgba(255,255,255,.35)'; tctx.beginPath(); tctx.moveTo(0, 0); for (let x = 0; x <= W; x += 12) tctx.lineTo(x, H * .05 + Math.sin(x * .02 + tt * 1.5) * 4); tctx.lineTo(W, 0); tctx.fill();
-    tctx.save(); tctx.globalCompositeOperation = 'lighter';
-    for (let k = 0; k < 9; k++) { const bx = (k / 9 + Math.sin(tt * .1 + k) * .02) * W; const lg = tctx.createLinearGradient(0, 0, 0, H * .85); lg.addColorStop(0, 'rgba(200,240,255,.14)'); lg.addColorStop(1, 'rgba(200,240,255,0)'); tctx.fillStyle = lg; tctx.beginPath(); tctx.moveTo(bx, 0); tctx.lineTo(bx + 40, 0); tctx.lineTo(bx + 200, H * .85); tctx.lineTo(bx + 110, H * .85); tctx.closePath(); tctx.fill(); }
-    tctx.restore();
-    for (const s of tSpecks) { s.y -= dt * .004; if (s.y < 0) s.y = 1; tctx.fillStyle = `rgba(220,245,255,${.25 + .25 * Math.sin(tt * 2 + s.ph)})`; tctx.beginPath(); tctx.arc((s.x + Math.sin(tt * .2 + s.ph) * .01) * W, s.y * H, 1.3, 0, TAU); tctx.fill(); }
-    /* the rocks and the dock far below */
-    tctx.fillStyle = '#16304a'; tctx.beginPath(); tctx.moveTo(0, H); tctx.lineTo(0, H * .86); tctx.quadraticCurveTo(W * .3, H * .8, W * .55, H * .88); tctx.quadraticCurveTo(W * .8, H * .84, W, H * .9); tctx.lineTo(W, H); tctx.fill();
+    /* with the painted look: the live GL sea (just rendered this frame) behind painted jellies */
+    const gl = typeof GFX !== 'undefined' && GFX.active() && typeof Painted !== 'undefined', A = gl ? Painted : Sprites;
+    if (gl) { tctx.setTransform(1, 0, 0, 1, 0, 0); tctx.drawImage(GFX.canvas(), 0, 0, tc.width, tc.height); tctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
+    else {
+      const g = tctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#5ab8e0'); g.addColorStop(.12, '#2a86c0'); g.addColorStop(.6, '#0e4a80'); g.addColorStop(1, '#06203a');
+      tctx.fillStyle = g; tctx.fillRect(0, 0, W, H);
+      tctx.fillStyle = 'rgba(255,255,255,.35)'; tctx.beginPath(); tctx.moveTo(0, 0); for (let x = 0; x <= W; x += 12) tctx.lineTo(x, H * .05 + Math.sin(x * .02 + tt * 1.5) * 4); tctx.lineTo(W, 0); tctx.fill();
+      tctx.save(); tctx.globalCompositeOperation = 'lighter';
+      for (let k = 0; k < 9; k++) { const bx = (k / 9 + Math.sin(tt * .1 + k) * .02) * W; const lg = tctx.createLinearGradient(0, 0, 0, H * .85); lg.addColorStop(0, 'rgba(200,240,255,.14)'); lg.addColorStop(1, 'rgba(200,240,255,0)'); tctx.fillStyle = lg; tctx.beginPath(); tctx.moveTo(bx, 0); tctx.lineTo(bx + 40, 0); tctx.lineTo(bx + 200, H * .85); tctx.lineTo(bx + 110, H * .85); tctx.closePath(); tctx.fill(); }
+      tctx.restore();
+      for (const s of tSpecks) { s.y -= dt * .004; if (s.y < 0) s.y = 1; tctx.fillStyle = `rgba(220,245,255,${.25 + .25 * Math.sin(tt * 2 + s.ph)})`; tctx.beginPath(); tctx.arc((s.x + Math.sin(tt * .2 + s.ph) * .01) * W, s.y * H, 1.3, 0, TAU); tctx.fill(); }
+      /* the rocks and the dock far below */
+      tctx.fillStyle = '#16304a'; tctx.beginPath(); tctx.moveTo(0, H); tctx.lineTo(0, H * .86); tctx.quadraticCurveTo(W * .3, H * .8, W * .55, H * .88); tctx.quadraticCurveTo(W * .8, H * .84, W, H * .9); tctx.lineTo(W, H); tctx.fill();
+    }
     for (const j of tJellies) {
       j.ph += dt * (1.1 + j.z * .4); j.y -= j.sp * dt * (.5 + .5 * Math.max(0, Math.sin(j.ph))); j.x += j.drift * dt;
       if (j.y < -.15) { j.y = 1.15; j.x = Math.random(); }
@@ -386,7 +393,7 @@
       const u = (j.ph / TAU) % 1, pulse = u < .28 ? smoothstep(0, .28, u) : 1 - smoothstep(.28, 1, u);
       const r = Math.min(W, H) * .07 * j.z;
       tctx.save(); tctx.translate(j.x * W, j.y * H); tctx.rotate(Math.sin(j.ph * .3) * .15); tctx.globalAlpha = .45 + j.z * .55;
-      Sprites.drawJelly(tctx, { r, form: j.form, pulse, t: tt + j.ph, simple: r < 14 });
+      A.drawJelly(tctx, { r, form: j.form, pulse, t: tt + j.ph, simple: r < 14 });
       tctx.restore();
     }
   }

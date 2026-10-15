@@ -272,7 +272,9 @@
     /* bubbles pop at the surface */
     { const lvl = G.world.seaLevel(); G.particles.list = G.particles.list.filter(q => q.type !== 'bubble' || q.y > lvl + 1); }
     camera(rawDt);
-    Render.frame(G, dt);
+    /* behind the title the painted sea is shown in daylight; the game itself still starts at dusk */
+    if (!G.started && typeof GFX !== 'undefined' && GFX.active()) { const tod0 = G.tod, n0 = G.night; G.tod = .45; Render.frame(G, dt); G.tod = tod0; G.night = n0; }
+    else Render.frame(G, dt);
     frames++;
     if (params.has('debug')) document.title = `t=${G.time.toFixed(1)} ${p.stage}/${p.mode} s${p.step} food=${p.food.toFixed(0)} oil=${p.oil.toFixed(2)} safe=${p.safe.toFixed(2)} p=${p.x.toFixed(0)},${p.y.toFixed(0)} w${G.warp} fps=${Render.getFps().toFixed(0)}${typeof GFX !== 'undefined' && GFX.active() ? ` gl=${GFX.stats().ms.toFixed(1)}ms` : ''}`;
     if (params.has('debughud')) document.getElementById('hintText').textContent = `${STEP_NAME[p.step]} ${p.mode} food ${p.food.toFixed(1)}/${p.need} oil ${p.oil.toFixed(2)} safe ${p.safe.toFixed(2)} y ${p.y.toFixed(0)} tod ${G.tod.toFixed(2)} ${G.world.season} day ${G.day}`;
@@ -295,24 +297,29 @@
     tt += dt;
     if (tc.width !== W * DPR || tc.height !== H * DPR) { tc.width = W * DPR; tc.height = H * DPR; }
     tctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    const g = tctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#7ad0d8'); g.addColorStop(.15, '#3aa0b8'); g.addColorStop(.6, '#11568e'); g.addColorStop(1, '#04203e');
-    tctx.fillStyle = g; tctx.fillRect(0, 0, W, H);
-    tctx.fillStyle = 'rgba(255,255,255,.35)'; tctx.beginPath(); tctx.moveTo(0, 0); for (let x = 0; x <= W; x += 12) tctx.lineTo(x, H * .05 + Math.sin(x * .02 + tt * 1.5) * 4); tctx.lineTo(W, 0); tctx.fill();
-    tctx.save(); tctx.globalCompositeOperation = 'lighter';
-    for (let k = 0; k < 9; k++) { const bx = (k / 9 + Math.sin(tt * .1 + k) * .02) * W; const lg = tctx.createLinearGradient(0, 0, 0, H * .85); lg.addColorStop(0, 'rgba(210,250,240,.15)'); lg.addColorStop(1, 'rgba(200,240,255,0)'); tctx.fillStyle = lg; tctx.beginPath(); tctx.moveTo(bx, 0); tctx.lineTo(bx + 40, 0); tctx.lineTo(bx + 200, H * .85); tctx.lineTo(bx + 110, H * .85); tctx.closePath(); tctx.fill(); }
-    tctx.restore();
+    /* with the painted look: the live GL sea (just rendered this frame) behind painted animals */
+    const gl = typeof GFX !== 'undefined' && GFX.active() && typeof Painted !== 'undefined', A = gl ? Painted : Sprites;
+    if (gl) { tctx.setTransform(1, 0, 0, 1, 0, 0); tctx.drawImage(GFX.canvas(), 0, 0, tc.width, tc.height); tctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
+    else {
+      const g = tctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#7ad0d8'); g.addColorStop(.15, '#3aa0b8'); g.addColorStop(.6, '#11568e'); g.addColorStop(1, '#04203e');
+      tctx.fillStyle = g; tctx.fillRect(0, 0, W, H);
+      tctx.fillStyle = 'rgba(255,255,255,.35)'; tctx.beginPath(); tctx.moveTo(0, 0); for (let x = 0; x <= W; x += 12) tctx.lineTo(x, H * .05 + Math.sin(x * .02 + tt * 1.5) * 4); tctx.lineTo(W, 0); tctx.fill();
+      tctx.save(); tctx.globalCompositeOperation = 'lighter';
+      for (let k = 0; k < 9; k++) { const bx = (k / 9 + Math.sin(tt * .1 + k) * .02) * W; const lg = tctx.createLinearGradient(0, 0, 0, H * .85); lg.addColorStop(0, 'rgba(210,250,240,.15)'); lg.addColorStop(1, 'rgba(200,240,255,0)'); tctx.fillStyle = lg; tctx.beginPath(); tctx.moveTo(bx, 0); tctx.lineTo(bx + 40, 0); tctx.lineTo(bx + 200, H * .85); tctx.lineTo(bx + 110, H * .85); tctx.closePath(); tctx.fill(); }
+      tctx.restore();
+    }
     /* a right whale far off in the blue */
-    tctx.save(); tctx.globalAlpha = .28; tctx.translate(((tt * 14) % (W + 900)) - 450, H * .72); tctx.scale(.42 * Math.min(1.4, W / 1000), .42 * Math.min(1.4, W / 1000)); tctx.filter = 'blur(1px)'; Sprites.drawWhale(tctx, { s: 1, t: tt, open: .6 }); tctx.restore(); tctx.filter = 'none';
+    tctx.save(); tctx.globalAlpha = .28; tctx.translate(((tt * 14) % (W + 900)) - 450, H * .72); tctx.scale(.42 * Math.min(1.4, W / 1000), .42 * Math.min(1.4, W / 1000)); tctx.filter = 'blur(1px)'; A.drawWhale(tctx, { s: 1, t: tt, open: .6 }); tctx.restore(); tctx.filter = 'none';
     /* diatoms glittering in the light */
-    for (const d of tDiatoms) { d.y -= dt * .004; if (d.y < -.02) d.y = 1.02; d.r += dt * .2; const x = (d.x + Math.sin(tt * .2 + d.ph) * .01) * W, y = d.y * H; tctx.save(); tctx.translate(x, y); tctx.scale(3.2 * d.s, 3.2 * d.s); Sprites.drawPlankton(tctx, { x: 0, y: 0, kind: d.k, rot: d.r }, 0, 0); tctx.restore(); }
+    for (const d of tDiatoms) { d.y -= dt * .004; if (d.y < -.02) d.y = 1.02; d.r += dt * .2; const x = (d.x + Math.sin(tt * .2 + d.ph) * .01) * W, y = d.y * H; tctx.save(); tctx.translate(x, y); tctx.scale(3.2 * d.s, 3.2 * d.s); A.drawPlankton(tctx, { x: 0, y: 0, kind: d.k, rot: d.r }, 0, 0); tctx.restore(); }
     /* copepods and nauplii swimming across, now and then a jump */
     for (const c of swimmers) {
       c.hop = Math.max(0, c.hop - dt * 2); if (Math.random() < dt * .08) c.hop = 1;
       c.x += (c.sp + c.hop * .05) * c.dir * dt; c.ph += dt * 6; if (c.x < -.12) c.x = 1.12; if (c.x > 1.12) c.x = -.12;
       const x = c.x * W, y = c.y * H + Math.sin(tt * .7 + c.ph) * 8, s = c.s * Math.min(1.7, W / 800) * 4.2;
       tctx.save(); tctx.translate(x, y); tctx.scale(c.dir, 1);
-      if (c.naup) Sprites.drawNauplius(tctx, { s: s * 1.4, form: c.form, step: 3, ph: c.ph, gut: .5 });
-      else Sprites.drawCopepod(tctx, { s, form: c.form, step: 12, sex: c.s > 1 ? 'girl' : 'boy', ph: c.ph, jump: c.hop, oil: c.form === 'gold' ? .9 : .3, gut: .6 });
+      if (c.naup) A.drawNauplius(tctx, { s: s * 1.4, form: c.form, step: 3, ph: c.ph, gut: .5 });
+      else A.drawCopepod(tctx, { s, form: c.form, step: 12, sex: c.s > 1 ? 'girl' : 'boy', ph: c.ph, jump: c.hop, oil: c.form === 'gold' ? .9 : .3, gut: .6 });
       tctx.restore();
     }
   }
