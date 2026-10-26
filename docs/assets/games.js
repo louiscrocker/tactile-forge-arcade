@@ -166,6 +166,22 @@ export const GAMES = [
     meta: 'Keyboard, touch or gamepad',
   },
   {
+    slug: 'octopus', shelf: 'nature', name: 'Octopus: Arm by Arm', badge: 'AGES 4–8',
+    accent: '#d0603a', glow: 'rgba(208,96,58,0.5)',
+    tagline: 'Pop out of your egg, change colour to vanish, and squirt ink to get away.',
+    description: "Live a giant Pacific octopus's real life in Puget Sound: pop out of your egg as a tiny see-through paralarva and eat plankton, settle into a crack on the reef or an old bottle, hunt crabs at night, change colour to vanish, squirt ink and jet away while seals and lingcod always miss, sleep to grow arm by arm, crawl down to the deep for winter and start the next generation. Play as a boy or a girl octopus; nothing ever gets hurt. Everything is read aloud, and Read to Play turns levelled reading into how you play.",
+    features: ['Real life cycle', 'Read to Play', 'Plays offline'],
+    meta: 'Keyboard, touch or gamepad',
+  },
+  {
+    slug: 'castle', shelf: 'nature', name: 'Castle: Stone by Stone', badge: 'AGES 4–10',
+    accent: '#c9a24a', glow: 'rgba(201,162,74,0.5)',
+    tagline: 'Build towers, dig a moat, furnish every room and fill the stables with horses.',
+    description: "Be a prince or a princess and build a whole castle, stone by stone: walls, towers, battlements, stairs, a gatehouse, a moat and a drawbridge. Name each room, from the throne room and great hall to the kitchen, library and stables, and furnish it. Horses come to live in the stalls, knights joust for points with blunted lances, the household cooks and feasts at dusk, and a friendly dragon lands on a tall enough tower. Everything is read aloud, and Read to Build turns levelled reading into how you build.",
+    features: ['Build anything', 'Read to Build', 'Plays offline'],
+    meta: 'Mouse or touch',
+  },
+  {
     slug: 'storm-lab', shelf: 'nature', name: 'Storm Lab', badge: 'AGES 8–13',
     accent: '#8fb8ff', glow: 'rgba(143,184,255,0.5)',
     tagline: 'Build a tornado, watch it work, and read the damage like a scientist.',

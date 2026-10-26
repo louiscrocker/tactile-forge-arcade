@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Colour Your Castle — Castle: Stone by Stone</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root { --ink: #2a2016; --dim: #6a5a46; --line: #d8cdb8; --red: #c0501a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9e4d6; color: var(--ink); font-family: "Nunito", "Segoe UI", system-ui, sans-serif; }
+  .page { width: 210mm; min-height: 297mm; margin: 12px auto; padding: 12mm 14mm 10mm; background: #fffdf6; box-shadow: 0 6px 30px rgba(0,0,0,.15); }
+  h1 { margin: 0; font-size: 34px; font-weight: 900; letter-spacing: .04em; }
+  h1 span { color: var(--red); }
+  .sub { margin: 4px 0 12px; color: var(--dim); font-weight: 700; }
+  h2 { font-size: 17px; font-weight: 900; margin: 14px 0 6px; border-bottom: 2px solid var(--line); padding-bottom: 4px; }
+  .castle { width: 100%; height: 118mm; border: 2px dashed var(--line); border-radius: 12px; background: #fff; display: block; }
+  .parts { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; align-items: end; }
+  .parts figure { margin: 0; text-align: center; }
+  .parts canvas { width: 100%; height: auto; border: 2px dashed var(--line); border-radius: 10px; background: #fff; }
+  .parts figcaption { font-weight: 900; margin-top: 3px; font-size: 12.5px; }
+  .hunt { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 18px; }
+  .hunt label { display: flex; gap: 10px; align-items: flex-start; font-weight: 700; padding: 4px 0; border-bottom: 1px dotted var(--line); font-size: 13px; }
+  .box { flex: 0 0 20px; height: 20px; border: 2.5px solid var(--ink); border-radius: 5px; }
+  .hunt small { display: block; color: var(--dim); font-size: 11px; font-weight: 600; }
+  .note { font-size: 11.5px; color: var(--dim); font-weight: 600; margin-top: 10px; line-height: 1.4; }
+  .bar { display: flex; gap: 8px; justify-content: center; margin: 12px auto 0; width: 210mm; }
+  .bar button { font: inherit; font-weight: 900; padding: 10px 18px; border-radius: 12px; border: none; background: var(--red); color: #fff; cursor: pointer; }
+  @media print { body { background: #fff; } .page { margin: 0; box-shadow: none; } .bar { display: none; } }
+</style>
+</head>
+<body>
+<div class="bar"><button onclick="print()">🖨️ Print this page</button></div>
+<div class="page">
+  <h1>Colour your <span>Castle</span></h1>
+  <p class="sub">Name: ______________________ &nbsp; My castle is called: ______________________</p>
+
+  <h2>1 · Colour the castle, and draw your own flag on the tower</h2>
+  <canvas class="castle" id="castle" width="1480" height="900"></canvas>
+
+  <h2>2 · Who lives in a castle? Colour them in</h2>
+  <div class="parts">
+    <figure><canvas data-draw="royal" width="200" height="200"></canvas><figcaption>Prince or princess</figcaption></figure>
+    <figure><canvas data-draw="knight" width="200" height="200"></canvas><figcaption>Knight</figcaption></figure>
+    <figure><canvas data-draw="horse" width="200" height="200"></canvas><figcaption>Horse</figcaption></figure>
+    <figure><canvas data-draw="cook" width="200" height="200"></canvas><figcaption>Cook</figcaption></figure>
+    <figure><canvas data-draw="jester" width="200" height="200"></canvas><figcaption>Jester</figcaption></figure>
+    <figure><canvas data-draw="dragon" width="200" height="200"></canvas><figcaption>Dragon</figcaption></figure>
+  </div>
+
+  <h2>3 · Castle spotter: can you find these? (in a book, a film, or a real castle)</h2>
+  <div class="hunt">
+    <label><span class="box"></span><span>A tower with a pointed roof<small>Round towers have no corners to knock down.</small></span></label>
+    <label><span class="box"></span><span>Battlements<small>The tooth shapes on top of a wall. Guards walk behind them.</small></span></label>
+    <label><span class="box"></span><span>A moat<small>A ring of water. Do swans or ducks live on it?</small></span></label>
+    <label><span class="box"></span><span>A drawbridge or a portcullis<small>The bridge lifts on chains. The gate slides up and down.</small></span></label>
+    <label><span class="box"></span><span>An arrow slit<small>A tall thin window, narrow outside and wide inside.</small></span></label>
+    <label><span class="box"></span><span>A stained glass window<small>Coloured glass that paints the floor when the sun shines.</small></span></label>
+    <label><span class="box"></span><span>A great hall<small>The biggest room, for feasts.</small></span></label>
+    <label><span class="box"></span><span>A flag flying<small>It means the prince or princess is at home!</small></span></label>
+  </div>
+  <p class="note">From <b>Castle: Stone by Stone</b>, a Tactile Forge game. The outlines are drawn by the game's own code, so the castle on this sheet is the one on the screen.</p>
+</div>
+<script src="js/core.js"></script>
+<script src="js/facts.js"></script>
+<script src="js/grid.js"></script>
+<script src="js/catalog.js"></script>
+<script src="js/sprites.js"></script>
+<script>
+  /* outlines: draw the colour art, then keep only the edges (a thin dark line on white) */
+  function outline(src, w, h, thick) {
+    const out = document.createElement('canvas'); out.width = w; out.height = h; const g = out.getContext('2d');
+    const d = src.getContext('2d').getImageData(0, 0, w, h).data, o = g.createImageData(w, h), od = o.data;
+    const lum = (i) => d[i + 3] < 40 ? 999 : (d[i] * .3 + d[i + 1] * .59 + d[i + 2] * .11);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4; let edge = false; const a = lum(i);
+      for (const [dx, dy] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue; const b = lum((yy * w + xx) * 4); if (Math.abs(a - b) > 60) { edge = true; break; } }
+      if (edge) { for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) { const xx = x + dx, yy = y + dy; if (xx < w && yy < h) { const j = (yy * w + xx) * 4; od[j] = od[j + 1] = od[j + 2] = 40; od[j + 3] = 255; } } }
+      else if (od[i + 3] === 0) { od[i] = od[i + 1] = od[i + 2] = 255; od[i + 3] = 255; }
+    }
+    g.putImageData(o, 0, 0);
+    return out;
+  }
+  /* the castle: the grand blueprint, drawn big */
+  (function () {
+    const G = { settings: { difficulty: 'normal' }, diff() { return DIFFICULTY.normal; } };
+    const C = { grid: new Grid() };
+    const marks = [], items = [];
+    const b = { set(x, y, t) { if (C.grid.inside(x, y)) C.grid.t[y * COLS + x] = t; }, rect(x0, y0, x1, y1, t) { for (let y = Math.min(y0, y1); y <= Math.max(y0, y1); y++) for (let x = Math.min(x0, x1); x <= Math.max(x0, x1); x++) b.set(x, y, t); }, room() {}, item(k, x, y) { items.push([k, x, y]); } };
+    BLUEPRINTS.castle.build(b); C.grid.version++;
+    const src = document.createElement('canvas'); src.width = 1480; src.height = 900; const g = src.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, 1480, 900);
+    const bnd = C.grid.bounds(), sc = 1480 / ((bnd.r - bnd.l + 12) * CELL);
+    g.save(); g.translate(740 - (bnd.l + bnd.r + 1) / 2 * CELL * sc, 900 - (GROUND + 3) * CELL * sc); g.scale(sc, sc);
+    for (let cy = 0; cy < GROUND + 3; cy++) for (let cx = bnd.l - 6; cx <= bnd.r + 6; cx++) { const t = C.grid.get(cx, cy); if (t === T.AIR) continue; if (t === T.EARTH && cy > GROUND) continue; Sprites.tile(g, C.grid, cx, cy, t, { time: 0, snow: 0, bridge: 1, lit: false, season: 'summer' }); }
+    for (const [k, x, y] of items) { if (!ITEMS[k]) continue; g.save(); g.translate(x * CELL, (y + 1) * CELL); Sprites.item(g, k, { t: 1, lit: false, season: 'summer' }); g.restore(); }
+    g.restore();
+    document.getElementById('castle').getContext('2d').drawImage(outline(src, 1480, 900, 1), 0, 0);
+  })();
+  for (const c of document.querySelectorAll('canvas[data-draw]')) {
+    const key = c.dataset.draw, src = document.createElement('canvas'); src.width = src.height = 200; const g = src.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, 200, 200); g.translate(100, 170);
+    if (key === 'horse') { g.translate(-10, 0); Sprites.horse(g, { s: 2.2, col: '#8a5a3a' }); }
+    else if (key === 'dragon') { g.translate(10, 0); Sprites.dragon(g, { s: .95, ph: 1 }); }
+    else if (key === 'royal') Sprites.person(g, { role: 'royal', sex: 'princess', look: royalLook('princess', 'rose'), s: 3 });
+    else Sprites.person(g, { role: key, s: 3 });
+    c.getContext('2d').drawImage(outline(src, 200, 200, 1), 0, 0);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "Octopus: Arm by Arm",
+  "short_name": "Octopus",
+  "description": "Be a giant Pacific octopus in Puget Sound: pop out of your egg as a tiny paralarva, settle into a crack on the reef, hunt crabs at night, change colour to vanish, ink and jet from hunters, grow into a giant, and start the next generation.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0e4a70",
+  "theme_color": "#0e4a70",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

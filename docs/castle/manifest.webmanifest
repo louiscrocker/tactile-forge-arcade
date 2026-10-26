@@ -1,0 +1,16 @@
+{
+  "name": "Castle: Stone by Stone",
+  "short_name": "Castle",
+  "description": "Be a prince or a princess and build your own castle: towers, a moat and a drawbridge, rooms to name and furnish, stables with horses, knights who joust, feasts, fireworks and a friendly dragon.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#2a4a7a",
+  "theme_color": "#2a4a7a",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
