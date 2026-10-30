@@ -62,6 +62,7 @@
     const k = e.key, c = e.code;
     if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
     if (c === 'KeyM') { G.settings.sound = !G.settings.sound; applySettings(); return; }
+    if (c === 'KeyO') { toggleLook(); return; }
     if (k === 'Escape' && UI.closeTopModal()) return;
     if (G.mode === 'play') {
       if (!$('intro').hidden) { if (k === 'Enter' || k === ' ' || c === 'KeyX') { e.preventDefault(); beginPlay(); } return; }
@@ -140,10 +141,30 @@
     } else { padMenus(pads); AudioFX.update(raw, { mode: 'map' }); }
     G.cam.update(raw, G.level || G.attract ? { left: -200, right: (G.level || G.attract).W + 200, top: -2000, bottom: GROUND_Y + 300 } : null);
     G.particles.update(raw);
-    if (G.mode === 'map') { const ctx = Render.ctx; ctx.setTransform(Render.DPR, 0, 0, Render.DPR, 0, 0); MapView.draw(ctx, W, H, G.t, G.sel); }
+    if (G.mode === 'map') drawMap();
     else if (G.level || G.attract) { const keep = G.level; if (!keep) G.level = G.attract; Render.frame(G, raw); G.level = keep; }
     if (params.has('debug')) document.title = `${G.mode} fps=${Render.fps.toFixed(0)} t=${L ? L.time.toFixed(1) : ''}`;
   }
+
+  /* the town map: classic straight onto the canvas; painted through the GPU with the
+     stop numbers and stars on the overlay */
+  function drawMap() {
+    const main = Render.ctx;
+    if (!Render.gl()) { main.setTransform(Render.DPR, 0, 0, Render.DPR, 0, 0); MapView.draw(main, W, H, G.t, G.sel); return; }
+    const ctx = Render.beginGL('morning');
+    main.setTransform(Render.DPR, 0, 0, Render.DPR, 0, 0);
+    MapView.draw(ctx, W, H, G.t, G.sel, main);
+    const { s, street } = MapView.layout(W, H), cx = MapView.camX;
+    Render.endGL('morning', { x: cx, y: 0, zoom: s, toScreen: (x, y) => [(x - cx) * s, y * s] }, { groundY: street, hillBase: street + 40, hillCamX: cx * .6, skyCamX: cx, t: G.t });
+  }
+  /* O: the painted look on/off (remembered); the grown-ups' settings drawer has the same switch */
+  function toggleLook() {
+    if (typeof GFX === 'undefined' || !GFX.available()) { UI.hint('The painted look needs WebGL2 (not on this device)', 3); return; }
+    const on = GFX.toggle(); UI.hint(on ? 'Painted look on' : 'Classic look on', 2); syncLook();
+  }
+  function syncLook() { const b = $('tgGfx'); if (!b) return; const ok = typeof GFX !== 'undefined' && GFX.available(); b.disabled = !ok; b.classList.toggle('on', ok && GFX.active()); }
+  on('tgGfx', toggleLook);
+  setInterval(syncLook, 2000);   /* the slow-device fallback can switch it off by itself */
 
   /* ---------- go ---------- */
   Render.init(canvas); resize();
@@ -151,7 +172,7 @@
   if (params.has('unlock')) { for (const l of LEVELS) SaveGame.data.stars[l.id] = 3; SaveGame.data.stars.cottage = 3; }
   if (params.has('diff') && DIFF[params.get('diff')]) G.settings.diff = params.get('diff');
   if (params.has('pad')) G.settings.touch = 'on';
-  Voice.init(); applySettings(); wardrobeToG();
+  Voice.init(); applySettings(); wardrobeToG(); syncLook();
   $('titleCanvas').hidden = true;
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
   const want = params.get('level') || params.get('coop');

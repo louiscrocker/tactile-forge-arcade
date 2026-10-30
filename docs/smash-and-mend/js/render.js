@@ -6,8 +6,30 @@
 
 const Render = {
   W: 1, H: 1, DPR: 1, ctx: null, flash: 0, fps: 60, _fa: 0, _fn: 0,
-  init(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); },
-  resize(W, H, DPR) { this.W = W; this.H = H; this.DPR = DPR; if (this.canvas) { this.canvas.width = Math.round(W * DPR); this.canvas.height = Math.round(H * DPR); } },
+  /* the painted look: lights gathered while drawing (world units), lamp strength, dusk windows */
+  lights: null, lampK: 0, dusk: false,
+  init(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); if (typeof GFX !== 'undefined') GFX.init(canvas); },
+  resize(W, H, DPR) { this.W = W; this.H = H; this.DPR = DPR; if (this.canvas) { this.canvas.width = Math.round(W * DPR); this.canvas.height = Math.round(H * DPR); if (typeof GFX !== 'undefined') GFX.resize(W, H, DPR, this.canvas.width, this.canvas.height); } },
+  gl() { return typeof GFX !== 'undefined' && GFX.active(); },
+  glow(x, y, r, col, i) { if (this.lights && i > 0) this.lights.push({ x, y, r, col, i }); },
+  /* start a painted frame: clear the overlay canvas, hand back the GPU's world layer */
+  beginGL(tod) {
+    const main = this.ctx; main.setTransform(1, 0, 0, 1, 0, 0); main.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    const ctx = GFX.worldCtx(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.setTransform(this.DPR, 0, 0, this.DPR, 0, 0); ctx.imageSmoothingEnabled = true;
+    const sky = SKIES[tod] || SKIES.noon;
+    this.lights = []; this.lampK = sky.night ? 1 : tod === 'sunset' ? .6 : 0; this.dusk = tod === 'sunset';
+    return ctx;
+  },
+  /* light it on the GPU; cam = { x, y, zoom, toScreen }; the sun sits where the classic sky puts it */
+  endGL(tod, cam, o) {
+    const W = this.W, H = this.H, sky = SKIES[tod] || SKIES.noon;
+    const lights = this.lights.map(l => { const [x, y] = cam.toScreen(l.x, l.y); return { x, y, r: l.r * cam.zoom, col: l.col, i: l.i }; });
+    this.lights = null; this.lampK = 0; this.dusk = false;
+    GFX.render({ tod: SKIES[tod] ? tod : 'noon', sky, sun: { x: W * .78 - o.skyCamX * .02, y: H * (sky.night ? .16 : tod === 'sunset' ? .42 : .18) },
+      groundY: o.groundY, hillBase: o.hillBase, hillCamX: o.hillCamX, skyCamX: o.skyCamX, camX: cam.x, camY: cam.y, zoom: cam.zoom,
+      time: o.t, rain: o.rain || 0, wind: o.wind || 0, flash: o.flash || 0, lights });
+  },
 
   /* the camera for a level: follow one player, or keep both in view */
   frameCamera(cam, L, insets, snap) {
@@ -30,12 +52,12 @@ const Render = {
   },
 
   frame(G, dt) {
-    const ctx = this.ctx, L = G.level, W = this.W, H = this.H, cam = G.cam, t = G.t;
+    const gx = this.gl(), main = this.ctx, L = G.level, W = this.W, H = this.H, cam = G.cam, t = G.t;
+    const ctx = gx ? this.beginGL(L.def.tod) : main;
     ctx.setTransform(this.DPR, 0, 0, this.DPR, 0, 0);
     this.flash = Math.max(0, this.flash - dt * 3);
     const sky = SKIES[L.def.tod] || SKIES.noon, night = !!sky.night;
-    Scene.sky(ctx, W, H, L.def.tod, cam.x, t, this.flash);
-    Scene.hills(ctx, W, H, L.def.tod, cam);
+    if (!gx) { Scene.sky(ctx, W, H, L.def.tod, cam.x, t, this.flash); Scene.hills(ctx, W, H, L.def.tod, cam); }
     ctx.save(); cam.apply(ctx);
     const view = cam.viewRect(80);
     this.backdrop(ctx, L, t, night, view);
@@ -56,9 +78,22 @@ const Render = {
     L.players.forEach((a, n) => {
       const o = { hat: G.hats[a.type], bucket: G.bucketColor, happy: L.done };
       if (a.type === 'mungo') Chars.mungo(ctx, a, o); else Chars.pip(ctx, a, o);
-      if (L.players.length > 1) { ctx.fillStyle = n ? '#3aa86a' : '#ef7a2a'; ctx.font = `900 13px ${UI_FONT}`; ctx.textAlign = 'center'; ctx.fillText(n ? 'P2' : 'P1', a.x, a.y - a.h - (a.type === 'mungo' ? 46 : 28)); }
+      if (L.players.length > 1 && !gx) { ctx.fillStyle = n ? '#3aa86a' : '#ef7a2a'; ctx.font = `900 13px ${UI_FONT}`; ctx.textAlign = 'center'; ctx.fillText(n ? 'P2' : 'P1', a.x, a.y - a.h - (a.type === 'mungo' ? 46 : 28)); }
     });
     G.particles.draw(ctx, 'front');
+    if (gx) {
+      /* sparks glow; the words and P1/P2 tags go on the overlay, crisp and unlit */
+      let n = 0; for (const p of G.particles.list) if (p.kind === 'spark' && n++ < 10) this.glow(p.x, p.y, 34, hexToRgb(p.col.length === 7 ? p.col : '#fff3a0').map(v => v / 255), 1.4 * (1 - p.t / p.life));
+      ctx.restore();
+      const ground = cam.toScreen(0, GROUND_Y)[1], storm = L.def.boss === 'storm';
+      this.endGL(L.def.tod, cam, { groundY: ground, hillBase: ground, hillCamX: cam.x, skyCamX: cam.x, t, flash: this.flash, rain: storm ? 1 : 0, wind: L.gust ? L.gust.dir * 2.5 : storm ? .6 : 0 });
+      main.setTransform(this.DPR, 0, 0, this.DPR, 0, 0); main.save(); cam.apply(main);
+      if (L.players.length > 1) L.players.forEach((a, n) => { main.fillStyle = n ? '#3aa86a' : '#ef7a2a'; main.font = `900 13px ${UI_FONT}`; main.textAlign = 'center'; main.fillText(n ? 'P2' : 'P1', a.x, a.y - a.h - (a.type === 'mungo' ? 46 : 28)); });
+      G.particles.drawWords(main); main.restore();
+      Cinematic.draw(main, W, H);
+      this._fa += dt; this._fn++; if (this._fa > .5) { this.fps = this._fn / this._fa; this._fa = 0; this._fn = 0; }
+      return;
+    }
     G.particles.drawWords(ctx);
     ctx.restore();
     if (night) { const g = ctx.createRadialGradient(W / 2, H / 2, H * .3, W / 2, H / 2, H * .9); g.addColorStop(0, 'rgba(10,14,40,0)'); g.addColorStop(1, 'rgba(10,14,40,.45)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
@@ -82,6 +117,7 @@ const Render = {
   lot(ctx, L, night) {
     const x0 = L.lot[0] * CELL, x1 = L.lot[1] * CELL;
     ctx.fillStyle = night ? '#5a4a3a' : '#a88a64'; ctx.fillRect(x0, GROUND_Y - 4, x1 - x0, 10);
+    if (painted()) Painted.lot(ctx, x0, x1);
     for (const x of [x0, x1]) { ctx.fillStyle = '#f0a020'; ctx.fillRect(x - 3, GROUND_Y - 50, 6, 50); ctx.fillStyle = '#ffffff'; ctx.fillRect(x - 3, GROUND_Y - 38, 6, 8); ctx.fillRect(x - 3, GROUND_Y - 18, 6, 8); }
     ctx.strokeStyle = '#f0a020'; ctx.lineWidth = 3; ctx.setLineDash([12, 8]);
     ctx.beginPath(); ctx.moveTo(x0, GROUND_Y - 44); ctx.lineTo(x0 - 60, GROUND_Y - 44); ctx.moveTo(x1, GROUND_Y - 44); ctx.lineTo(x1 + 60, GROUND_Y - 44); ctx.stroke(); ctx.setLineDash([]);
@@ -103,7 +139,7 @@ const Render = {
   },
   block(ctx, L, c, r, code, hp, x, y) {
     const v = ((c * 7 + r * 3) % 4);
-    ctx.drawImage(Sprites.block(code, v), x, y, CELL, CELL);
+    ctx.drawImage(painted() ? Painted.block(code, v) : Sprites.block(code, v), x, y, CELL, CELL);
     const max = matOf(code).hp[L.diff.i];
     if (hp < max) Sprites.cracks(ctx, x, y, hp / max, c * 31 + r);
     if (!L.code(c, r - 1)) { ctx.fillStyle = 'rgba(255,240,200,.18)'; ctx.fillRect(x, y, CELL, 3); }

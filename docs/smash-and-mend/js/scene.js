@@ -51,10 +51,12 @@ const Scene = {
     ctx.fillStyle = night ? '#8a8a90' : '#e8e2d4'; ctx.fillRect(x0, GROUND_Y + 30, x1 - x0, 6);
     ctx.fillStyle = night ? '#2a2c34' : '#5a5c64'; ctx.fillRect(x0, GROUND_Y + 36, x1 - x0, 400);
     ctx.fillStyle = night ? '#8a8a6a' : '#f0e8c0'; for (let x = Math.floor(x0 / 160) * 160; x < x1; x += 160) ctx.fillRect(x, GROUND_Y + 80, 70, 6);
+    if (painted()) Painted.street(ctx, x0, x1, night);
   },
   lamp(ctx, x, night) {
     ctx.fillStyle = '#3a4a4a'; ctx.fillRect(x - 3, GROUND_Y - 150, 6, 152); ctx.beginPath(); ctx.arc(x + 12, GROUND_Y - 150, 12, Math.PI, TAU); ctx.fillRect(x, GROUND_Y - 154, 14, 5); ctx.fill();
     ctx.fillStyle = night ? '#fff0a0' : '#f6efd0'; ctx.beginPath(); ctx.arc(x + 12, GROUND_Y - 146, 6, 0, TAU); ctx.fill();
+    Render.glow(x + 12, GROUND_Y - 146, 190, [1, .8, .48], Render.lampK);
     if (night) { const g = ctx.createRadialGradient(x + 12, GROUND_Y - 140, 4, x + 12, GROUND_Y - 120, 110); g.addColorStop(0, 'rgba(255,230,140,.35)'); g.addColorStop(1, 'rgba(255,230,140,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x + 12, GROUND_Y - 120, 110, 0, TAU); ctx.fill(); }
   },
   tree(ctx, x, s, t, night) {
@@ -71,12 +73,17 @@ const Scene = {
     const cols = ['#f2d7a6', '#a8cfe8', '#f6c8c8', '#c8e8c0', '#e8d0f0', '#f0e0a0'], col = cols[seed % cols.length], h = storeys * 3 * CELL - 20;
     const y0 = GROUND_Y - h;
     ctx.fillStyle = shade(col, night ? .55 : 1); ctx.fillRect(x, y0, w, h);
+    if (painted()) Painted.wall(ctx, x, y0, w, h);
     ctx.fillStyle = shade(col, night ? .45 : .85); ctx.fillRect(x, y0, w, 6);
     ctx.fillStyle = night ? '#3a2a3a' : ['#a8553a', '#4a5a7a', '#7a3a3a'][seed % 3];
     ctx.beginPath(); ctx.moveTo(x - 12, y0 + 2); ctx.lineTo(x + w / 2, y0 - 70); ctx.lineTo(x + w + 12, y0 + 2); ctx.closePath(); ctx.fill();
+    if (painted()) Painted.roof(ctx, (c) => { c.moveTo(x - 12, y0 + 2); c.lineTo(x + w / 2, y0 - 70); c.lineTo(x + w + 12, y0 + 2); c.closePath(); });
+    const litWin = night || Render.dusk;
     for (let s = 0; s < storeys; s++) for (let k = 0; k < Math.floor(w / 70); k++) {
       const wx = x + 22 + k * 70, wy = GROUND_Y - (s * 3 + 2.2) * CELL;
-      ctx.fillStyle = night ? (Sprites.hash(seed + k, s) > .4 ? '#ffd880' : '#2a3040') : '#bfe0f4'; ctx.fillRect(wx, wy, 30, 36);
+      const on = litWin && Sprites.hash(seed + k, s) > (night ? .4 : .6);
+      ctx.fillStyle = litWin ? (on ? '#ffd880' : night ? '#2a3040' : '#8aa8c8') : '#bfe0f4'; ctx.fillRect(wx, wy, 30, 36);
+      if (on) Render.glow(wx + 15, wy + 18, 60, [1, .78, .42], night ? .55 : .4);
       ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.strokeRect(wx, wy, 30, 36); ctx.beginPath(); ctx.moveTo(wx + 15, wy); ctx.lineTo(wx + 15, wy + 36); ctx.stroke();
     }
     ctx.fillStyle = '#7a4a2a'; rr(ctx, x + w / 2 - 14, GROUND_Y - 64, 28, 64, 4); ctx.fill();
@@ -91,10 +98,12 @@ const Scene = {
     const H = L.house, d = L.def, x0 = H.x0 * CELL, w = H.w * CELL, top = H.topY, night = (SKIES[d.tod] || {}).night;
     const wall = shade(d.color, night ? .62 : 1), trim = d.trim;
     ctx.fillStyle = wall; ctx.fillRect(x0, top, w, GROUND_Y - top);
+    if (painted()) Painted.wall(ctx, x0, top, w, GROUND_Y - top);
     for (let s = 1; s < H.storeys; s++) { ctx.fillStyle = shade(d.color, night ? .5 : .86); ctx.fillRect(x0, L.floorY(s) - 4, w, 8); }
     /* the roof */
     const rh = 3 * CELL;
     ctx.fillStyle = shade(d.roofColor, night ? .7 : 1); ctx.beginPath(); ctx.moveTo(x0 - 16, top); ctx.lineTo(x0 + 34, top - rh); ctx.lineTo(x0 + w - 34, top - rh); ctx.lineTo(x0 + w + 16, top); ctx.closePath(); ctx.fill();
+    if (painted()) Painted.roof(ctx, (c) => { c.moveTo(x0 - 16, top); c.lineTo(x0 + 34, top - rh); c.lineTo(x0 + w - 34, top - rh); c.lineTo(x0 + w + 16, top); c.closePath(); });
     ctx.strokeStyle = shade(d.roofColor, .7); ctx.lineWidth = 2;
     for (let k = 1; k < 6; k++) { const yy = top - k * rh / 6; ctx.beginPath(); ctx.moveTo(x0 - 16 + k * 50 / 6, yy); ctx.lineTo(x0 + w + 16 - k * 50 / 6, yy); ctx.stroke(); }
     ctx.fillStyle = shade(d.roofColor, .8); ctx.fillRect(x0 + w - 90, top - rh - 30, 34, 40);
@@ -110,10 +119,12 @@ const Scene = {
     const dx = x0 + Math.floor(H.w / 2) * CELL - (d.ladders.includes(Math.floor(H.w / 2)) ? CELL : 0);
     ctx.fillStyle = shade(trim, .9); rr(ctx, dx + 6, GROUND_Y - 72, 28, 72, 6); ctx.fill(); ctx.fillStyle = '#ffd24a'; ctx.beginPath(); ctx.arc(dx + 28, GROUND_Y - 36, 2.5, 0, TAU); ctx.fill();
     ctx.fillStyle = night ? 'rgba(255,220,120,.9)' : '#f6e8a0'; ctx.beginPath(); ctx.arc(dx + 20, GROUND_Y - 82, 6, 0, TAU); ctx.fill();
+    Render.glow(dx + 20, GROUND_Y - 82, 90, [1, .8, .5], Render.lampK * .8);
   },
   window(ctx, cx, cy, trim, night, folk, t) {
     const w = 30, h = 38, x = cx - w / 2, y = cy - h / 2;
     ctx.fillStyle = night ? '#ffd27a' : '#cfe8f8'; ctx.fillRect(x, y, w, h);
+    if (night) Render.glow(cx, cy, 62, [1, .78, .42], .5);
     if (folk) this.folk(ctx, cx, y + h, folk.who, t);
     ctx.fillStyle = night ? 'rgba(255,200,120,.25)' : 'rgba(255,255,255,.35)'; ctx.fillRect(x, y, w, h / 2);
     ctx.fillStyle = '#e86a6a'; ctx.fillRect(x, y, 6, h); ctx.fillRect(x + w - 6, y, 6, h);

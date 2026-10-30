@@ -11,6 +11,7 @@ Object.assign(Scene, {
       const y = L.floorY(s), x0 = (H.x0 - 1) * CELL, x1 = (H.x0 + H.w + 1) * CELL;
       ctx.fillStyle = '#8a9aa8'; for (let x = x0 + 4; x <= x1 - 4; x += CELL * 3) ctx.fillRect(x - 2, y, 4, L.floorY(s - 1) - y);
       ctx.fillStyle = '#c89a5a'; ctx.fillRect(x0, y, x1 - x0, 9);
+      if (painted()) Painted.wood(ctx, x0, y, x1 - x0, 9);
       ctx.fillStyle = '#e8bf7a'; ctx.fillRect(x0, y, x1 - x0, 2.5);
       ctx.fillStyle = '#9a6a3a'; for (let x = x0; x < x1; x += 46) ctx.fillRect(x, y + 2, 1.5, 7);
       ctx.strokeStyle = '#8a9aa8'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x0, y - 26); ctx.lineTo(x1, y - 26); ctx.stroke();
@@ -53,6 +54,7 @@ Object.assign(Scene, {
     }
     ctx.restore();
     /* a soft pulse ring says "fix me!"; a glint says "mended!" */
+    if (broken) Render.glow(x, y, 50, [1, .85, .35], (SKIES[L.def.tod] || {}).night ? .9 : .3);
     if (broken) { const p = (t * 1.2 + x * .01) % 1; ctx.strokeStyle = `rgba(255,220,80,${.9 - p * .9})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 18 + p * 16, 0, TAU); ctx.stroke(); }
     if (f.glint > 0) { const a = Math.min(1, f.glint); ctx.fillStyle = `rgba(255,255,220,${a})`; for (let k = 0; k < 4; k++) { const an = k * Math.PI / 2 + t * 3; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.cos(an) * 26 * a, y + Math.sin(an) * 26 * a); ctx.lineTo(x + Math.cos(an + .3) * 8, y + Math.sin(an + .3) * 8); ctx.fill(); } }
     if (broken && f.taps > 0) { ctx.fillStyle = '#ffffff'; for (let k = 0; k < f.need; k++) { ctx.beginPath(); ctx.arc(x - (f.need - 1) * 6 + k * 12, y - 28, 4, 0, TAU); ctx.fillStyle = k < f.taps ? '#5ad06a' : 'rgba(255,255,255,.7)'; ctx.fill(); } }

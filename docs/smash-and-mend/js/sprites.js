@@ -8,6 +8,8 @@
 'use strict';
 
 const INK = '#3a2418';
+/* is the painted look on? (paint.js + gfx.js; false in smoke and the classic look) */
+const painted = () => typeof Painted !== 'undefined' && Painted.on();
 const Sprites = {
   cache: new Map(),
   hash(a, b) { let h = (a * 374761393 + b * 668265263) | 0; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; },

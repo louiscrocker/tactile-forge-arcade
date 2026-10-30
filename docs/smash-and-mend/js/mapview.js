@@ -13,14 +13,17 @@ const MapView = {
     return { s, street };
   },
   stopX(i) { return 160 + i * this.GAP; },
-  draw(ctx, W, H, t, sel) {
+  /* over: the painted look's overlay canvas (the stop numbers, stars and tags stay crisp
+     there); without it everything goes on ctx, sky and hills too (the classic look) */
+  draw(ctx, W, H, t, sel, over) {
     const { s, street } = this.layout(W, H), D = SaveGame.data;
     const target = this.stopX(sel) - W / 2 / s;
     this.camX += (target - this.camX) * .12;
     const fakeCam = { x: this.camX * .6, toScreen: () => [0, street + 40] };
-    Scene.sky(ctx, W, H, 'morning', this.camX, t, 0);
-    Scene.hills(ctx, W, H, 'morning', fakeCam);
+    if (!over) { Scene.sky(ctx, W, H, 'morning', this.camX, t, 0); Scene.hills(ctx, W, H, 'morning', fakeCam); }
+    const lc = over || ctx;
     ctx.save(); ctx.scale(s, s); ctx.translate(-this.camX, 0);
+    if (over) { over.save(); over.scale(s, s); over.translate(-this.camX, 0); }
     const gy = street / s, view = { l: this.camX - 100, r: this.camX + W / s + 100 };
     ctx.save(); ctx.translate(0, gy - GROUND_Y);
     Scene.street(ctx, { def: { tod: 'morning' } }, view);
@@ -30,19 +33,21 @@ const MapView = {
     LEVELS.forEach((L, i) => {
       const x = this.stopX(i), open = SaveGame.unlocked(L.id), stars = D.stars[L.id] || 0;
       ctx.save(); ctx.translate(x, gy);
+      if (over) { over.save(); over.translate(x, gy); }
       if (L.kind === 'smash') {
         if (stars > 0) { ctx.save(); ctx.scale(.5, .5); ctx.translate(0, -GROUND_Y); Scene.newBuilding(ctx, D.styles[L.id] || 'garden', -190, 190, 1, false); ctx.restore(); }
         else this.miniOld(ctx, L);
       } else this.miniHouse(ctx, L, stars > 0, t);
-      if (!open) { ctx.fillStyle = 'rgba(230,236,244,.72)'; ctx.fillRect(-110, -260, 220, 262); this.padlock(ctx, 0, -110); }
+      if (!open) { ctx.fillStyle = 'rgba(230,236,244,.72)'; ctx.fillRect(-110, -260, 220, 262); this.padlock(lc, 0, -110); }
       /* the stop's number and its stars */
       const sy = -268, on = i === sel;
-      ctx.fillStyle = on ? '#ffe24a' : '#ffffff'; ctx.strokeStyle = INK; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, sy, 22, 0, TAU); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = INK; ctx.font = `900 22px ${UI_FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(i + 1), 0, sy + 1);
-      for (let k = 0; k < 3; k++) this.star(ctx, -30 + k * 30, sy - 38, 11, k < stars);
-      ctx.fillStyle = L.kind === 'smash' ? '#ef7a2a' : '#3aa86a'; rr(ctx, -46, 14, 92, 24, 12); ctx.fill();
-      ctx.fillStyle = '#fff'; ctx.font = `900 13px ${UI_FONT}`; ctx.fillText(L.kind === 'smash' ? 'SMASH' : 'MEND', 0, 27);
-      if (L.boss) { ctx.fillStyle = '#d83a6a'; rr(ctx, 30, sy - 12, 52, 22, 11); ctx.fill(); ctx.fillStyle = '#fff'; ctx.font = `900 11px ${UI_FONT}`; ctx.fillText('BIG ONE', 56, sy - 1); }
+      lc.fillStyle = on ? '#ffe24a' : '#ffffff'; lc.strokeStyle = INK; lc.lineWidth = 3; lc.beginPath(); lc.arc(0, sy, 22, 0, TAU); lc.fill(); lc.stroke();
+      lc.fillStyle = INK; lc.font = `900 22px ${UI_FONT}`; lc.textAlign = 'center'; lc.textBaseline = 'middle'; lc.fillText(String(i + 1), 0, sy + 1);
+      for (let k = 0; k < 3; k++) this.star(lc, -30 + k * 30, sy - 38, 11, k < stars);
+      lc.fillStyle = L.kind === 'smash' ? '#ef7a2a' : '#3aa86a'; rr(lc, -46, 14, 92, 24, 12); lc.fill();
+      lc.fillStyle = '#fff'; lc.font = `900 13px ${UI_FONT}`; lc.fillText(L.kind === 'smash' ? 'SMASH' : 'MEND', 0, 27);
+      if (L.boss) { lc.fillStyle = '#d83a6a'; rr(lc, 30, sy - 12, 52, 22, 11); lc.fill(); lc.fillStyle = '#fff'; lc.font = `900 11px ${UI_FONT}`; lc.fillText('BIG ONE', 56, sy - 1); }
+      if (over) over.restore();
       ctx.restore();
       this.stops.push({ i, x, sx: (x - this.camX) * s, sy: street });
     });
@@ -51,7 +56,7 @@ const MapView = {
     const mk = (type, x, face) => { const a = new Actor(type, x, gy); a.face = face; a.anim = t; a.onGround = true; return a; };
     Chars.mungo(ctx, mk('mungo', cx - 140, 1), { hat: D.hats.mungo, happy: true });
     Chars.pip(ctx, mk('pip', cx + 128, -1), { hat: D.hats.pip, bucket: (BUCKETS.find(b => b.key === D.bucket) || BUCKETS[0]).color });
-    ctx.restore();
+    ctx.restore(); if (over) over.restore();
   },
   /* which stop is under a screen point? */
   hit(px, py, W, H) {
@@ -64,7 +69,7 @@ const MapView = {
     for (let i = 0; i < h; i++) for (let j = 0; j < w; j++) {
       const ch = L.plan[i][j]; if (!MAT[ch]) continue;
       const x = (j - w / 2) * cs, y = -(h - i) * cs;
-      ctx.drawImage(Sprites.block(matCode(ch), (i + j) % 4), x, y, cs, cs);
+      ctx.drawImage(painted() ? Painted.block(matCode(ch), (i + j) % 4) : Sprites.block(matCode(ch), (i + j) % 4), x, y, cs, cs);
     }
   },
   miniHouse(ctx, L, done, t) {
