@@ -1,7 +1,7 @@
 {
   "slug": "sunfish",
-  "commit": "6455b95",
-  "builtAt": "2026-10-30T19:19:11.922Z",
+  "commit": "5072416",
+  "builtAt": "2026-10-30T19:21:08.792Z",
   "files": {
     "css/style.css": "c08248b5ee64287d2a6d3fd9ecf99ed217a85b1d367fbca1491f47de3c429ffb",
     "fonts/LICENSE-nunito.txt": "580df76c95a1ec5ab878ceb25bb3d85c6a076804e9c970c8c6972aea775fdf65",
@@ -39,6 +39,6 @@
     "js/voice.js": "5d02130701f0b95d54c81a7c3e6ef6dbf1dfab1e556aaf29df92ae9b7bff2a84",
     "js/world.js": "c593b62c57140a81253b1009fa70830716dfe68181b20ba2ae3698553b0bc081",
     "manifest.webmanifest": "037c0748f710b7555236720dbe15e844d33317762c688b4c5220125a39f75653",
-    "sw.js": "2ea0050e45883b43539183b158bef93773d0e65ebb27f46ae7aa73b609354bf2"
+    "sw.js": "3081c32f99780b884592109a5f677f9f927b9654cdfba110f08c9a68da93ba3f"
   }
 }
