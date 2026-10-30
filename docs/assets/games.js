@@ -182,6 +182,14 @@ export const GAMES = [
     meta: 'Mouse or touch',
   },
   {
+    slug: 'smash-and-mend', shelf: 'nature', name: 'Mungo & Pip: Smash and Mend', badge: 'AGES 5–10',
+    accent: '#e8702a', glow: 'rgba(232,112,42,0.5)',
+    tagline: 'Knock the old buildings down as a gentle giant, then fix the homes up as a tiny handy kid.',
+    description: "Mungo is a big, gentle giant with boulder mitts, hired to knock down old, empty buildings so new ones can go up. Pip is small and quick, with a spanner, a glue-pot and a bucket, and fixes the homes people live in. Work your way down a town street: punch, stomp and topple crumbly blocks into satisfying chunks, then climb drainpipes and scaffold to mend windows, shingles and gutters while storms, a cheeky crane and pigeons drop things to catch. Punch a runaway wrecking ball back where it belongs, ride out Storm Night, unlock hats and new buildings, and team up on the same screen with two players. Nobody ever gets hurt: a bump is just dizzy stars.",
+    features: ['Smash and mend levels', 'Two-player team jobs', 'Plays offline'],
+    meta: 'Keyboard, touch or gamepad',
+  },
+  {
     slug: 'storm-lab', shelf: 'nature', name: 'Storm Lab', badge: 'AGES 8–13',
     accent: '#8fb8ff', glow: 'rgba(143,184,255,0.5)',
     tagline: 'Build a tornado, watch it work, and read the damage like a scientist.',

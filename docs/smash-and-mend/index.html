@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#ef7a2a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Mungo the gentle demolition giant smashes the town's old, empty buildings; tiny Pip climbs the drainpipes and mends the homes people live in. Two kinds of level along one street, a wrecking ball, a storm night, hats to win, and a two-player team mode.">
+<title>Mungo &amp; Pip: Smash and Mend</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<canvas id="scene"></canvas>
+
+<!-- ============================ IN-LEVEL HUD ============================ -->
+<header class="hud" id="hud" hidden>
+  <div class="stage-card">
+    <div class="stage-txt">
+      <span class="stage-k" id="hudStreet">Bramble Lane</span>
+      <b class="stage-v" id="hudName">The Wobbly Shed</b>
+      <div class="prog"><i id="progBar"></i><span id="progText">0%</span></div>
+    </div>
+  </div>
+  <div class="readouts">
+    <div class="ro"><span class="ro-k">⏱ Time</span><b id="roTime">0:00</b></div>
+    <div class="ro"><span class="ro-k">★ Score</span><b id="roScore">0</b></div>
+    <div class="ro" id="roTidyBox"><span class="ro-k" id="roTidyK">🧹 Dust</span><b id="roTidy">0</b></div>
+  </div>
+  <div class="top-actions">
+    <button class="icon-btn" id="btnSay" title="Say it again (V)">🔊</button>
+    <button class="icon-btn" id="btnPause" title="Pause (P)">⏸</button>
+  </div>
+</header>
+
+<div class="hint" id="hint" hidden><span id="hintText"></span></div>
+<div class="combo" id="combo" hidden><b id="comboN">x2</b><span>COMBO</span></div>
+
+<!-- ============================ TOUCH CONTROLS ============================ -->
+<div class="pad" id="pad" hidden>
+  <div class="cluster" id="pad0" data-p="0">
+    <div class="dpad"><button data-k="left">◀</button><button data-k="up">▲</button><button data-k="right">▶</button><button data-k="down">▼</button></div>
+    <div class="pad-actions"><button class="big alt" data-k="jump">JUMP</button><button class="big" data-k="action" id="act0">PUNCH</button></div>
+  </div>
+  <div class="cluster" id="pad1" data-p="1" hidden>
+    <div class="dpad"><button data-k="left">◀</button><button data-k="up">▲</button><button data-k="right">▶</button><button data-k="down">▼</button></div>
+    <div class="pad-actions"><button class="big alt" data-k="jump">JUMP</button><button class="big" data-k="action">FIX</button></div>
+  </div>
+</div>
+
+<!-- ============================ TITLE ============================ -->
+<div class="title" id="title">
+  <canvas id="titleCanvas"></canvas>
+  <div class="title-card">
+    <div class="title-logo"><span class="t1">MUNGO <i>&amp;</i> PIP</span><span class="t2">SMASH AND MEND</span><em>Knock the old down · fix the homes up</em></div>
+    <p class="lede">Mungo is a big, gentle giant with boulder mitts. The town hires him to knock down old, empty buildings so new ones can go up. Pip is small and quick, with a tool belt and a bucket, and fixes the homes people live in. Help them both, all the way down the street!</p>
+    <button class="start continue" id="btnContinue" hidden>Carry on down the street ➜</button>
+    <button class="start" id="btnStart">Play! 🔨</button>
+    <div class="chips center" style="margin-top:12px">
+      <button class="chip" id="btnTwo">👫 Two players</button>
+      <button class="chip" id="btnHelpT">❓ How to play</button>
+      <button class="chip" id="btnGrownT">👪 Grown-ups</button>
+    </div>
+    <h4>Who is playing?</h4>
+    <div class="seg" id="diffTitle"><button data-diff="easy">🐣 Little helper</button><button data-diff="normal">🙂 Big helper</button><button data-diff="hard">🔥 Super crew</button></div>
+    <div class="chips center" style="margin-top:10px"><button class="chip on" id="tgVoiceT">🔊 Read the words to me</button><button class="chip on" id="tgSoundT">🎵 Sound</button></div>
+    <p class="keys-line"><kbd>← →</kbd> move · <kbd>↑</kbd> jump / climb · <kbd>X</kbd> punch or fix · <kbd>↓</kbd> stomp or bucket · <kbd>P</kbd> pause</p>
+  </div>
+</div>
+
+<!-- ============================ TOWN MAP ============================ -->
+<div class="mapui" id="mapui" hidden>
+  <div class="map-top">
+    <button class="icon-btn wide-ico" id="mapBack" title="Back to the start">🏠</button>
+    <div class="map-stars" title="All your stars">★ <b id="mapStars">0</b> / 30</div>
+    <div class="map-actions">
+      <button class="chip" id="btnWardrobe">🎩 Hats &amp; buckets</button>
+      <button class="chip" id="btnTwoMap">👫 Two players</button>
+      <button class="icon-btn" id="btnSettings" title="Settings">⚙</button>
+    </div>
+  </div>
+  <div class="map-card" id="mapCard">
+    <button class="arrow" id="mapPrev" title="Previous (←)">◀</button>
+    <div class="mc-mid">
+      <span class="stage-k" id="mcStreet">Bramble Lane · stop 1</span>
+      <b class="mc-name" id="mcName">The Wobbly Shed</b>
+      <span class="mc-kind" id="mcKind">SMASH with Mungo</span>
+      <span class="tiny" id="mcBest"></span>
+    </div>
+    <button class="start mc-go" id="mcPlay">Go! ➜</button>
+    <button class="arrow" id="mapNext" title="Next (→)">▶</button>
+  </div>
+</div>
+
+<!-- ============================ MODALS ============================ -->
+<div class="modal" id="intro" hidden>
+  <div class="sheet intro-sheet">
+    <canvas id="introPic" width="240" height="160"></canvas>
+    <span class="stage-k" id="introKind">SMASH</span>
+    <h2 id="introTitle">The Wobbly Shed</h2>
+    <p class="intro-say" id="introText"></p>
+    <ul class="intro-keys" id="introKeys"></ul>
+    <div class="row inline center"><button class="chip" id="introSay">🔊 Say it again</button><button class="start" id="introGo">Let's go! ➜</button></div>
+  </div>
+</div>
+
+<div class="modal" id="pause" hidden>
+  <div class="sheet small-sheet">
+    <h2>⏸ Paused</h2>
+    <button class="start" id="pResume">Keep going ➜</button>
+    <div class="chips center" style="margin:14px 0"><button class="chip on" id="tgSound">🔊 Sound</button><button class="chip on" id="tgMusic">🎵 Music</button><button class="chip on" id="tgVoice">🗣 Read aloud</button></div>
+    <div class="row inline center"><button class="wide ghost small" id="pRestart">↻ Start this one again</button><button class="wide ghost small" id="pMap">🗺 Town map</button></div>
+  </div>
+</div>
+
+<div class="modal" id="results" hidden>
+  <div class="sheet result-sheet">
+    <h2 id="resTitle">Smashed it!</h2>
+    <div class="res-stars" id="resStars"></div>
+    <div class="res-stats" id="resStats"></div>
+    <div class="res-new" id="resNew"></div>
+    <div class="res-style" id="resStyleBox" hidden>
+      <h4>What should go up here?</h4>
+      <div class="style-grid" id="resStyles"></div>
+    </div>
+    <div class="row inline center"><button class="wide ghost small" id="resAgain">↻ Again</button><button class="wide ghost small" id="resMap">🗺 Map</button><button class="start" id="resNext">Next stop ➜</button></div>
+  </div>
+</div>
+
+<div class="modal" id="wardrobe" hidden>
+  <div class="sheet">
+    <button class="close" id="wardClose">&times;</button>
+    <h2>🎩 Hats &amp; buckets</h2>
+    <p class="tiny">Win stars along the street to unlock more. Tap one to wear it.</p>
+    <h4>Mungo's hats</h4><div class="ward-grid" id="wardMungo"></div>
+    <h4>Pip's hats</h4><div class="ward-grid" id="wardPip"></div>
+    <h4>Pip's bucket</h4><div class="ward-grid" id="wardBucket"></div>
+  </div>
+</div>
+
+<div class="modal" id="coop" hidden>
+  <div class="sheet">
+    <button class="close" id="coopClose">&times;</button>
+    <h2>👫 Two players: a team job</h2>
+    <p>Player 1 is <b>Mungo</b> and smashes the old building. Player 2 is <b>Pip</b> and keeps the house next door fixed. Flying rubble can crack a window, so smash carefully!</p>
+    <div class="coop-keys"><div><b>Player 1 · Mungo</b><br><kbd>A</kbd><kbd>D</kbd> move · <kbd>W</kbd> jump / climb · <kbd>S</kbd> stomp · <kbd>F</kbd> punch<br>or the first gamepad, or the left buttons</div><div><b>Player 2 · Pip</b><br><kbd>←</kbd><kbd>→</kbd> move · <kbd>↑</kbd> jump / climb · <kbd>↓</kbd> bucket · <kbd>L</kbd> fix<br>or the second gamepad, or the right buttons</div></div>
+    <div class="coop-grid" id="coopGrid"></div>
+    <p class="tiny" id="coopLocked"></p>
+  </div>
+</div>
+
+<aside class="drawer" id="drawer" hidden>
+  <div class="drawer-head"><h2>Settings</h2><button class="close" id="drawerClose">&times;</button></div>
+  <section><h4>Who is playing?</h4>
+    <div class="seg" id="diffDrawer"><button data-diff="easy">Little helper</button><button data-diff="normal">Big helper</button><button data-diff="hard">Super crew</button></div>
+    <p class="tiny">Little helper: no clock, slow falling things, one tap fixes, a drop shadow shows where things land. Big helper: a clock for the stars. Super crew: tough steel, three taps, the clock runs out.</p></section>
+  <section><h4>Sound &amp; words</h4>
+    <div class="chips"><button class="chip on" id="tgSoundD">🔊 Sound</button><button class="chip on" id="tgMusicD">🎵 Music</button><button class="chip on" id="tgVoiceD">🗣 Read aloud</button></div></section>
+  <section><h4>Screen</h4>
+    <div class="chips"><button class="chip on" id="tgShake">📳 Screen shake</button><button class="chip" id="tgSlow">🐢 Slow &amp; gentle</button></div>
+    <label class="select"><span>Touch buttons</span><select id="selTouch"><option value="auto">Auto</option><option value="on">Always</option><option value="off">Never</option></select></label></section>
+  <section><button class="wide ghost" id="btnHelpD">❓ How to play</button><button class="wide ghost" id="btnGrownD">👪 Grown-ups</button></section>
+</aside>
+
+<div class="modal" id="help" hidden>
+  <div class="sheet">
+    <button class="close" id="helpClose">&times;</button>
+    <h2>How to play</h2>
+    <div class="steps">
+      <div class="step"><b>🔨</b><div><h3>Smash with Mungo</h3><p>Walk with ← →. Punch with <kbd>X</kbd> (or <kbd>J</kbd>, <kbd>F</kbd>). Hold ↑ while punching to punch up, ↓ to punch down. To climb, walk into the side of the building and hold ↑. Jump with <kbd>Space</kbd> or ↑, then press ↓ in the air to STOMP. Bricks with nothing under them fall and crumble. Smash from the top down to keep the dust off the neighbours.</p></div></div>
+      <div class="step"><b>🔧</b><div><h3>Mend with Pip</h3><p>Climb the drainpipes with ↑ ↓ and step off onto the scaffold with ← →. Things that need fixing glow and pulse. Stand next to one and press <kbd>X</kbd> to fix it. Hold ↓ to lift your bucket and catch falling things.</p></div></div>
+      <div class="step"><b>😵</b><div><h3>Bumps</h3><p>Nobody ever gets hurt. A bump makes you dizzy for a moment, then you carry on.</p></div></div>
+      <div class="step"><b>★</b><div><h3>Stars</h3><p>One star for finishing, one for being quick, one for being tidy (Mungo) or steady (Pip). Stars unlock new hats, buckets and new buildings.</p></div></div>
+    </div>
+    <h2>Keys &amp; gamepad</h2>
+    <div class="keys">
+      <span><kbd>←→</kbd>/<kbd>AD</kbd> move · <kbd>↑</kbd>/<kbd>W</kbd> jump or climb · <kbd>Space</kbd> jump · <kbd>↓</kbd>/<kbd>S</kbd> stomp / bucket</span>
+      <span><kbd>X</kbd> <kbd>J</kbd> <kbd>F</kbd> <kbd>Enter</kbd> punch / fix · <kbd>P</kbd> <kbd>Esc</kbd> pause · <kbd>V</kbd> say it again · <kbd>M</kbd> sound</span>
+      <span>🎮 stick move · A jump · B or X punch/fix · stick down stomp/bucket · Start pause</span>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="grownups" hidden>
+  <div class="sheet">
+    <button class="close" id="grownClose">&times;</button>
+    <h2>👪 For grown-ups</h2>
+    <p><b>What it is.</b> A gentle arcade game for about ages 5 to 8: two kinds of level along one town street. In SMASH levels Mungo, a demolition-crew giant, knocks down old buildings that the town has emptied for rebuilding. In MEND levels Pip, a small repair kid, climbs scaffolding and fixes a family's house while catching things that fall. A two-player mode puts both on one screen.</p>
+    <p><b>Kind by design.</b> Nobody is ever hurt. A bump is a cartoon wobble with dizzy stars and play goes straight on. There are no lives and no game over; on Super crew the clock can run out, and you simply try again. Buildings are always empty before they are knocked down (the sign says "ALL OUT!"), and the pigeon and cat napping in two windows hop out safely as soon as Mungo knocks.</p>
+    <p><b>Difficulty.</b> Little helper has no clock, slow falling things, one-tap fixes and shadows showing where things land. Big helper adds a clock that only affects the stars. Super crew has tougher steel, three-tap fixes, no landing shadows and a real time limit.</p>
+    <p><b>Privacy.</b> Nothing leaves this device. Progress is kept in this browser's storage. Read-aloud uses the device's own voices. There are no adverts, accounts, purchases or links out.</p>
+    <p><b>Controls.</b> Keyboard, touch buttons (shown on touch screens) and up to two gamepads.</p>
+    <button class="wide ghost" id="btnReset">🗑 Start the whole street again (asks a grown-up)</button>
+  </div>
+</div>
+
+<script src="js/core.js"></script>
+<script src="js/levels.js"></script>
+<script src="js/game.js"></script>
+<script src="js/smash.js"></script>
+<script src="js/mend.js"></script>
+<script src="js/step.js"></script>
+<script src="js/bot.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/chars.js"></script>
+<script src="js/scene.js"></script>
+<script src="js/scene2.js"></script>
+<script src="js/particles.js"></script>
+<script src="js/cinematic.js"></script>
+<script src="js/render.js"></script>
+<script src="js/mapview.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/grownups.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/gamepad.js"></script>
+<script src="js/save.js"></script>
+<script src="js/input.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/director.js"></script>
+<script src="js/main.js"></script>
+<script src="js/boot.js"></script>
+</body>
+</html>

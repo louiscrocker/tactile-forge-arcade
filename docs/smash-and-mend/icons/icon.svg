@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc4f0"/><stop offset="1" stop-color="#ffe9c4"/></linearGradient>
+    <radialGradient id="rock" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#d8d4cc"/><stop offset=".6" stop-color="#8e8a84"/><stop offset="1" stop-color="#5e5a56"/></radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="110" fill="url(#sky)"/>
+  <g transform="translate(70 120)">
+    <rect x="0" y="0" width="70" height="44" fill="#c4643e" stroke="#7a3a22" stroke-width="5"/>
+    <rect x="76" y="0" width="70" height="44" fill="#b8583a" stroke="#7a3a22" stroke-width="5"/>
+    <rect x="38" y="50" width="70" height="44" fill="#c4643e" stroke="#7a3a22" stroke-width="5"/>
+    <rect x="-20" y="190" width="54" height="40" fill="#c4643e" stroke="#7a3a22" stroke-width="5" transform="rotate(-22 0 210)"/>
+  </g>
+  <path d="M120 430 L220 300" stroke="#ef7a2a" stroke-width="58" stroke-linecap="round"/>
+  <path d="M232 214 l46 -26 l40 30 l-6 52 l-50 26 l-44 -24 z" fill="url(#rock)" stroke="#3a2418" stroke-width="12" stroke-linejoin="round" transform="translate(-20 30) scale(1.25) translate(-40 -40)"/>
+  <g transform="translate(360 300) rotate(35)">
+    <rect x="-16" y="-10" width="32" height="170" rx="12" fill="#3aa86a" stroke="#1a5a3a" stroke-width="10"/>
+    <path d="M-50 -40 a54 54 0 1 1 100 0 l-22 30 l-18 -24 l-20 0 l-18 24 z" fill="#3aa86a" stroke="#1a5a3a" stroke-width="10" stroke-linejoin="round"/>
+  </g>
+  <g fill="#ffd23a" stroke="#b8801a" stroke-width="5">
+    <path d="M400 90 l12 26 l28 3 l-21 19 l6 28 l-25 -14 l-25 14 l6 -28 l-21 -19 l28 -3 z"/>
+  </g>
+</svg>
