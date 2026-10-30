@@ -141,22 +141,22 @@ const GFX = (function () {
       cc = mix(cc, vec3(.05, .06, .1), uNight * .85);
       col = mix(col, cc, dens * .6);
       /* the sea's far edge: a glint line where the water meets the sky */
-      col += vec3(.7, .85, 1.) * exp(-(sy - px.y) / 3.) * .25 * (uDay + .2);
-      src = .45 * uDay * (1. - .6 * uCloud) + .03;
+      col += vec3(.7, .85, 1.) * exp(-(sy - px.y) / 3.) * .12 * (uDay + .2);
+      src = .22 * uDay * (1. - .6 * uCloud) + .03;   /* not .45: the sky's light poured into the top of the sea as a milky band */
     } else {
       /* --- under the water --- */
       float d = max(0., wy - uSeaLevel), u = px.y - sy;
       col = water(d);
       /* light falls off from the surface; a soft glow below where the sun is */
-      col *= 1. + .25 * uDay * exp(-d / 45.);
-      col += uSunCol * toLin(vec3(.55, .85, .9)) * uDay * (1. - .6 * uCloud) * .08 * exp(-abs(px.x - uSun.x) / (uRes.x * .3)) * exp(-d / 100.);
+      col *= 1. + .1 * uDay * exp(-d / 45.);
+      col += uSunCol * toLin(vec3(.55, .85, .9)) * uDay * (1. - .6 * uCloud) * .05 * exp(-abs(px.x - uSun.x) / (uRes.x * .3)) * exp(-d / 100.);
       col += vec3(.25, .35, .55) * uMoon.z * .06 * exp(-abs(px.x - uMoon.x) / (uRes.x * .2)) * exp(-d / 120.);
       /* the surface seen from below: a bright skin, rippling cells of light, the sky's glow through Snell's window */
       float skin = exp(-u / (1.5 + uZoom * .7));
       float rip = caustic(vec2(wx * .012 + uTime * .02, uTime * .05 + wx * .003), uTime * .4);
       float under = exp(-u / (10. + 14. * uZoom));
       vec3 surfCol = mix(toLin(vec3(.62, .86, .9)), uSunCol, .25) * (uDay * (1. - .5 * uCloud) + .06 + uMoon.z * .12);
-      col += surfCol * (skin * .8 + under * (.2 + 1.1 * rip) * .22);   /* softer than Octopus: the open sea's top band washed out */
+      col += surfCol * (skin * .5 + under * (.2 + 1.1 * rip) * .1);   /* much softer than Octopus: a bright top band washed the open sea out milky */
       /* far boulders and kelp, three bands, blue with distance */
       if (uFarK > .01) {
         float t = uTime;
@@ -175,7 +175,7 @@ const GFX = (function () {
       }
       float xs = wx - d * uSlant;
       float shaft = n1(xs * .021 + uTime * .06) * n1(xs * .047 - uTime * .09 + 3.) * n1(xs * .009 + 7.);
-      src = uDay * (1. - .75 * uCloud) * exp(-d / 260.) * (.02 + 2.4 * shaft * shaft) * (.6 + .4 * exp(-u / 40.));
+      src = uDay * (1. - .75 * uCloud) * exp(-d / 260.) * (.02 + 2.4 * shaft * shaft) * (.6 + .15 * exp(-u / 40.));
     }
     o = vec4(col, clamp(src, 0., 1.));
   }`;
@@ -240,8 +240,8 @@ const GFX = (function () {
         float diff = .78 + .3 * top - .22 * bot + bump * .25;
         float cs = caustic(vec2(wx * .011, wy * .006 + wx * .002), uTime * .45) * uCaus * exp(-d / 380.) * (1. - uUnder) * 1.6;
         vec3 amb = wc * 2. + vec3(.04, .05, .062) * (1. - uNight * .6) + vec3(.012, .018, .034) * uNight;
-        lit = alb * (amb + (sunIn + moonIn) * diff * 1.5 + sunIn * cs * (1.1 + top * 1.5));
-        lit += (sunIn * .9 + moonIn * 2.) * edge * pow(max(-n.y, 0.), 1.5) * (.25 + .9 * dot(alb, vec3(.33)));
+        lit = alb * (amb + (sunIn + moonIn) * diff * 1.05 + sunIn * cs * (.8 + top * 1.1));   /* not 1.5: a silver sunfish near the top went white */
+        lit += (sunIn * .55 + moonIn * 2.) * edge * pow(max(-n.y, 0.), 1.5) * (.25 + .9 * dot(alb, vec3(.33)));
         lit += vec3(.03, .055, .065) * edge * (.35 + .65 * max(-n.y, 0.)) * (1. - uUnder * .5);   /* a soft outline so shapes read even in the deep */
         float hz = clamp(uHaze + smoothstep(250., 750., d) * .05, 0., .8);
         lit = mix(lit, wc * 1.6, hz);
@@ -255,7 +255,7 @@ const GFX = (function () {
     }
     if (under) {
       vec3 rays = texture(uRays, vUv).rgb;
-      col += rays * mix(uSunCol, toLin(vec3(.7, .95, 1.)), .5) * uRayK * (1. - w.a * .6) * (1. - uUnder);
+      col += rays * mix(uSunCol, toLin(vec3(.5, .88, 1.)), .75) * uRayK * (1. - w.a * .6) * (1. - uUnder);
     }
     o = vec4(col, 1.);
   }`;
@@ -313,7 +313,7 @@ const GFX = (function () {
     for (int y = -1; y <= 1; y += 2) for (int x = -1; x <= 1; x += 2) c += texture(uSrc, vUv + vec2(x, y) * uTexel).rgb;
     c *= .25;
     float l = max(c.r, max(c.g, c.b));
-    o = vec4(c * smoothstep(.8, 1.8, l), 1.);
+    o = vec4(c * smoothstep(1., 2.2, l), 1.);
   }`;
   const FS_BLUR = `#version 300 es
   precision highp float;
@@ -490,7 +490,7 @@ const GFX = (function () {
     bind(u, 'uBg', 0, T.bg.t); bind(u, 'uWorld', 1, worldTex); bind(u, 'uRays', 2, T.rays.t);
     common(u);
     gl.uniform2f(u.uTexel, 1 / pw, 1 / ph); f1(u, 'uDPR', dpr);
-    f1(u, 'uUnder', L.underground ? 1 : 0); f1(u, 'uRayK', L.underground ? 0 : .85);
+    f1(u, 'uUnder', L.underground ? 1 : 0); f1(u, 'uRayK', L.underground ? 0 : .65);
     f1(u, 'uHaze', clamp(.04 + storm * .25 + (L.winter ? .02 : 0), 0, .6)); f1(u, 'uCaus', (1 - cloud * .7) * 1.0);
     f3(u, 'uSun', sun); f3(u, 'uSunCol', sunCol); f3(u, 'uMoon', moon); f3(u, 'uAbove', above); f3(u, 'uSky', sky);
     draw();

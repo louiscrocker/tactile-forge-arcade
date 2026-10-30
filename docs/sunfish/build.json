@@ -1,7 +1,7 @@
 {
   "slug": "sunfish",
-  "commit": "c084f58",
-  "builtAt": "2026-10-30T18:20:27.044Z",
+  "commit": "6455b95",
+  "builtAt": "2026-10-30T19:19:11.922Z",
   "files": {
     "css/style.css": "c08248b5ee64287d2a6d3fd9ecf99ed217a85b1d367fbca1491f47de3c429ffb",
     "fonts/LICENSE-nunito.txt": "580df76c95a1ec5ab878ceb25bb3d85c6a076804e9c970c8c6972aea775fdf65",
@@ -19,7 +19,7 @@
     "js/core.js": "256f0094900e3f6cb7cf1453e94da68c39115371091ccc6b4b5b235166b73ed3",
     "js/facts.js": "d0f315239dedef4955261f34e0ff04dc0d48e583698b4f62380149d273df91c5",
     "js/gamepad.js": "c1e1c59f057ac85f3f0c3d139c63666a618a741b69f83ba935fd8cfd49cac1a1",
-    "js/gfx.js": "f985b2d132e6adf615513e4219617950b3488ff5dd67366392bd69bc724a67f0",
+    "js/gfx.js": "96a75cd7b1ddf22e0443c08a824458b3d38332baeb633446dd2b28c105a49378",
     "js/grownups.js": "45bfe5ed0ac3a453b47708dd7f19f2da1c9860742472a6836a3cebd1b445377f",
     "js/journal.js": "c8d524821cc28d516b83e74fb1335ae52fa5c4a69bc86c9824da16f84566fca4",
     "js/main.js": "c570a9a16d3113f2165a6c5314aea95eba1653e286f75b0ac1bd1d3bd88a86b2",
@@ -29,7 +29,7 @@
     "js/player.js": "d94a0388b0e56eac4401470bed53f2bcb16b8f01f2ac161b6846dcc8314a366e",
     "js/reading.js": "a207d5a699546b9f25ce3358a7c4155059579ddf13307af744fa2cde957f183e",
     "js/readlex.js": "119d2bd201d738314a42edd28f206c7b5f1b63a5f6cfe4e4c0044a9d48d8f43f",
-    "js/render.js": "e2c82ea0017356a0f71943bb431d4f6b2f98b98848c6724aa66a47e052e352f5",
+    "js/render.js": "dbe5a5030f75456441ff489a0841a2bbe1c3ef6a49c0908e88a2ae94f287d2bf",
     "js/save.js": "951c50551077f74124a7a003aca7967419502b23fc21433ddb5ee21fa70d5165",
     "js/seabed.js": "4b283f43a0abc82702990df52855b1079f04004d45126b08a650723985903ac5",
     "js/sprites.js": "8bcf26c743f8a719fae9070b465e5831a67e3992bc88b025d19ded559388be10",
