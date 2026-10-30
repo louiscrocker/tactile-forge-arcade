@@ -174,6 +174,14 @@ export const GAMES = [
     meta: 'Keyboard, touch or gamepad',
   },
   {
+    slug: 'sunfish', shelf: 'nature', name: 'Sunfish: Sun and Sea', badge: 'AGES 4–8',
+    accent: '#3d8fd1', glow: 'rgba(61,143,209,0.5)',
+    tagline: 'Hatch as a tiny spiky star, dive deep for jellies, and lie in the sun to warm up.',
+    description: "Live an ocean sunfish's real life off Monterey Bay: hatch from one of three hundred million eggs, grow spikes like a tiny star, swim in a school, then dive into the cold dark for jellies and come back up to lie flat in the sun and warm up. Gulls and little kelp fish pick off your itchy sea lice, sea lions and orcas always swim by, a fishing net lets you go, and you grow sixty million times heavier before swimming back to the warm sea to start the next generation. Play as a boy or a girl sunfish; nothing ever gets hurt. Everything is read aloud, and Read to Play turns levelled reading into how you play.",
+    features: ['Real life cycle', 'Read to Play', 'Plays offline'],
+    meta: 'Keyboard, touch or gamepad',
+  },
+  {
     slug: 'castle', shelf: 'nature', name: 'Castle: Stone by Stone', badge: 'AGES 4–10',
     accent: '#c9a24a', glow: 'rgba(201,162,74,0.5)',
     tagline: 'Build towers, dig a moat, furnish every room and fill the stables with horses.',

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sunfish Spotter — Sunfish: Sun and Sea</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root { --ink: #2a2016; --dim: #6a5a46; --line: #d8cdb8; --red: #b8502a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9e4d6; color: var(--ink); font-family: "Nunito", "Segoe UI", system-ui, sans-serif; }
+  .page { width: 210mm; min-height: 297mm; margin: 12px auto; padding: 14mm 14mm 10mm; background: #fffdf6; box-shadow: 0 6px 30px rgba(0,0,0,.15); }
+  h1 { margin: 0; font-size: 34px; font-weight: 900; letter-spacing: .04em; }
+  h1 span { color: var(--red); }
+  .sub { margin: 4px 0 14px; color: var(--dim); font-weight: 700; }
+  h2 { font-size: 18px; font-weight: 900; margin: 18px 0 8px; border-bottom: 2px solid var(--line); padding-bottom: 4px; }
+  .cycle { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; align-items: end; }
+  .cycle figure { margin: 0; text-align: center; }
+  .cycle canvas { width: 100%; height: auto; border: 2px dashed var(--line); border-radius: 12px; background: #fff; }
+  .cycle figcaption { font-weight: 900; margin-top: 4px; font-size: 14px; }
+  .cycle small { display: block; color: var(--dim); font-weight: 700; font-size: 10.5px; line-height: 1.25; }
+  .arrow { text-align: center; font-weight: 900; color: var(--dim); margin: 4px 0 0; font-size: 13px; }
+  .hunt { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; }
+  .hunt label { display: flex; gap: 10px; align-items: flex-start; font-weight: 700; padding: 6px 0; border-bottom: 1px dotted var(--line); }
+  .box { flex: 0 0 22px; height: 22px; border: 2.5px solid var(--ink); border-radius: 5px; }
+  .hunt small { display: block; color: var(--dim); font-size: 12px; font-weight: 600; }
+  .draw { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .draw div { height: 58mm; border: 2px solid var(--line); border-radius: 12px; padding: 8px; font-weight: 800; color: var(--dim); }
+  .measure { font-weight: 800; margin-top: 10px; }
+  .ruler { width: 60mm; height: 9mm; margin-top: 4px; border: 2px solid var(--ink); border-radius: 3px; background: repeating-linear-gradient(90deg, var(--ink) 0 .5mm, transparent .5mm 10mm); position: relative; }
+  .ruler::after { content: "0 cm …………… 6 cm: a young sunfish in its school"; position: absolute; left: 0; top: 100%; font-size: 10px; color: var(--dim); white-space: nowrap; }
+  .note { font-size: 12px; color: var(--dim); font-weight: 600; margin-top: 16px; line-height: 1.45; }
+  .bar { display: flex; gap: 8px; justify-content: center; margin: 12px auto 0; width: 210mm; }
+  .bar button { font: inherit; font-weight: 900; padding: 10px 18px; border-radius: 12px; border: none; background: var(--red); color: #fff; cursor: pointer; }
+  @media print { body { background: #fff; } .page { margin: 0; box-shadow: none; } .bar { display: none; } }
+</style>
+</head>
+<body>
+<div class="bar"><button onclick="print()">🖨️ Print this page</button></div>
+<div class="page">
+  <h1>Sunfish <span>Spotter</span></h1>
+  <p class="sub">Sunfish: Sun and Sea · a life-cycle sheet to colour, and things to spot at the sea or the aquarium</p>
+  <h2>1 · The ocean sunfish's life cycle (colour it in!)</h2>
+  <div class="cycle">
+    <figure><canvas data-draw="egg" width="220" height="200"></canvas><figcaption>Eggs</figcaption><small>millions drift in the warm sea</small></figure>
+    <figure><canvas data-draw="larva" width="220" height="200"></canvas><figcaption>Hatchling</figcaption><small>smaller than a grain of rice</small></figure>
+    <figure><canvas data-draw="star" width="220" height="200"></canvas><figcaption>Spiky star</figcaption><small>spikes all over, like a tiny star</small></figure>
+    <figure><canvas data-draw="juvenile" width="220" height="200"></canvas><figcaption>Young sunfish</figcaption><small>spikes fade, a rudder grows</small></figure>
+    <figure><canvas data-draw="mola" width="220" height="200"></canvas><figcaption>Sunfish</figcaption><small>dives deep for jellies</small></figure>
+    <figure><canvas data-draw="bask" width="220" height="200"></canvas><figcaption>Sunbathing</figcaption><small>lies flat in the sun to warm up</small></figure>
+  </div>
+  <p class="arrow">eggs → hatchling → spiky star → young sunfish → sunfish → giant → the warm sea → eggs again</p>
+  <h2>2 · Things to spot (tick them off!)</h2>
+  <div class="hunt">
+    <label><span class="box"></span><span>A jelly<small>Look, don't touch! Jellies are a sunfish's favourite food.</small></span></label>
+    <label><span class="box"></span><span>A fin flopping at the top of the sea<small>Is it a shark, or a sunfish lying on its side?</small></span></label>
+    <label><span class="box"></span><span>Giant kelp<small>Find a float on it: a little bubble that holds it up.</small></span></label>
+    <label><span class="box"></span><span>A gull<small>Gulls peck sea lice off basking sunfish.</small></span></label>
+    <label><span class="box"></span><span>A small yellow or blue fish<small>Little fish like these clean sunfish in the kelp.</small></span></label>
+    <label><span class="box"></span><span>A sea lion or a seal<small>One of the few animals that bothers a big sunfish.</small></span></label>
+    <label><span class="box"></span><span>A pufferfish<small>The sunfish's cousin. Is it spiky like a baby sunfish?</small></span></label>
+    <label><span class="box"></span><span>A boat going slowly<small>Careful skippers slow down for fins.</small></span></label>
+  </div>
+  <h2>3 · Draw it</h2>
+  <div class="draw"><div>A sunfish diving down to the dark, cold deep for jellies</div><div>A sunfish lying in the sun with a gull on its side</div></div>
+  <div class="measure">A hatchling sunfish is about 2 mm long. A grown-up can be 2 metres long and taller than that from fin tip to fin tip, and weigh as much as a car: about sixty million times heavier than when it hatched!</div>
+  <div class="ruler"></div>
+  <p class="note">For grown-ups: the ocean sunfish (Mola mola) lives in temperate and tropical seas worldwide and visits Monterey Bay and the California coast in summer and autumn. Look at sunfish and jellies at an aquarium, never touch a jelly, and keep well back from wild animals. The game's life cycle is simplified: little is known about where sunfish spawn.</p>
+</div>
+<script src="js/core.js"></script>
+<script src="js/facts.js"></script>
+<script src="js/sprites.js"></script>
+<script>
+  /* outline drawings to colour in: draw each sprite, then turn it into a line drawing */
+  for (const c of document.querySelectorAll('canvas[data-draw]')) {
+    const g = c.getContext('2d'), k = c.dataset.draw;
+    g.translate(c.width / 2, c.height / 2);
+    if (k === 'egg') { for (const [x, y] of [[-30, -10], [0, -24], [26, -6], [-12, 18], [16, 22], [40, 26], [-40, 22]]) { g.save(); g.translate(x, y); Sprites.drawEgg(g, { s: 1.2, eye: true }); g.restore(); } }
+    if (k === 'larva') Sprites.drawSunfish(g, { s: 1.4, stage: 'larva', flap: .5 });
+    if (k === 'star') Sprites.drawSunfish(g, { s: 1.2, stage: 'star', flap: .5 });
+    if (k === 'juvenile') Sprites.drawSunfish(g, { s: 1.5, stage: 'juvenile', flap: .9, spiky: .4, seed: 3 });
+    if (k === 'mola') Sprites.drawSunfish(g, { s: 1.1, stage: 'mola', flap: .9, seed: 3 });
+    if (k === 'bask') { g.translate(0, 10); Sprites.drawSunfish(g, { s: 1.4, stage: 'mola', flap: 0, roll: 1, seed: 3 }); g.translate(-8, -6); Sprites.drawGullStand(g, { s: 1.2, ph: .3 }); }
+    /* keep only the edges: a colouring-book outline */
+    const img = g.getImageData(0, 0, c.width, c.height), d = img.data, w = c.width, h = c.height, out = g.createImageData(w, h), o = out.data;
+    const lum = (i) => d[i * 4 + 3] < 40 ? 255 : (d[i * 4] + d[i * 4 + 1] + d[i * 4 + 2]) / 3, al = (i) => d[i * 4 + 3];
+    const edge = new Uint8Array(w * h);
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x, e = Math.abs(lum(i) - lum(i + 1)) + Math.abs(lum(i) - lum(i + w)) + (Math.abs(al(i) - al(i + 1)) + Math.abs(al(i) - al(i + w))) * .8;
+      if (e > 45) edge[i] = 1;
+    }
+    for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+      const i = y * w + x, on = edge[i] || edge[i + 1] || edge[i + w];
+      const v = on ? 25 : 255; o[i * 4] = o[i * 4 + 1] = o[i * 4 + 2] = v; o[i * 4 + 3] = 255;
+    }
+    g.setTransform(1, 0, 0, 1, 0, 0); g.putImageData(out, 0, 0);
+  }
+</script>
+</body>
+</html>

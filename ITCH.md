@@ -71,6 +71,7 @@ Copy the tagline and description from `docs/assets/games.js`. Add one line at th
 | Plankton: The Copepod's Year | Adventure | kids, plankton, ocean, sea-life, life-cycle, nature, educational, reading, family-friendly, browser |
 | Jellyfish: Pulse by Pulse | Adventure | kids, jellyfish, ocean, sea-life, life-cycle, nature, educational, reading, family-friendly, browser |
 | Octopus: Arm by Arm | Adventure | kids, octopus, ocean, sea-life, life-cycle, nature, educational, reading, family-friendly, browser |
+| Sunfish: Sun and Sea | Adventure | kids, sunfish, ocean, sea-life, life-cycle, nature, educational, reading, family-friendly, browser |
 | Castle: Stone by Stone | Simulation | kids, castle, building, sandbox, knights, horses, educational, reading, family-friendly, browser |
 | Mungo & Pip: Smash and Mend | Platformer | kids, platformer, demolition, building, repair, local-co-op, cartoon, family-friendly, browser, singleplayer |
 | Storm Lab | Educational | weather, tornado, science, simulation, educational, kids, stem, webgl, radar, browser |

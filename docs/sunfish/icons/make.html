@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><title>icon render</title>
+<!-- dev page: renders icon.svg at 512 and 192 so a headless screenshot (or a right-click save) gives the PNGs.
+     ?size=512 or ?size=192 fills the whole viewport with the icon at that size (shoot with --window-size=size,size). -->
+<body style="margin:0;background:#1a72b8">
+<img id="i" src="icon.svg" style="display:block">
+<script>
+  const s = +(new URLSearchParams(location.search).get('size') || 512);
+  const img = document.getElementById('i'); img.width = s; img.height = s;
+</script>
+</body>
