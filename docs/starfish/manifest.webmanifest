@@ -1,0 +1,16 @@
+{
+  "name": "Starfish: Tide by Tide",
+  "short_name": "Starfish",
+  "description": "Be an ochre sea star on the Olympic coast: hatch as a swimming larva, settle on a pink rock, ride the tide up the shore to eat mussels, hide in tide pools, hold on through big waves, make room for new life, and start the next generation.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#1e7894",
+  "theme_color": "#1e7894",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

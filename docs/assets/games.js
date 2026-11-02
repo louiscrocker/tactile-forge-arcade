@@ -182,6 +182,14 @@ export const GAMES = [
     meta: 'Keyboard, touch or gamepad',
   },
   {
+    slug: 'starfish', shelf: 'nature', name: 'Starfish: Tide by Tide', badge: 'AGES 4–8',
+    accent: '#8a3f9c', glow: 'rgba(138,63,156,0.5)',
+    tagline: 'Ride the tide up the rocks, hide in a tide pool, and hold on tight when the waves crash.',
+    description: "Live an ochre sea star's real life on the wild Olympic coast: hatch as a see-through swimming larva, come back to the shore and hold on to a pink rock, and turn into a star smaller than a pinhead. Twice a day the tide climbs the rocks and falls back: crawl up to eat barnacles and mussels while the sea is in, and find a tide pool before you dry out when it goes out. Hold on tight when the big waves, gulls and otters come, make room on the shore for new life, and stand tall in spring to start the next generation. Play as a boy or a girl sea star; nothing ever gets hurt. Everything is read aloud, and Read to Play turns levelled reading into how you play.",
+    features: ['Real life cycle', 'Read to Play', 'Plays offline'],
+    meta: 'Keyboard, touch or gamepad',
+  },
+  {
     slug: 'castle', shelf: 'nature', name: 'Castle: Stone by Stone', badge: 'AGES 4–10',
     accent: '#c9a24a', glow: 'rgba(201,162,74,0.5)',
     tagline: 'Build towers, dig a moat, furnish every room and fill the stables with horses.',
