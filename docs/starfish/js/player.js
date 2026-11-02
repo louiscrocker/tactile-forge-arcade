@@ -200,7 +200,11 @@ class Starfish {
     const maxX = this.stage === 'larva' ? WORLD.lowR : WORLD.bedR;
     if (this.x > maxX) { this.x = maxX; this.vx = Math.min(0, this.vx); }
     for (let k = 0; k < 6 && S.solidAt(this.x, this.y + R); k++) { this.y -= 2; this.vy = Math.min(0, this.vy); }
-    if (S.solidAt(this.x + sign(this.vx) * R, this.y)) { this.x -= sign(this.vx) * 2; this.vx *= -.3; }
+    /* a swimmer pushing along the bottom rises over a bump; only a real wall bounces it back */
+    if (S.solidAt(this.x + sign(this.vx) * R, this.y)) {
+      let up = 2; while (up <= 30 && S.solidAt(this.x + sign(this.vx) * R, this.y - up)) up += 2;
+      if (up <= 30 && this.y - up > top) { this.y -= up; this.vy = Math.min(0, this.vy); } else { this.x -= sign(this.vx) * 2; this.vx *= -.3; }
+    }
     /* the water goes out from under a swimmer at the top of the shore: slide back down to the sea */
     if (this.y < W.seaLevel() + R && S.topAt(this.x) < W.seaLevel() + 4) { this.x -= 30 * (1 / 60); }
   }

@@ -1,7 +1,7 @@
 {
   "slug": "starfish",
-  "commit": "1a0545c",
-  "builtAt": "2026-11-02T18:56:35.951Z",
+  "commit": "369db6d",
+  "builtAt": "2026-11-02T20:38:55.986Z",
   "files": {
     "css/style.css": "777c70e1c38bf930faea3bd02a746ae9102435d343c5b2acaec7d866ec2a6ac0",
     "fonts/LICENSE-nunito.txt": "580df76c95a1ec5ab878ceb25bb3d85c6a076804e9c970c8c6972aea775fdf65",
@@ -26,7 +26,7 @@
     "js/microscope.js": "9e7bcdd7ef0d98957d55901a24bc402b4b9776310b101eacb140f1497b1507a5",
     "js/paint.js": "f27c5b6ae9a664128ff70a7d5e4c21308ec609f9c6e36e50759b51897462d3fe",
     "js/particles.js": "d3b2b309446975e32c39e3eed90034dab3e068ed1ebca80c406c055b67ec2a1e",
-    "js/player.js": "80820b7b40b3c2bf12f6c9886a9fd1baa0ea6a11539e2a98f4fa2e60b0658de3",
+    "js/player.js": "93f1151c18a23a32a71b0787e64f91c2205cd1e61c954535b8091fec969c6ba6",
     "js/reading.js": "d627a01dee3c8b4d0301c8df89dcd18f06194ca2b736ec7d3b5a517f25a68abc",
     "js/readlex.js": "7edbcceb38d502c4dbd35fe8a685417cb30ac848a39c45865c663c4bee6369fa",
     "js/render.js": "08056103600204cf35a4514ecb9a5976cc0eb2996e3b81d61bdc1d224d456c05",
