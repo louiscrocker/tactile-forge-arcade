@@ -190,6 +190,14 @@ export const GAMES = [
     meta: 'Keyboard, touch or gamepad',
   },
   {
+    slug: 'stag-beetle', shelf: 'nature', name: 'Stag Beetle: Seven Years, One Summer', badge: 'AGES 4–8',
+    accent: '#a0401c', glow: 'rgba(160,64,28,0.5)',
+    tagline: 'Up to seven years in an oak stump, then one summer to fly at dusk and wrestle on the Antler Branch.',
+    description: "Live a European stag beetle's real life at the bottom of a family garden: chew through an old oak stump for up to seven years as it rots around you, while a child grows up in the garden above. What you eat sets the size of your antlers for good. Then you get one summer: whirr clumsily through warm dusks, wrestle named rivals on the Antler Branch and win their trading cards, or slip past as a small, sneaky male. Play as her and find the sap, smell out the right rotten wood, dig down and lay your eggs. Then hatch as one of the new babies. Nothing ever gets hurt.",
+    features: ['Real life cycle', 'Read to Play', 'Plays offline'],
+    meta: 'Keyboard, touch or gamepad',
+  },
+  {
     slug: 'castle', shelf: 'nature', name: 'Castle: Stone by Stone', badge: 'AGES 4–10',
     accent: '#c9a24a', glow: 'rgba(201,162,74,0.5)',
     tagline: 'Build towers, dig a moat, furnish every room and fill the stables with horses.',
