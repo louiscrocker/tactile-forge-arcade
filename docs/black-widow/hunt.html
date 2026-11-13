@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Web spotting: look, do not touch</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  body { font-family: "Nunito", "Segoe UI", system-ui, sans-serif; color: #2a2016; background: #f4efe4; margin: 0; padding: 24px; }
+  .sheet { max-width: 820px; margin: 0 auto; background: #fffdf6; border: 3px solid #26314a; border-radius: 18px; padding: 26px 30px; }
+  h1 { margin: 0 0 4px; font-size: 34px; letter-spacing: .02em; }
+  h2 { font-size: 20px; margin: 22px 0 8px; color: #26314a; }
+  .rule { background: #26314a; color: #fff; border-radius: 14px; padding: 14px 18px; font-size: 22px; font-weight: 900; text-align: center; margin: 14px 0; }
+  .rule span { color: #ff8a7a; }
+  ol.safe { font-size: 18px; line-height: 1.5; padding-left: 26px; margin: 6px 0; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .box { border: 2px dashed #9aa4bc; border-radius: 12px; padding: 10px 12px; min-height: 96px; font-size: 16px; }
+  .box b { display: block; font-size: 17px; }
+  .box i { color: #6a705e; font-style: normal; font-size: 14px; }
+  .tick { float: right; width: 26px; height: 26px; border: 2px solid #26314a; border-radius: 6px; }
+  .draw { border: 2px solid #9aa4bc; border-radius: 12px; height: 230px; margin-top: 8px; }
+  .lines p { border-bottom: 2px dotted #9aa4bc; height: 30px; margin: 0; }
+  .fine { font-size: 13px; color: #5a5a50; margin-top: 18px; line-height: 1.45; }
+  button { font: inherit; font-weight: 800; padding: 10px 18px; border-radius: 12px; border: 0; background: #26314a; color: #fff; cursor: pointer; }
+  @media print { body { background: #fff; padding: 0; } .sheet { border: 0; } .noprint { display: none; } }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <p class="noprint"><button onclick="window.print()">🖨️ Print this sheet</button></p>
+  <h1>🕸️ Web spotting</h1>
+  <p>Spiders build wherever it is dry and quiet. Go and look for webs with a grown-up. Take this sheet and a torch.</p>
+  <div class="rule">LOOK. <span>DO NOT TOUCH.</span> TELL A GROWN-UP.</div>
+
+  <h2>The spotter's rules</h2>
+  <ol class="safe">
+    <li>I look with my <b>eyes</b>, not with my hands.</li>
+    <li>I do not put my hand where I can not see: not under a pot, not in a woodpile, not in an old boot.</li>
+    <li>I do not poke a web or a spider with a stick.</li>
+    <li>If I see a shiny black spider with a red mark, I step back and <b>tell a grown-up</b>.</li>
+    <li>Grown-ups wear gloves to move wood, pots and boxes.</li>
+  </ol>
+
+  <h2>Can you find these webs? Tick each one.</h2>
+  <div class="grid">
+    <div class="box"><span class="tick"></span><b>A wheel web</b><i>Round, with spokes, like a bike wheel. An orb weaver made it.</i></div>
+    <div class="box"><span class="tick"></span><b>A tangle web</b><i>Messy threads in a corner, low down. Cobweb spiders (and widows) make these.</i></div>
+    <div class="box"><span class="tick"></span><b>A sheet web</b><i>Flat, like a little hammock, on grass or a bush.</i></div>
+    <div class="box"><span class="tick"></span><b>A funnel web</b><i>A flat sheet with a tube at the back where the spider waits.</i></div>
+    <div class="box"><span class="tick"></span><b>A thread to the ground</b><i>One tight line going straight down. Is the bottom sticky? Do not test it: just look!</i></div>
+    <div class="box"><span class="tick"></span><b>An egg sac</b><i>A little ball or bag of silk, hanging in a web.</i></div>
+    <div class="box"><span class="tick"></span><b>A shed skin</b><i>A pale, empty spider shape. The spider grew out of it.</i></div>
+    <div class="box"><span class="tick"></span><b>A wrapped parcel</b><i>A little white bundle in a web: a spider's snack.</i></div>
+    <div class="box"><span class="tick"></span><b>A web with dew</b><i>Look early in the morning. Every thread shows.</i></div>
+  </div>
+
+  <h2>Draw the best web you found</h2>
+  <div class="draw"></div>
+  <h2>Where was it? What was in it?</h2>
+  <div class="lines"><p></p><p></p><p></p></div>
+
+  <p class="fine"><b>For grown-ups.</b> Black widows (<i>Latrodectus</i>) live across much of North America and in many warm parts of the world, in dry, sheltered places close to the ground. They are shy and bite only when pressed or squeezed, but a bite can make a person very sick, and children are affected more. If you think someone has been bitten, call your doctor or, in the United States, Poison Control on 1-800-222-1222; get medical care right away for a child. Most spiders you will find are harmless and useful. This sheet goes with the game <i>Black Widow: Thread by Thread</i>.</p>
+</div>
+</body>
+</html>

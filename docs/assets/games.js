@@ -198,6 +198,14 @@ export const GAMES = [
     meta: 'Keyboard, touch or gamepad',
   },
   {
+    slug: 'black-widow', shelf: 'nature', name: 'Black Widow: Thread by Thread', badge: 'AGES 4–8',
+    accent: '#c0241c', glow: 'rgba(192,36,28,0.5)',
+    tagline: 'Sail in on a strand of silk, build your web thread by thread, and feel in the dark what is in it.',
+    description: "Live a western black widow's real life in a dry back yard: balloon away on a strand of silk, and where you land is where you live. Build your own web one thread at a time, drop and swing on your line, and set sticky lines that snap a bug into the air. She sees badly, so at night you feel: the thread that hums has something on it. Moult by moult she turns from pale to striped to glossy black with the red hourglass, while he stays small and striped, crosses the yard and plucks her web gently to say hello. Spin the egg sac and watch the babies sail away. Nothing ever gets hurt, and the game teaches the one rule for real widows: look, do not touch.",
+    features: ['Real life cycle', 'Read to Play', 'Plays offline'],
+    meta: 'Keyboard, touch or gamepad',
+  },
+  {
     slug: 'castle', shelf: 'nature', name: 'Castle: Stone by Stone', badge: 'AGES 4–10',
     accent: '#c9a24a', glow: 'rgba(201,162,74,0.5)',
     tagline: 'Build towers, dig a moat, furnish every room and fill the stables with horses.',
