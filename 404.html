@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tactile Forge Arcade has moved</title>
+  <meta name="robots" content="noindex" />
+  <link rel="canonical" href="https://play.badwolf.software/" />
+  <meta http-equiv="refresh" content="3; url=https://play.badwolf.software/" />
+  <style>
+    html, body { height: 100%; margin: 0; }
+    body { display: grid; place-items: center; background: #020504; color: #d9ffe9; font: 18px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; text-align: center; padding: 24px; box-sizing: border-box; }
+    h1 { font-size: clamp(26px, 6vw, 44px); margin: 0 0 12px; color: #5cffaa; text-shadow: 0 0 24px rgba(92, 255, 170, 0.5); letter-spacing: 0.04em; }
+    a { color: #ffc46a; font-weight: 700; text-underline-offset: 4px; }
+    p { margin: 8px 0; color: #9cc4b0; }
+  </style>
+  <script>
+    // Same game, new address: /tactile-forge-arcade/<game>/ -> play.badwolf.software/<game>/
+    (function () {
+      var rest = location.pathname.replace(/^\/tactile-forge-arcade\/?/, '').replace(/index\.html$/, '');
+      if (!/^[A-Za-z0-9._\/-]*$/.test(rest) || rest.indexOf('..') !== -1) rest = '';
+      window.NEW_URL = 'https://play.badwolf.software/' + rest + location.hash;
+      location.replace(window.NEW_URL);
+    })();
+  </script>
+</head>
+<body>
+  <main>
+    <h1>The arcade has moved</h1>
+    <p>Tactile Forge Arcade now lives at<br /><a id="go" href="https://play.badwolf.software/">play.badwolf.software</a></p>
+    <p>Taking you there now.</p>
+  </main>
+  <script>document.getElementById('go').href = window.NEW_URL || 'https://play.badwolf.software/';</script>
+</body>
+</html>
