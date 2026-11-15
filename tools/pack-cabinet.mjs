@@ -66,7 +66,7 @@ const TARGETS = [
 ];
 
 const readme = (platform) => `${args.name} — Tactile Forge Cabinet Edition ${args.version}
-Free to play. More games: https://louiscrocker.github.io/tactile-forge-arcade/
+Free to play. More games: https://play.badwolf.software/
 
 ${{
   windows: `RUN: unzip, open the "${args.name}" folder, double-click "${args.name}.exe".

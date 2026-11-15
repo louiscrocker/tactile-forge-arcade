@@ -46,7 +46,7 @@ The project URL slug should match ours (for example `last-silo`).
 ## Page text
 
 Copy the tagline and description from `docs/assets/games.js`. Add one line at the end:
-*"Also playable with the rest of the collection at https://louiscrocker.github.io/tactile-forge-arcade/"*.
+*"Also playable with the rest of the collection at https://play.badwolf.software/"*.
 
 | Game | Genre | Tags (itch allows 10) |
 |---|---|---|

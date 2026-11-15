@@ -6,7 +6,7 @@
 # reports feedback issues and Cabinet Edition download counts.
 # =====================================================
 $ErrorActionPreference = 'Continue'
-$Base = 'https://louiscrocker.github.io/tactile-forge-arcade/'
+$Base = 'https://play.badwolf.software/'
 $Repo = 'louiscrocker/tactile-forge-arcade'
 $GH   = 'C:\Program Files\GitHub CLI\gh.exe'
 $Dev  = 'C:\Development'
