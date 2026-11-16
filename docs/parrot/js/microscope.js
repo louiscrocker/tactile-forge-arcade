@@ -16,7 +16,7 @@ const Microscope = (function () {
   const PARTS = {
     egg: { k: 1, draw: (c) => { c.fillStyle = '#8a6a44'; c.beginPath(); c.ellipse(0, 130, 170, 30, 0, 0, TAU); c.fill(); Sprites.drawEgg(c, 104); if (cutaway) { c.save(); c.globalAlpha = .92; c.translate(-14, 60); c.rotate(-.5); Sprites.drawChick(c, { r: 46, instar: 0 }); c.restore(); } }, parts: [
       { x: -60, y: -80, name: 'White shell', say: 'A macaw egg is plain white. Eggs laid in a dark hole do not need colours to hide them.', simple: 'A white egg.' },
-      { x: 70, y: 40, name: 'About as big as a hen egg', say: 'A scarlet macaw egg is a little under five centimetres long, about the size of a hen egg.', simple: 'As big as a hen egg.' },
+      { x: 70, y: 40, name: 'A little smaller than a hen egg', say: 'A scarlet macaw egg is a little under five centimetres long, a little smaller than a hen egg.', simple: 'A bit smaller than a hen egg.' },
       { x: 0, y: 132, name: 'Wood chips', say: 'There is no nest of twigs. The eggs lie on a bed of wood chips at the bottom of the hollow.', simple: 'A bed of wood chips.' },
       { x: 20, y: 0, name: 'Chick', say: 'The chick grows inside for about three and a half weeks, kept warm by its mother.', simple: 'A chick is inside!', needs: 'cutaway' }
     ] },
@@ -30,7 +30,7 @@ const Microscope = (function () {
     head: { k: .82, shift: -20, draw: (c) => { c.translate(-34, 8); Sprites.head(c, 124, PAL.scarlet, {}); }, parts: [
       { x: 150, y: -20, name: 'Top beak', say: 'The top half of the beak is hinged where it joins the skull, so it can move up as well as down.', simple: 'The top beak can move.' },
       { x: 60, y: 120, name: 'Bottom beak', say: 'The bottom half is short and dark. It slides against the top like a chisel on a block.', simple: 'The bottom beak is dark.' },
-      { x: 20, y: 30, name: 'Bare face', say: 'The white skin of the face has no proper feathers, only tiny ones in thin lines.', simple: 'A white face with no feathers.' },
+      { x: 20, y: 30, name: 'Bare face', say: 'The white skin of the face is nearly bare. It has only a few tiny white feathers.', simple: 'A white face with no feathers.' },
       { x: 6, y: -16, name: 'Eye', say: 'A grown scarlet macaw has pale yellow eyes. A young one has dark eyes.', simple: 'A pale yellow eye.' },
       { x: -110, y: -40, name: 'Red feathers', say: 'The red comes from colours that only parrots make. Scientists named them after parrots: psittacofulvins.', simple: 'Only parrots make this red.' }
     ] },
@@ -42,7 +42,7 @@ const Microscope = (function () {
     ] },
     adult: { k: .88, shift: 0, draw: (c) => { c.translate(12, 84); c.scale(3.7, 3.7); Sprites.drawParrot(c, { r: 16 }); }, parts: [
       { x: 60, y: -80, name: 'Beak', say: 'Strong enough to crack a palm nut, and gentle enough to preen a chick.', simple: 'A very strong beak.' },
-      { x: -30, y: -20, name: 'Wing', say: 'Red, then yellow, then blue. With its wings spread, a scarlet macaw is wider than a child is tall.', simple: 'Red, yellow and blue.' },
+      { x: -30, y: -20, name: 'Wing', say: 'Red, then yellow, then blue. With its wings spread, a scarlet macaw is about a metre wide.', simple: 'Red, yellow and blue.' },
       { x: 10, y: 60, name: 'Foot', say: 'Two toes point forward and two point back. It can grip a branch, or hold food like a hand.', simple: 'Two toes front, two toes back.' },
       { x: -70, y: 170, name: 'Tail', say: 'The tail is up to half the length of the whole bird.', simple: 'A very long tail.' },
       { x: 20, y: -30, name: 'Crop', say: 'Under the feathers of the chest is the crop, a pouch for carrying food home.', simple: 'A pouch for food.' }

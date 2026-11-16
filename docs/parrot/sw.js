@@ -1,7 +1,7 @@
 /* Parrot: Wing to Wing — offline cache.  Everything the game needs
    is a static file, so we cache the lot on install and serve from the
    cache first.  Bump VERSION when files change. */
-const VERSION = 'parrot-v1';
+const VERSION = 'parrot-v2';
 const FILES = [
   './', './index.html', './hunt.html', './manifest.webmanifest', './css/style.css',
   './js/core.js', './js/facts.js', './js/hints.js', './js/readlex.js', './js/forest.js', './js/flock.js', './js/sprites.js', './js/sprites2.js', './js/critters.js', './js/scene.js', './js/scene2.js', './js/particles.js',

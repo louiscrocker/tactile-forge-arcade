@@ -1,7 +1,7 @@
 {
   "slug": "parrot",
-  "commit": "dec2061",
-  "builtAt": "2026-11-16T02:05:04.773Z",
+  "commit": "6b96829",
+  "builtAt": "2026-11-16T14:04:53.548Z",
   "files": {
     "css/style.css": "33f37bbff6857b4434b32a9f461cf15d90f844739f1a0ba55f239ec55b729c5c",
     "fonts/LICENSE-nunito.txt": "580df76c95a1ec5ab878ceb25bb3d85c6a076804e9c970c8c6972aea775fdf65",
@@ -27,7 +27,7 @@
     "js/hints.js": "e1cc911b0663b53551b14c486a48ef641eb71f7c29d049a07607ab3fbe467c9f",
     "js/journal.js": "dc82e2ae718530f5a8fab39dd93b5dd081d834938c5bd104a7e94408faaad9ee",
     "js/main.js": "96f655277671c19cf783a911658905b12073006ad59d828ee391afe79ee38685",
-    "js/microscope.js": "939d2a8c97c6e19cd29d2808041cf27ba5e254acb7bb4d25518ccd578def7372",
+    "js/microscope.js": "7a6a5bb9191ced07e7002dd0395ed72786670580fa8ac9a44eea2568d698377e",
     "js/particles.js": "11b72a9f2c75f730a432423f136767750d634a0ea72dc34ba27533f4312c94af",
     "js/player.js": "2b6ccb9181e45abf533a5f306ea3b9686d0824056103fbfa4257decc47cd9264",
     "js/player2.js": "b13dbe54b0f45780eff0db69e3118593b3e5409f9ce6056499b3327f89f1bbc9",
@@ -46,6 +46,6 @@
     "js/ui.js": "53c68e468e9095473e538f233b798bafbfadeefa01bb5867be30d299d2676f6c",
     "js/voice.js": "5d02130701f0b95d54c81a7c3e6ef6dbf1dfab1e556aaf29df92ae9b7bff2a84",
     "manifest.webmanifest": "a7157aff716efcb132415fd6fe3f92d575c5d14e5895dcf990d686b9488e1baa",
-    "sw.js": "bfd90eef039647610a7f7fb667ee9be2d27d2682c3c5cfdd6329b0d98280bfc2"
+    "sw.js": "c5773143b60448aad3e95fda5e93d6fc6d16d458dabd0ed670c4675a350f6df6"
   }
 }
