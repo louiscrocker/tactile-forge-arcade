@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fd0f0"/><stop offset="1" stop-color="#2f8a5a"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <ellipse cx="96" cy="420" rx="150" ry="90" fill="#2f7a3a"/>
+  <ellipse cx="430" cy="440" rx="160" ry="100" fill="#3f8a3a"/>
+  <!-- wing colours behind the head -->
+  <path d="M96 512 Q70 330 190 210 L300 330 Q250 430 250 512 Z" fill="#1f62c8"/>
+  <path d="M130 512 Q120 360 210 250 L300 330 Q262 420 262 512 Z" fill="#ffd21f"/>
+  <path d="M176 512 Q170 380 236 290 L330 340 Q290 430 290 512 Z" fill="#d9201f"/>
+  <!-- head -->
+  <circle cx="258" cy="236" r="150" fill="#d9201f"/>
+  <ellipse cx="310" cy="242" rx="92" ry="84" fill="#f7f0e6" transform="rotate(-12 310 242)"/>
+  <!-- beak -->
+  <path d="M344 286 Q412 300 394 372 Q336 378 318 316 Z" fill="#2a2420"/>
+  <path d="M334 162 C430 142 482 250 414 348 Q396 292 344 286 Z" fill="#efe2c0" stroke="#5a3a2a" stroke-width="7" stroke-linejoin="round"/>
+  <!-- eye -->
+  <circle cx="304" cy="222" r="29" fill="#f7ecaa"/>
+  <circle cx="307" cy="222" r="15" fill="#1a1210"/>
+  <circle cx="314" cy="213" r="6" fill="#fff"/>
+</svg>

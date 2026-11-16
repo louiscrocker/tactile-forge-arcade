@@ -206,6 +206,14 @@ export const GAMES = [
     meta: 'Keyboard, touch or gamepad',
   },
   {
+    slug: 'parrot', shelf: 'nature', name: 'Parrot: Wing to Wing', badge: 'AGES 4–8',
+    accent: '#d9201f', glow: 'rgba(217,32,31,0.5)',
+    tagline: 'Learn your name in the hollow, make your first flight, and find a friend for life.',
+    description: "Live a scarlet macaw's real life in the rainforest of Peru: hatch in a hollow high in a tree, beg for food, and grow your red, yellow and blue feathers. Your parents give you a call of your own, three notes that are your name. Flap at the door, jump, and fly. Follow your family to the figs, eat clay with the flock at the clay lick, crack a palm nut, and call when you are lost in the mist. Then find a friend for life, fly wing to wing, look for an empty hollow, and give your own chick a name. Wild parrots stay wild, and nothing ever gets hurt.",
+    features: ['Real life cycle', 'Read to Play', 'Plays offline'],
+    meta: 'Keyboard, touch or gamepad',
+  },
+  {
     slug: 'castle', shelf: 'nature', name: 'Castle: Stone by Stone', badge: 'AGES 4–10',
     accent: '#c9a24a', glow: 'rgba(201,162,74,0.5)',
     tagline: 'Build towers, dig a moat, furnish every room and fill the stables with horses.',

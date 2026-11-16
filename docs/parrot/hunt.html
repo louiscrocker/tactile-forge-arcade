@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bird watching: look from far away</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  body { font-family: "Nunito", "Segoe UI", system-ui, sans-serif; color: #2a2016; background: #eef4ea; margin: 0; padding: 24px; }
+  .sheet { max-width: 820px; margin: 0 auto; background: #fffdf6; border: 3px solid #2f6a3c; border-radius: 18px; padding: 26px 30px; }
+  h1 { margin: 0 0 4px; font-size: 34px; letter-spacing: .02em; }
+  h2 { font-size: 20px; margin: 22px 0 8px; color: #2f6a3c; }
+  .rule { background: #2f6a3c; color: #fff; border-radius: 14px; padding: 14px 18px; font-size: 22px; font-weight: 900; text-align: center; margin: 14px 0; }
+  .rule span { color: #ffd23f; }
+  ol.safe { font-size: 18px; line-height: 1.5; padding-left: 26px; margin: 6px 0; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .box { border: 2px dashed #9ab49a; border-radius: 12px; padding: 10px 12px; min-height: 96px; font-size: 16px; }
+  .box b { display: block; font-size: 17px; }
+  .box i { color: #5a6a54; font-style: normal; font-size: 14px; }
+  .tick { float: right; width: 26px; height: 26px; border: 2px solid #2f6a3c; border-radius: 6px; }
+  .draw { border: 2px solid #9ab49a; border-radius: 12px; height: 230px; margin-top: 8px; }
+  .lines p { border-bottom: 2px dotted #9ab49a; height: 30px; margin: 0; }
+  .fine { font-size: 13px; color: #5a5a50; margin-top: 18px; line-height: 1.45; }
+  button { font: inherit; font-weight: 800; padding: 10px 18px; border-radius: 12px; border: 0; background: #2f6a3c; color: #fff; cursor: pointer; }
+  @media print { body { background: #fff; padding: 0; } .sheet { border: 0; } .noprint { display: none; } }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <p class="noprint"><button onclick="window.print()">🖨️ Print this sheet</button></p>
+  <h1>🦜 Bird watching</h1>
+  <p>You do not need a rainforest. There are wild birds in every yard, park and street. Go and watch them with a grown-up. Take this sheet and a pencil.</p>
+  <div class="rule">LOOK FROM FAR AWAY. <span>BE QUIET.</span> WILD BIRDS STAY WILD.</div>
+
+  <h2>The bird watcher's rules</h2>
+  <ol class="safe">
+    <li>I keep <b>still</b> and I keep <b>quiet</b>. Then the birds come closer by themselves.</li>
+    <li>I look with my <b>eyes</b> (or binoculars), not with my hands.</li>
+    <li>I never chase a bird, and I never touch a nest or an egg.</li>
+    <li>If I find a baby bird on the ground, I leave it and <b>tell a grown-up</b>. Its parents are nearly always close by.</li>
+    <li>A wild bird belongs outside, with its flock.</li>
+  </ol>
+
+  <h2>Can you see these? Tick each one.</h2>
+  <div class="grid">
+    <div class="box"><span class="tick"></span><b>A bird eating</b><i>What is it eating? A seed, a berry, a worm, a crumb?</i></div>
+    <div class="box"><span class="tick"></span><b>A bird calling</b><i>Listen. Does another bird answer?</i></div>
+    <div class="box"><span class="tick"></span><b>A flock</b><i>Lots of birds together. How many can you count?</i></div>
+    <div class="box"><span class="tick"></span><b>Two birds together</b><i>A pair? Do they fly side by side?</i></div>
+    <div class="box"><span class="tick"></span><b>A hole in a tree</b><i>Does anybody live in it? Watch from far away.</i></div>
+    <div class="box"><span class="tick"></span><b>A bird landing</b><i>Watch its wings and tail spread out, like brakes.</i></div>
+    <div class="box"><span class="tick"></span><b>A feather</b><i>On the ground. What colour is it? Look, then wash your hands if you pick it up.</i></div>
+    <div class="box"><span class="tick"></span><b>A bird with red on it</b><i>Or blue. Or yellow. Where is the colour?</i></div>
+    <div class="box"><span class="tick"></span><b>A bird that flies up</b><i>One bird goes, and then they all go. Did you see what scared them?</i></div>
+  </div>
+
+  <h2>Draw the best bird you saw</h2>
+  <div class="draw"></div>
+  <h2>Where was it? What was it doing?</h2>
+  <div class="lines"><p></p><p></p><p></p></div>
+
+  <p class="fine"><b>For grown-ups.</b> Scarlet macaws live from southern Mexico to the Amazon. Taking parrots from the wild for the pet trade is one reason some kinds are rare, and trade in wild-caught macaws is restricted by international agreement. If your family ever wants a parrot, ask where it was bred, and remember that a large parrot can live for forty years or more. The best way to see wild birds is the one in the game: from a distance, quietly. This sheet goes with the game <i>Parrot: Wing to Wing</i>.</p>
+</div>
+</body>
+</html>

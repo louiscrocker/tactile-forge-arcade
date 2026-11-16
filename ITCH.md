@@ -75,6 +75,7 @@ Copy the tagline and description from `docs/assets/games.js`. Add one line at th
 | Starfish: Tide by Tide | Adventure | kids, starfish, sea-star, tide-pools, ocean, life-cycle, nature, educational, reading, family-friendly, browser |
 | Stag Beetle: Seven Years, One Summer | Adventure | kids, stag-beetle, beetle, insects, garden, life-cycle, nature, educational, reading, family-friendly, browser |
 | Black Widow: Thread by Thread | Adventure | kids, spider, black-widow, web, desert, life-cycle, nature, educational, reading, family-friendly, browser |
+| Parrot: Wing to Wing | Adventure | kids, parrot, macaw, birds, rainforest, flying, life-cycle, nature, educational, reading, family-friendly, browser |
 | Castle: Stone by Stone | Simulation | kids, castle, building, sandbox, knights, horses, educational, reading, family-friendly, browser |
 | Mungo & Pip: Smash and Mend | Platformer | kids, platformer, demolition, building, repair, local-co-op, cartoon, family-friendly, browser, singleplayer |
 | Storm Lab | Educational | weather, tornado, science, simulation, educational, kids, stem, webgl, radar, browser |
